@@ -1,0 +1,444 @@
+##
+## Code for generating multi-site randomized trial data with cross-site
+## impact variation
+##
+## Core functions:
+##     gen.dat.model - generate according to a model with the coefficients specified
+##     gen.dat - generate data according to some higher level parameters such as ICC, which will
+##        automatically calculate model coefficients and then call gen.dat.model
+
+
+library( tidyverse )
+library( MASS )
+library( lme4 )
+library( arm )
+library( lmtest )
+
+# This is a hack so if the 'finite.model' flag is set to true, it will save the
+# randomly generated units in this variable and simply rerandomize them with
+# subsequent calls to gen.dat.
+CANONICAL = NULL
+
+
+# For pretty-printing output.  Can do things like, e.g.,
+# scat( "This is %d and %f\n", 10, 3.333 )
+scat = function( str, ... ) {
+    cat( sprintf( str, ... ) )
+}
+
+
+# Some initial variables that one might consider
+if ( FALSE ) {
+
+    n.bar = 10
+    J = 30
+    p = 0.5
+    tau.11.star = 0.3
+    rho2.0X = 0.8
+    rho2.1X = 0.5
+    ICC = 0
+    gamma.00 = 0
+    gamma.10 = 0.2  # ATE
+
+
+    # for debugging
+    gamma.00 = gamma.01 = gamma.10 = gamma.11 = 0
+    tau.00 = tau.11 = 0.3
+    tau.01 = 0
+    sigma2.e = 1
+}
+
+
+# Utility function to describe different site characteristics.
+describe.dat = function( df ) {
+    sites = df %>% group_by( sid ) %>% summarise( Y0.bar = mean( Y0 ),
+                                                  Y1.bar = mean( Y1 ),
+                                                  beta = mean( Y1 - Y0 ),
+                                                  n = n(),
+                                                  p.Tx = mean( Z ) )
+    print( sites )
+
+    #sites %>% summarize( tau.11.star = sd( beta ),
+    #                     ICC = )
+    M0 = lmer( Yobs ~ 1 + Z + (Z|sid), data=df )
+    display( M0 )
+}
+
+
+# Given 2-level model, generate data to specifications
+gen.dat.model  = function( n.bar = 10,
+                             J = 30,
+                             p = 0.5,
+                             gamma.00, gamma.01, gamma.10, gamma.11,
+                             tau.00, tau.01, tau.11,
+                             sigma2.e,
+                             variable.n = TRUE,
+                             return.sites=FALSE,
+                             verbose = FALSE ) {
+
+    if ( verbose ) {
+        scat( "gammas:\t%.2f\t%.2f (%.2f)\n\t%.2f\t%.2f (%.2f)\n",
+              gamma.00, gamma.01, gamma.01^2, gamma.10, gamma.11, gamma.11^2 )
+        scat( "taus:\t%.2f\t%.2f\tsd=%.2f\n\t%.2f\t%.2f\tsd=%.2f\tcor=%.2f\n",
+              tau.00, tau.01, sqrt(tau.00), tau.01, tau.11, sqrt(tau.11), tau.01 / sqrt( tau.00 * tau.11) )
+    }
+
+    # site level
+    if ( variable.n ) {
+        nj = rpois( J, n.bar)
+    } else {
+        nj = rep( n.bar, J )
+    }
+    Xj = rnorm( J )
+    Sigma = matrix( c( tau.00, tau.01, tau.01, tau.11 ), nrow=2 )
+    mv = mvrnorm( J, c( 0, 0 ), Sigma )
+    beta.0j = gamma.00 + gamma.01 * Xj + mv[,1]
+    beta.1j = gamma.10 + gamma.11 * Xj + mv[,2]
+
+    if ( return.sites ) {
+        data.frame( n = nj, X = Xj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2] )
+    } else {
+        sid = rep( 1:J, nj )
+
+        # generate individual level outcomes
+        N = sum( nj )
+        #Zij = as.numeric( sample( N ) <= N*p )
+        dd = data.frame( sid = as.factor(sid) )
+        dd = dd %>% group_by( sid ) %>%
+            mutate( Z = as.numeric( sample( n() ) <= n()/2 ) )
+        Zij = dd$Z
+
+        e = rnorm( N, mean=0, sd=sqrt( sigma2.e ) )
+        Y0 = beta.0j[sid] + e
+        Y1 = beta.0j[sid] + beta.1j[sid] + e
+
+        data.frame( sid=as.factor(sid), X = Xj[sid], Y0 = Y0, Y1 = Y1, Z = Zij, Yobs = ifelse( Zij, Y1, Y0 ) )
+    }
+}
+
+
+# Generate multilevel data with no covariates.  A simplification of function
+# above.
+gen.dat.model.no.cov = function( n.bar = 10,
+                                 J = 30,
+                                 p = 0.5,
+                                 gamma.00, gamma.10,
+                                 tau.00, tau.01, tau.11,
+                                 sigma2.e,
+                                 variable.n = TRUE,
+                                 return.sites=FALSE,
+                                 finite.model=FALSE,
+                                 verbose = FALSE ) {
+
+    # generate site sizes (all the same or poisson distribution)
+    if ( variable.n ) {
+        nj = rpois( J, n.bar)
+    } else {
+        nj = rep( n.bar, J )
+    }
+
+    Sigma = matrix( c( tau.00, tau.01, tau.01, tau.11 ), nrow=2 )
+
+    if ( finite.model ) {
+        # Make a canonical set of site charactaristics and then never change
+        # them.
+        if ( is.null( CANONICAL ) || nrow( CANONICAL ) != J ) {
+            CC <- mvrnorm( J, c( 0, 0 ), Sigma )
+            if ( var( CC[,2] ) > 0 ) {
+                CC[,2] = sqrt( tau.11 ) * CC[,2] / sd( CC[,2] )
+            }
+            if ( var( CC[,1]) > 0 ) {
+                CC[,1] = sqrt( tau.00 ) * CC[,1] / sd( CC[,1] )
+            }
+            CANONICAL <<- CC
+        }
+        mv = CANONICAL
+    } else {
+        mv <- mvrnorm( J, c( 0, 0 ), Sigma )
+    }
+
+    # Calculate site intercept and average impacts
+    beta.0j = gamma.00 + mv[,1]
+    beta.1j = gamma.10 + mv[,2]
+
+    if ( return.sites ) {
+        data.frame( n = nj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2] )
+    } else {
+        sid = as.factor( rep( 1:J, nj ) )
+
+        # generate individual level outcomes
+        N = sum( nj )
+
+        # randomize units within each site (proportion p to treatment)
+        dd = data.frame( sid = sid  )
+        dd = dd %>% group_by( sid ) %>%
+            mutate( Z = as.numeric( sample( n() ) <= n()*p ) )
+        Zij = dd$Z
+
+        # individual residuals
+        e = rnorm( N, mean=0, sd=sqrt( sigma2.e ) )
+        Y0 = beta.0j[sid] + e
+        Y1 = beta.0j[sid] + beta.1j[sid] + e
+
+        df <- data.frame( sid=sid,
+                          Y0 = Y0, Y1 = Y1,
+                          Z = Zij,
+                          Yobs = ifelse( Zij, Y1, Y0 ) )
+        attr( df, "tau.S" ) <- sd( beta.1j )
+        df
+    }
+}
+
+
+# n.bar average site size
+# J number sites
+# p prop treated
+gen.dat = function( n.bar = 10,
+                    J = 30,
+                    p = 0.5,
+                    tau.11.star = 0.3,
+                    rho2.0X = 0.1,
+                    rho2.1X = 0.5,
+                    ICC = 0.7,
+                    gamma.00 = 0,
+                    gamma.10 = 0.2,
+                    verbose = FALSE,
+                    zero.corr = FALSE,
+                    ... ) {
+    sigma2.X = 1
+
+    gamma.01 = sqrt( rho2.0X * ICC / sigma2.X )
+    gamma.11 = sqrt( rho2.1X * tau.11.star )
+    tau.00 = (1 - rho2.0X) * ICC
+    if ( zero.corr ) {
+        tau.01 = 0
+    } else {
+        tau.01 = - tau.11.star / 2 - gamma.01 * gamma.11 * sigma2.X
+    }
+    tau.11 = (1 - rho2.1X) * tau.11.star
+    sigma2.e = 1 - ICC
+
+    if ( verbose ) {
+        scat( "tau.11* = %.2f\tICC = %.2f\trho2.Xs = %.2f, %.2f\n", tau.11.star, ICC, rho2.0X, rho2.1X )
+        scat( "tau.00* = %.2f\n", gamma.01^2 * sigma2.X + tau.00 )
+        scat( "tau.11* = %.2f\n", gamma.11^2 * sigma2.X + tau.11 )
+        scat( "sigma2.e* = %.2f\n", sigma2.e )
+    }
+    gen.dat.model( n.bar=n.bar, J=J, p=p,
+                   gamma.00, gamma.01, gamma.10, gamma.11,
+                   tau.00, tau.01, tau.11,
+                   sigma2.e,
+                   verbose = verbose,
+                   ... )
+}
+
+
+# Simplified version of gen.dat() with no X covariate.
+gen.dat.no.cov = function( n.bar = 10,
+                           J = 30,
+                           p = 0.5,
+                           tau.11.star = 0.3,
+                           ICC = 0.7,
+                           gamma.00 = 0,
+                           gamma.10 = 0.2,
+                           verbose = FALSE,
+                           control.sd.Y1 = TRUE,
+                           ... ) {
+    sigma2.X = 1
+
+    tau.00 =  ICC
+    tau.11 = tau.11.star
+    if ( control.sd.Y1 ) {
+        tau.01 = -tau.11 / 2
+    } else {
+        tau.01 = 0
+    }
+    sigma2.e = 1 - ICC
+
+    if ( verbose ) {
+        scat( "tau.11* = %.2f\tICC = %.2f\n",
+              tau.11.star, ICC )
+        scat( "tau.00* = %.2f\n",  tau.00 )
+        scat( "tau.11* = %.2f\n",  tau.11 )
+        scat( "sigma2.e* = %.2f\n", sigma2.e )
+    }
+
+    gen.dat.model.no.cov( n.bar=n.bar, J=J, p=p,
+                          gamma.00, gamma.10,
+                          tau.00, tau.01, tau.11,
+                          sigma2.e,
+                          verbose = verbose,
+                          ... )
+}
+
+##### Another DGP from Catherine ######
+
+# Catherine's create data
+#     a -- average treatment effect
+#     t -- tau
+#     s -- number of sites
+#     n -- number of students per site
+catherine.gen.dat <- function(a,t,s,n){
+    #create site ates
+    raw_ate_vec <- rnorm(n=s, mean=a,sd=t)
+    tau_fp <- sd(raw_ate_vec)
+    ate_vec <- rep(raw_ate_vec,each=n)
+
+    #create data frame with sids
+    dat <- data.frame(sid=as.factor(rep(1:s,each=n)))
+    #randomize within blocks
+    dat = dat %>% group_by(sid) %>%
+        mutate( Z = as.numeric( sample( n() ) <= n()/2 ) ) #50% treatment
+    dat$y0 <- rnorm(n*s,mean=0,sd=1)
+    dat$y1 <- dat$y0+ate_vec
+    dat$Yobs <- dat$y0*(1-dat$Z) + dat$y1*(dat$Z)
+
+    dat$tau_fp <- tau_fp
+
+    return(dat)
+}
+
+
+
+##### Seeing how code works  #####
+
+if ( FALSE ) {
+    # exploring sites
+    sdf = gen.dat( n.bar=10, J=10,
+                   rho2.0X = 0.3, rho2.1X = 0.1,
+                   tau.11.star = 0.3, return.sites=TRUE )
+
+    head(sdf)
+    nrow( sdf )
+    cov( sdf$beta.0, sdf$beta.1 )
+    cov( sdf$u0, sdf$u1 )
+
+
+    dat = gen.dat( n.bar=10, J=10,
+                   rho2.0X = 0.3, rho2.1X = 0.1,
+                   tau.11.star = 0.3, return.sites=FALSE )
+
+    head( dat )
+
+
+    sdf = gen.dat.no.cov( n.bar=10, J=10,
+                          tau.11.star = 0.3, return.sites=TRUE )
+    head(sdf)
+    nrow( sdf )
+    cov( sdf$beta.0, sdf$beta.1 )
+    cov( sdf$u0, sdf$u1 )
+}
+
+
+############ Seeing how code works  ############
+
+if ( FALSE ) {
+    df = gen.dat.model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1 )
+
+    df = gen.dat( n.bar=10, J=300,
+                  tau.11.star = 0.3,
+                  verbose=TRUE)
+
+    var( df$Y0 )
+    var( df$Y1 )
+
+    M0 = lmer( Yobs ~ 1 + Z + (Z|sid), data=df )
+    display( M0 )
+
+    M1 = lmer( Yobs ~ 1 + X*Z + (Z|sid), data=df )
+    display( M1 )
+
+
+    sites = df %>% group_by( sid, X ) %>% summarise( Y0.bar = mean( Y0 ),
+                                                     Y1.bar = mean( Y1 ),
+                                                     beta = mean( Y1 - Y0 ),
+                                                     n = n(),
+                                                     p.Tx = mean( Z ) )
+    nrow( sites )
+    sites %>% ungroup() %>% summarise( mean.Y0 = mean( Y0.bar ),
+                                       mean.Y1 = mean( Y1.bar ),
+                                       cor.Ys = cor( Y0.bar, Y1.bar ),
+                                       cov.Ys = cov( Y0.bar, Y1.bar ),
+                                       mean.beta = mean( beta ),
+                                       n.bar = mean( n ),
+                                       p = mean( p.Tx ),
+                                       X.bar = mean( X ) )
+
+}
+
+######## A small simulation study  ########
+
+if ( FALSE ) {
+
+    single.rho = function( rho2.1X, R = 5 ) {
+        cat( "Doing rho = ", rho2.1X, "\n" )
+        res = plyr::rdply( R, {
+            df = gen.dat( n.bar=10, J=20,
+                          rho2.1X = rho2.1X,
+                          tau.11.star = 0.1 )
+
+            c( ideosyncratic = analysis.1( df ),
+               systematic = analysis.2( df ),
+               combination = analysis.3( df  ) )
+        })
+        res = reshape2::melt( res, id=".n" )
+        res$rho2.1X = rho2.1X
+        res
+    }
+
+    rhos = seq( 0, .4, by = 0.1/4 )
+
+    res = map_df( rhos, single.rho, R=100 )
+    head( res )
+
+    powers = res %>% group_by( rho2.1X, variable ) %>% summarise( power = mean( value <= 0.05 ) )
+    head( powers )
+
+    ggplot( powers, aes(x=rho2.1X, y=power, col=variable ) ) +
+        geom_smooth() +
+        geom_hline( yintercept = 0.05 )
+
+
+
+    ggplot( subset( res, rho2.1X == 0.2 ), aes( x=value ) ) +
+        facet_wrap( ~ variable, ncol= 1 ) +
+        geom_histogram()
+
+    print( powers )
+
+}
+
+
+###### Testing the finite.sample code ##########
+
+
+# Testing the finite model code.
+if ( FALSE ) {
+    CANONICAL <- NULL
+
+    df = gen.dat.no.cov( n.bar=10, J=J,
+                         gamma.10 = 0,
+                         tau.11.star = 0.2^2,
+                         ICC = 0.85,
+                         variable.n = FALSE,
+                         return.sites=TRUE,
+                         finite.model=TRUE
+    )
+    head( df )
+    sd( df$u0 )
+    sd( df$u1 )
+
+    df2 = gen.dat.no.cov( n.bar=10, J=J,
+                          gamma.10 = 0,
+                          tau.11.star = 0.2^2,
+                          ICC = 0.85,
+                          variable.n = FALSE,
+                          return.sites=TRUE,
+                          finite.model=TRUE
+
+    )
+    head( df2 )
+    df$u1 - df2$u1
+
+}
+

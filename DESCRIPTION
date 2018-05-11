@@ -1,0 +1,15 @@
+Package: blkvar
+Title: Blocked design variance estimation
+Version: 0.0.0.9
+Authors@R: c(
+    person("Nicole", "Pashley", email = "npashley@g.harvard.edu", role = "cre"),
+    person("Luke", "Miratrix", email = "lmiratrix@stat.harvard.edu", role = "aut"))
+Description: Calculates variance estimates for treatment effect estimator under block randomized design.
+Depends: R (>= 3.3.2)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Suggests: testthat
+Imports: sandwich,
+    randomizationInference
+RoxygenNote: 6.0.1
