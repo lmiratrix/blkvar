@@ -4,7 +4,7 @@
 
 
 # Multilevel modeling methods
-compare.MLM.methods = function( Y, Z, B) {
+compare.MLM.methods = function( Y, Z, B ) {
     FIRC = estimate.ATE.FIRC( Y, Z, B, REML = TRUE )
     RIRC = estimate.ATE.RIRC( Y, Z, B, REML = TRUE )
     mlms = data.frame( method=c("FIRC", "RIRC"),
@@ -25,9 +25,13 @@ compare.MLM.methods = function( Y, Z, B) {
 #' @param B block ids
 #' @param data matrix of Y, Z, B, as alternative to using vectors.  The columns
 #'   of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.
+#' @param include.MLM Include MLM estimators
+#' @param include.RCTYes Include RCTYes estimators
+#' @param include.LM Include Linear Model-based estimators (including Huber-White SEs, etc.)
+#'
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-compare.methods<-function(Y, Z, B, data=NULL){
+compare.methods<-function(Y, Z, B, data=NULL, include.MLM = TRUE, include.RCTYes = TRUE, include.LM = TRUE ){
     if(!is.null(data)){
         Y<-data[,1]
         Z<-data[,2]
@@ -58,24 +62,34 @@ compare.methods<-function(Y, Z, B, data=NULL){
                                tau = tau_estimates,
                                SE = SE_estimates, stringsAsFactors = FALSE )
 
-    lms = linear.model.estimators( Y, Z, B )
-
-    dt = convert.table.names( data.table )
-
-    # Design based methods
-    RCT.yes.fi = calc.RCT.Yes.SE( dt, method="finite", weight="individual" )
-    RCT.yes.fs = calc.RCT.Yes.SE( dt, method="finite", weight="site" )
-    RCT.yes.si = calc.RCT.Yes.SE( dt, method="superpop", weight="individual" )
-    RCT.yes.ss = calc.RCT.Yes.SE( dt, method="superpop", weight="site" )
-    rctyes = dplyr::bind_rows( RCT.yes.fi, RCT.yes.fs, RCT.yes.si, RCT.yes.ss )
-    rctyes$method = with( rctyes, paste( "RCT.yes (", weight, "-", method, ")", sep="" ) )
-    rctyes$weight = NULL
-    names(rctyes)[1] = "tau"
-
-    mlms = compare.MLM.methods( Y, Z, B )
 
 
-    summary_table = dplyr::bind_rows( summary_table, lms, rctyes, mlms )
+    if ( include.RCTYes ) {
+        dt = convert.table.names( data.table )
+
+        # Design based methods
+        RCT.yes.fi = calc.RCT.Yes.SE( dt, method="finite", weight="individual" )
+        RCT.yes.fs = calc.RCT.Yes.SE( dt, method="finite", weight="site" )
+        RCT.yes.si = calc.RCT.Yes.SE( dt, method="superpop", weight="individual" )
+        RCT.yes.ss = calc.RCT.Yes.SE( dt, method="superpop", weight="site" )
+        rctyes = dplyr::bind_rows( RCT.yes.fi, RCT.yes.fs, RCT.yes.si, RCT.yes.ss )
+        rctyes$method = with( rctyes, paste( "RCT.yes (", weight, "-", method, ")", sep="" ) )
+        rctyes$weight = NULL
+        names(rctyes)[1] = "tau"
+
+        summary_table = dplyr::bind_rows( summary_table, rctyes )
+    }
+
+    if ( include.LM ) {
+        lms = linear.model.estimators( Y, Z, B )
+        summary_table = dplyr::bind_rows( summary_table, lms )
+    }
+
+    if ( include.MLM ) {
+        mlms = compare.MLM.methods( Y, Z, B )
+        summary_table = dplyr::bind_rows( summary_table, mlms )
+    }
+
     return(summary_table)
 }
 

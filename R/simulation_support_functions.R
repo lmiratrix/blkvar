@@ -9,9 +9,15 @@
 #'
 #' @return dataframe with summary statistics by block
 #' @export
-calc.summary.stats.oracle = function( dt ) {
+calc.summary.stats.oracle = function( data, Y0="Y0", Y1="Y1", Z="Z", blk="blk" ) {
     require( tidyverse )
-    sdat <- dt %>% dplyr::group_by( blk ) %>%
+
+            data = rename( data, Y0 = !!rlang::sym(Y0),
+                       Y1 = !!rlang::sym(Y1),
+                       Z = !!rlang::sym(Z),
+                       blk = !!rlang::sym(blk) )
+
+            sdat <- data %>% dplyr::group_by( blk ) %>%
         dplyr::summarise( n = n(),
                           mu0 = mean( Y0 ),
                           mu1 = mean( Y1 ),
@@ -67,6 +73,9 @@ make.blocks = function(X,
     }
     B[X.order]
 }
+
+
+
 
 #' Make data from a linear model specification
 #'
@@ -256,7 +265,8 @@ if ( FALSE ) {
 #' @return Dataframe with block indicators, Y0, and Y1.
 #'
 #' @export
-make.data = function( n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact=FALSE ) {
+make.data = function( n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5,
+                      sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact=FALSE ) {
     K = length( n_k )
     percents<-seq(from=(1-1/(K+1)), to=1/(K+1), by=-1/(K+1))
     alpha <-qnorm(percents, 0, sigma_alpha)

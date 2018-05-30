@@ -14,12 +14,13 @@ library( tidyverse )
 ## ---------- unpooled methods (from Catherine)  ------------
 
 
-#' Fit the FIRC model to estimate ATE across sites as well as cross site treatment variation.
+#' Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
+#' treatment variation.
 #'
 #' Acknowledgement: taken and adapted from Catherine's weiss.tau() method.
 #'
 #' @export
-estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE ) {
+estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE ) {
 
     # get our variables
     if ( is.null( data ) ) {
@@ -36,22 +37,27 @@ estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE ) {
     method = ifelse( REML, "REML", "ML" )
 
     re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
-                    data = data,
-                    random = ~ 0 + Z | sid,
-                  weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
-                  method = method,
-                  control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-
-    # Test for cross site variation (???)
-    re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
-                             data=data,
+                        data = data,
+                        random = ~ 0 + Z | sid,
                         weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                         method = method,
                         control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-    #M0.null = lm( Yobs ~ 0 + sid + Z, data=data )
-    td = as.numeric( deviance( re.mod ) - deviance( re.mod.null ) )
-    p.variation = 0.5 * pchisq(td, 1, lower.tail = FALSE )
 
+    if ( include.testing ) {
+        # Test for cross site variation (???)
+        re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
+                                 data=data,
+                                 weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                                 method = method,
+                                 control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+
+        #M0.null = lm( Yobs ~ 0 + sid + Z, data=data )
+        td = as.numeric( deviance( re.mod.null ) - deviance( re.mod ) )
+        p.variation = 0.5 * pchisq(td, 1, lower.tail = FALSE )
+    } else {
+        p.variation = NA
+        td = NA
+    }
 
     # get ATE and SE
     ATE = nlme::fixef( re.mod )[[1]]
@@ -82,20 +88,33 @@ estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE ) {
 
     return( list(ATE = ATE, SE.ATE = SE.ATE,
                  tau.hat = tau.hat, SE.tau=SE.tau,
-                 p.variation = p.variation ))
+                 p.variation = p.variation,
+                 deviance = td ))
 }
 
 
+localsource = function( filename ) {
+    source( file.path( dirname( rstudioapi::getActiveDocumentContext()$path ), filename ) )
+}
 
 
 # Testing
 if ( FALSE ) {
-    source( "multisite_data_generators.R")
+    localsource( "multisite_data_generators.R")
 
-    dat = catherine.gen.dat( 0.2, 0.2, 30, 50 )
+    dat = catherine.gen.dat( 0.2, 1.0, 30, 50 )
     head( dat )
+    describe.data( dat )
 
-    debug( estimate.ATE.FIRC )
+    #debug( estimate.ATE.FIRC )
+    estimate.ATE.FIRC( Yobs, Z, sid, dat )
+
+
+    dat = catherine.gen.dat( 0.2, 0, 30, 50 )
+    head( dat )
+    describe.data( dat )
+
+    #debug( estimate.ATE.FIRC )
     estimate.ATE.FIRC( Yobs, Z, sid, dat )
 }
 
@@ -113,40 +132,68 @@ if ( FALSE ) {
 #'
 #' @rdname estimate.ATE.FIRC
 #' @export
-estimate.ATE.FIRC.pool = function(  Yobs, Z, sid, data=NULL ) {
+estimate.ATE.FIRC.pool = function(  Yobs, Z, sid, data=NULL, include.testing = TRUE ) {
 
-    M0 = lmer( Yobs ~ 0 + sid + Z + (0+Z|sid), data=data, REML = FALSE )
-    #M0.null = lm( Yobs ~ 0 + sid + Z, data=df )
-    #td = anova( M0, M0.null )$Chisq[[2]]
-    #p.v = 0.5 * pchisq(td, 1, lower.tail = FALSE )
-    M0.null = lm( Yobs ~ 0 + sid + Z, data=data )
+    #    M0 = lmer( Yobs ~ 0 + Z + sid + (0+Z|sid), data=data, REML = FALSE )
+    #    M0.null = lm( Yobs ~ 0 + Z + sid, data=data )
 
     # obtain the estimate of cross-site variation
-    tau.hat.FIRC.pool = sqrt( VarCorr( M0 )$sid[1,1] )
+    #    tau.hat.FIRC.pool = sqrt( VarCorr( M0 )$sid[1,1] )
 
-    # I _think_ this is what is suggested to handle the boundary by Snijders and Bosker
-    td = deviance( M0.null ) - deviance( M0 )
-    pvalue = 0.5 * pchisq(td, 1, lower.tail = FALSE ) + 0.5
+    # Can we get deviance from the lm and the lmer models?
+    #    td = deviance( M0.null ) - deviance( M0 )
+
+    re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
+                        data = data,
+                        random = ~ 0 + Z | sid,
+                        method = "ML",
+                        control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+
+    if ( include.testing ) {
+        # Test for cross site variation (???)
+        re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
+                                 data=data,
+                                 method = "ML",
+                                 control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+
+
+        td = as.numeric( deviance( re.mod.null ) - deviance( re.mod ) )
+        p.variation = 0.5 * pchisq(td, 1, lower.tail = FALSE )
+    } else {
+        p.variation = NA
+        td = NA
+    }
+    #pvalue = 0.5 * pchisq(-td, 1, lower.tail = FALSE )
     #tst = lrtest( M0, M0.null )
     #tst[[5]][[2]]
 
-    list( ATE = tau.hat.FIRC.pool, p.variation = pvalue )
+    vc <- nlme::VarCorr(re.mod)
+    suppressWarnings(storage.mode(vc) <- "numeric")
+    tau.hat.FIRC.pool <- vc["Z","StdDev"]
+
+    list( ATE = fixef( re.mod )[[1]],
+          tau.hat = tau.hat.FIRC.pool,
+          p.variation = p.variation,
+          deviance = td)
 }
 
 
 
 
+
+
 if ( FALSE ) {
-    library( blkvar )
-    source( "R/multisite_data_generators.R")
-    dat = catherine.gen.dat( 0.2, 0.2, 30, 50 )
-    head( dat )
 
-    analysis.idio.FIRC.pool( Yobs, Z, sid, data=dat )
+    localsource( "multisite_data_generators.R")
 
-    fit.FIRC.pool( Yobs, Z, sid, data=dat )
+    dat = catherine.gen.dat( 0.2, 0.0, 30, 50 )
+    describe.data( dat )
 
-    fit.FIRC( Yobs, Z, sid, data=dat )
+    estimate.ATE.FIRC.pool( Yobs, Z, sid, data=dat )
 
-    fit.FIRC( dat$Yobs, dat$Z, dat$sid )
+    dat = catherine.gen.dat( 0.2, 0.5, 30, 50 )
+    describe.data( dat )
+
+    estimate.ATE.FIRC.pool( Yobs, Z, sid, data=dat )
+
 }

@@ -4,7 +4,8 @@
 \alias{compare.methods}
 \title{Block variance method comparison function}
 \usage{
-compare.methods(Y, Z, B, data = NULL)
+compare.methods(Y, Z, B, data = NULL, include.MLM = TRUE,
+  include.RCTYes = TRUE, include.LM = TRUE)
 }
 \arguments{
 \item{Y}{vector observed outcomes}
@@ -15,6 +16,12 @@ compare.methods(Y, Z, B, data = NULL)
 
 \item{data}{matrix of Y, Z, B, as alternative to using vectors.  The columns
 of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.}
+
+\item{include.MLM}{Include MLM estimators}
+
+\item{include.RCTYes}{Include RCTYes estimators}
+
+\item{include.LM}{Include Linear Model-based estimators (including Huber-White SEs, etc.)}
 }
 \description{
 This function calculates the point estimates and SE estimates for a variety

@@ -36,6 +36,7 @@ block.data<-function(Y, Z, B, data=NULL){
 
   #First convert block ids into numbers
   blk_id<-factor(B)
+  n.blocks = nlevels( blk_id )
   blk_id<-as.numeric(blk_id)
 
   #Get number of units assigned to each treatment
@@ -54,6 +55,9 @@ block.data<-function(Y, Z, B, data=NULL){
   overall_mat<-merge(n_ctk_matrix, Ybar_matrix, by="Blk_ID")
   overall_mat<-merge(overall_mat, var_matrix, by="Blk_ID")
   overall_mat$se_ney<-sqrt(overall_mat$var1/overall_mat$Num_Trt + overall_mat$var0/overall_mat$Num_Ctrl)
+  if ( nrow( overall_mat ) < n.blocks ) {
+      warning( "Blocks dropped due to missing tx or co units." )
+  }
 
   return(overall_mat)
 }

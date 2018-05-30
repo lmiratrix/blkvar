@@ -49,19 +49,33 @@ if ( FALSE ) {
 }
 
 
-# Utility function to describe different site characteristics.
-describe.dat = function( df ) {
-    sites = df %>% group_by( sid ) %>% summarise( Y0.bar = mean( Y0 ),
+# Utility function to describe different characteristics of the distribution of
+# sites (given all the potential outcomes).
+describe.data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
+    #old param list: Y0, Y1, Z, sid, data = NULL
+    data = rename( data, Y0 = !!rlang::sym(Y0),
+                   Y1 = !!rlang::sym(Y1),
+                   Z = !!rlang::sym(Z),
+                   sid = !!rlang::sym(sid) )
+
+    sites = data %>% group_by( !!rlang::sym(sid) ) %>% summarise( Y0.bar = mean( Y0 ),
                                                   Y1.bar = mean( Y1 ),
-                                                  beta = mean( Y1 - Y0 ),
+                                                  beta = Y1.bar - Y0.bar,
                                                   n = n(),
                                                   p.Tx = mean( Z ) )
-    print( sites )
 
-    #sites %>% summarize( tau.11.star = sd( beta ),
-    #                     ICC = )
-    M0 = lmer( Yobs ~ 1 + Z + (Z|sid), data=df )
-    display( M0 )
+    site.var = sd( sites$beta )
+    scat( "\n\nDescription of site distribution:" )
+    scat( "\n\tsite average variation:\tsd(Y0.bar) = %.3f\tsd(Y1.bar) = %.3f", sd( sites$Y0.bar ), sd( sites$Y1.bar ) )
+    scat( "\n\tmarginal variation:\tsd(Y0) = %.3f\t\tsd(Y1) = %.3f\t\tcor(Y0,Y1) = %.3f", sd( data$Y0 ), sd( data$Y1 ), cor( data$Y0, data$Y1 ) )
+    scat( "\n\tsd( beta ) = %.3f\n\tcorr( Y0.bar, Y1.bar ) = %.3f\tcov = %.3f", site.var, cor( sites$Y0.bar, sites$Y1.bar ),
+          cov( sites$Y0.bar, sites$Y1.bar ))
+    scat( "\n\tcor( Y0.bar, beta ) = %.3f", cor( sites$Y0.bar, sites$beta ) )
+    scat( "\n\tmean( n ) = %.3f\tsd( n ) = %.3f", mean( sites$n ), sd( sites$n ) )
+    scat( "\n\tmean( Z.bar ) = %.3f\t(%.3f)\n", mean( sites$p.Tx ), sd( sites$p.Tx) )
+
+
+    invisible( sites )
 }
 
 
@@ -233,7 +247,24 @@ gen.dat = function( n.bar = 10,
 }
 
 
-# Simplified version of gen.dat() with no X covariate.
+#'
+#' @title  Simplified version of gen.dat() with no X covariate.
+#' @description Generate fake data for simulation studies
+#' @param n.bar PARAM_DESCRIPTION, Default: 10
+#' @param J PARAM_DESCRIPTION, Default: 30
+#' @param p PARAM_DESCRIPTION, Default: 0.5
+#' @param tau.11.star PARAM_DESCRIPTION, Default: 0.3
+#' @param ICC desired ICC, Default: 0.7
+#' @param gamma.00 PARAM_DESCRIPTION, Default: 0
+#' @param gamma.10 PARAM_DESCRIPTION, Default: 0.2
+#' @param verbose PARAM_DESCRIPTION, Default: FALSE
+#' @param variable.n PARAM_DESCRIPTION, Default: TRUE
+#' @param control.sd.Y1 Make correlation of random intercept and random slope
+#'   such that the variance of the Y1s is 1.0, Default: TRUE
+#' @param ... PARAM_DESCRIPTION
+#' @return Dataframe of individual data from a MLM DGP.
+#' @rdname gen.dat.no.cov
+#' @export
 gen.dat.no.cov = function( n.bar = 10,
                            J = 30,
                            p = 0.5,
@@ -242,6 +273,7 @@ gen.dat.no.cov = function( n.bar = 10,
                            gamma.00 = 0,
                            gamma.10 = 0.2,
                            verbose = FALSE,
+                           variable.n = TRUE,
                            control.sd.Y1 = TRUE,
                            ... ) {
     sigma2.X = 1
@@ -268,6 +300,7 @@ gen.dat.no.cov = function( n.bar = 10,
                           tau.00, tau.01, tau.11,
                           sigma2.e,
                           verbose = verbose,
+                          variable.n = variable.n,
                           ... )
 }
 
@@ -289,9 +322,9 @@ catherine.gen.dat <- function(a,t,s,n){
     #randomize within blocks
     dat = dat %>% group_by(sid) %>%
         mutate( Z = as.numeric( sample( n() ) <= n()/2 ) ) #50% treatment
-    dat$y0 <- rnorm(n*s,mean=0,sd=1)
-    dat$y1 <- dat$y0+ate_vec
-    dat$Yobs <- dat$y0*(1-dat$Z) + dat$y1*(dat$Z)
+    dat$Y0 <- rnorm(n*s,mean=0,sd=1)
+    dat$Y1 <- dat$Y0+ate_vec
+    dat$Yobs <- dat$Y0*(1-dat$Z) + dat$Y1*(dat$Z)
 
     dat$tau_fp <- tau_fp
 
@@ -328,9 +361,6 @@ if ( FALSE ) {
     cov( sdf$beta.0, sdf$beta.1 )
     cov( sdf$u0, sdf$u1 )
 }
-
-
-############ Seeing how code works  ############
 
 if ( FALSE ) {
     df = gen.dat.model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1 )
