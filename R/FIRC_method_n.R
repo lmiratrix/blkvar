@@ -31,7 +31,6 @@ analysis.FIRC <- function( Yobs, Z, sid, data=df, REML = FALSE ) {
 
 
 
-
 # Testing
 if ( FALSE ) {
   
