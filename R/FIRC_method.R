@@ -197,3 +197,73 @@ if ( FALSE ) {
     estimate.ATE.FIRC.pool( Yobs, Z, sid, data=dat )
 
 }
+
+
+## ---------------- unpooled FIRC: small sample sim -----------------
+##
+## This is an update function from Masha's small sample simultions that extracts the correct p-value
+
+analysis.FIRC <- function( df ) {
+  
+  #fit multilevel model and extract pvalue
+  re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
+                      data = df,
+                      random = ~ 0 + Z | sid,
+                      weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                      method="ML",
+                      control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+  
+  # Test for cross site variation
+  re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
+                           data=df,
+                           weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                           method = "ML",
+                           control=nlme::lmeControl(opt="optim", returnObject=TRUE))
+  
+  myanova = anova(re.mod.null, re.mod)
+  myanova[2,9]
+  
+}
+
+# Testing
+# This testing is based on the DGP for small sample simulations
+if ( FALSE ) {
+  
+  df = gen.dat.no.cov.n( n = 600,n.small = 6, J = 30, small.percentage = 0.7,tau.11.star = 0.2)
+  
+  # head( df )
+  # describe.data( df )
+  
+  analysis.FIRC( df )
+  
+}
+
+
+## ---------------- unpooled FIRC: accoutning for covariates -----------------
+##
+
+
+analysis.FIRC <- function( df ) {
+  
+  #fit multilevel model and extract pvalue 
+  re.mod <- nlme::lme(Yobs ~ 0 + Z * X + sid,
+                      data = df,
+                      random = ~ 0 + Z | sid,
+                      weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                      method="ML",
+                      control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+  
+  # Test for cross site variation
+  re.mod.null <- nlme::gls(Yobs ~ 0 + Z * X + sid,
+                           data=df,
+                           weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                           method = "ML",
+                           control=nlme::lmeControl(opt="optim", returnObject=TRUE))
+  
+  
+  myanova = anova(re.mod.null, re.mod)
+  myanova[2,9]
+  
+}
+
+
