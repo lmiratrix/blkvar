@@ -203,6 +203,7 @@ if ( FALSE ) {
 ##
 ## This is an update function from Masha's small sample simultions that extracts the correct p-value
 
+
 analysis.FIRC <- function( df ) {
   
   #fit multilevel model and extract pvalue
