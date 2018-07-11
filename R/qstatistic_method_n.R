@@ -2,6 +2,7 @@
 ## Methods of detection and estimation of cross site variation based on the
 ## Q-statistic/meta analysis approach
 ##
+##
 
 
 # This function doesn't incorporate covariates and is used for small sample simulations
