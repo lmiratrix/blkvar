@@ -93,6 +93,7 @@ estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
 }
 
 
+# For the debugging code to get the DGP files
 localsource = function( filename ) {
     source( file.path( dirname( rstudioapi::getActiveDocumentContext()$path ), filename ) )
 }
@@ -100,6 +101,7 @@ localsource = function( filename ) {
 
 # Testing
 if ( FALSE ) {
+
     localsource( "multisite_data_generators.R")
 
     dat = catherine.gen.dat( 0.2, 1.0, 30, 50 )
@@ -123,10 +125,10 @@ if ( FALSE ) {
 ## ---------------- pooled methods -----------------
 
 #' Fit the FIRC model, but using the same residual variance for both treatment
-#' and control groups.  This is a simple call to `lmer()`.
+#' and control groups.  This can be done with a simple call to `lmer()`.
 #'
-#' For testing for cross site variation, this will adjust the ratio stat p-value to account for the mixture of
-#' chi-squared distributions.
+#' For testing for cross site variation, this will adjust the ratio statistic's
+#' p-value to account for the mixture of chi-squared distributions.
 
 #' @return List of things including a pvalue for cross-site variation
 #'
@@ -201,8 +203,10 @@ if ( FALSE ) {
 
 ## ---------------- unpooled FIRC: small sample sim -----------------
 ##
-## This is an update function from Masha's small sample simultions that extracts the correct p-value
+## This is an updated function from Masha's small sample simultions that
+## extracts the correct p-value
 
+<<<<<<< HEAD
 
 analysis.FIRC <- function( df ) {
   
@@ -224,19 +228,76 @@ analysis.FIRC <- function( df ) {
   myanova = anova(re.mod.null, re.mod)
   myanova[2,9]
   
+=======
+#' Test for treatment heterogeniety with the FIRC model.
+#'
+#' @param anova Use the anova() method to do the test for significance between
+#'   the models.  FALSE means do the modified chi-squared test.
+analysis.FIRC <- function( data, REML = FALSE, anova=FALSE ) {
+
+    # get variables
+    #if ( is.null( df ) ) {
+    #    data = data.frame( Yobs = Yobs, Z = Z, sid= factor(sid) )
+    #} else {
+    #    sid.name = as.character( quote( sid ) )
+    #    data[ sid.name ] = factor( eval( substitute( sid ), df ) )
+    #}
+
+    #fit multilevel model and extract pvalue
+    method = ifelse( REML, "REML", "ML" )
+
+    re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
+                        data = data,
+                        random = ~ 0 + Z | sid,
+                        weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                        method = method,
+                        control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+
+    # Test for cross site variation
+    re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
+                             data=data,
+                             weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                             method = method,
+                             control=nlme::lmeControl(opt="optim", returnObject=TRUE))
+
+    if ( anova ) {
+        stopifnot( REML == FALSE )
+        myanova = anova(re.mod.null, re.mod)
+        p.value.anova = myanova[2,9]
+        return( p.value.anova / 2 )  # divide by 2 by same logic as chi-squared test.
+    } else {
+        td = abs(as.numeric( deviance( re.mod ) - deviance( re.mod.null )))
+        p.value = 0.5 * pchisq(td, 1, lower.tail = FALSE )
+        return( p.value )
+    }
+>>>>>>> 9f54f7c7d24902d3d0a6f8090a369ee1405b6432
 }
+
+# Testing
+if ( FALSE ) {
+
+    df = gen.dat.no.cov.n( n = 600,n.small = 6, J = 30, small.percentage = 0.7,tau.11.star = 0.2)
+
+    # head( df )
+    # describe.data( df )
+
+    analysis.FIRC( Yobs, Z, sid, df )
+
+}
+
+
 
 # Testing
 # This testing is based on the DGP for small sample simulations
 if ( FALSE ) {
-  
+
   df = gen.dat.no.cov.n( n = 600,n.small = 6, J = 30, small.percentage = 0.7,tau.11.star = 0.2)
-  
+
   # head( df )
   # describe.data( df )
-  
+
   analysis.FIRC( df )
-  
+
 }
 
 
@@ -244,27 +305,27 @@ if ( FALSE ) {
 ##
 
 
-analysis.FIRC <- function( df ) {
-  
-  #fit multilevel model and extract pvalue 
+analysis.FIRC.cov <- function( df ) {
+
+  #fit multilevel model and extract pvalue
   re.mod <- nlme::lme(Yobs ~ 0 + Z * X + sid,
                       data = df,
                       random = ~ 0 + Z | sid,
                       weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                       method="ML",
                       control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-  
+
   # Test for cross site variation
   re.mod.null <- nlme::gls(Yobs ~ 0 + Z * X + sid,
                            data=df,
                            weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                            method = "ML",
                            control=nlme::lmeControl(opt="optim", returnObject=TRUE))
-  
-  
+
+
   myanova = anova(re.mod.null, re.mod)
   myanova[2,9]
-  
+
 }
 
 
