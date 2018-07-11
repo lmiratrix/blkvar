@@ -216,6 +216,7 @@ plug_in_big<-function(data.small, data.big){
   return(var_est)
 }
 
+
 #' Block variance estimation function.
 #'
 #' This function takes the block-level summary statistics of a dataset and returns a treatment effect estimate,
@@ -225,7 +226,7 @@ plug_in_big<-function(data.small, data.big){
 #' @param method is method of variance estimation, defauly "hybrid_m"
 #' @param throw.warnings TRUE means throw warnings if the hybrid estimators are breaking down due to violation of assumptions.
 #' @export
-fitdata.sumtable = function( data.table, method=c("hybrid_m", "hybrid_p", "plug_in_big"), throw.warnings=TRUE ) {
+fitdata.sumtable = function( data.table, method=c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"), throw.warnings=TRUE ) {
     K<-nrow(data.table)
     data.table$nk<-data.table$Num_Trt+data.table$Num_Ctrl
     n<-sum(data.table$nk)
@@ -257,12 +258,32 @@ fitdata.sumtable = function( data.table, method=c("hybrid_m", "hybrid_p", "plug_
         if(throw.warnings && is.na(var_small)){
             warning("Need some big blocks for plug_in_big")
         }
+    }else if(method=="rct_yes_small"){
+      dt<-convert.table.names(data.small)
+      var_small<-(calc.RCT.Yes.SE(dt, "superpop.original" , weight = "individual")$SE)^2*sum(data.small$nk)^2/n^2
+      if(throw.warnings && is.na(var_small)){
+        warning("Need multiple small blocks for rct_yes_small")
+      }
+    }else if(method=="rct_yes_mod_small"){
+      dt<-convert.table.names(data.small)
+      var_small<-(calc.RCT.Yes.SE(dt, "superpop" , weight = "individual")$SE)^2*sum(data.small$nk)^2/n^2
+      if(throw.warnings && is.na(var_small)){
+        warning("Need multiple small blocks for rct_yes_small")
+      }
     }
     #Get trt effect estimates and aggregate
     tau_vec<-data.table$Y1-data.table$Y0
     tau_est<-sum(tau_vec*data.table$nk)/n
     #Get overall variance estimate
-    var_est<-var_small+var_big
+    if(method=="rct_yes_all"){
+      dt<-convert.table.names(data.table)
+      var_est<-(calc.RCT.Yes.SE(dt, "superpop.original" , weight = "individual")$SE)^2
+    }else if(method=="rct_yes_mod_all"){
+      dt<-convert.table.names(data.table)
+      var_est<-(calc.RCT.Yes.SE(dt, "superpop" , weight = "individual")$SE)^2
+    }else{
+      var_est<-var_small+var_big
+    }
     #Table summarizing block sizes
     size_table<-data.table[,c("Blk_ID", "Num_Trt", "Num_Ctrl")]
     #Percent of blocks that are small
@@ -287,7 +308,7 @@ fitdata.sumtable = function( data.table, method=c("hybrid_m", "hybrid_p", "plug_
 #' @param method is method of variance estimation, defauly "hybrid_m"
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-fitdata<-function(Y, Z, B, data=NULL, method=c("hybrid_m", "hybrid_p", "plug_in_big"), throw.warnings=TRUE ){
+fitdata<-function(Y, Z, B, data=NULL, method=c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"), throw.warnings=TRUE ){
   if(!is.null(data)){
     Y<-data[,1]
     Z<-data[,2]

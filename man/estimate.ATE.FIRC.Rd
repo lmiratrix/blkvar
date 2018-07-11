@@ -3,11 +3,13 @@
 \name{estimate.ATE.FIRC}
 \alias{estimate.ATE.FIRC}
 \alias{estimate.ATE.FIRC.pool}
-\title{Fit the FIRC model to estimate ATE across sites as well as cross site treatment variation.}
+\title{Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
+treatment variation.}
 \usage{
-estimate.ATE.FIRC(Yobs, Z, sid, data = NULL, REML = FALSE)
+estimate.ATE.FIRC(Yobs, Z, sid, data = NULL, REML = FALSE,
+  include.testing = TRUE)
 
-estimate.ATE.FIRC.pool(Yobs, Z, sid, data = NULL)
+estimate.ATE.FIRC.pool(Yobs, Z, sid, data = NULL, include.testing = TRUE)
 }
 \value{
 List of things including a pvalue for cross-site variation
