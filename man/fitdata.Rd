@@ -5,7 +5,8 @@
 \title{Block variance estimation function.}
 \usage{
 fitdata(Y, Z, B, data = NULL, method = c("hybrid_m", "hybrid_p",
-  "plug_in_big"), throw.warnings = TRUE)
+  "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all",
+  "rct_yes_mod_small"), throw.warnings = TRUE)
 }
 \arguments{
 \item{Y}{vector observed outcomes}

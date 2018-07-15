@@ -4,8 +4,9 @@
 \alias{fitdata.sumtable}
 \title{Block variance estimation function.}
 \usage{
-fitdata.sumtable(data.table, method = c("hybrid_m", "hybrid_p",
-  "plug_in_big"), throw.warnings = TRUE)
+fitdata.sumtable(data.table, method = c("hybrid_m", "hybrid_p", "plug_in_big",
+  "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"),
+  throw.warnings = TRUE)
 }
 \arguments{
 \item{data.table}{Summary statistics of blocks in a dataset.  In particular, the output of block.data method.}
