@@ -75,6 +75,8 @@ test_that( "Block specific generator works", {
     expect_equal( nrow( dt ), 7 )
     expect_equal( length( unique( dt$blk ) ), 2 )
     expect_true( is.factor( dt$blk ) )
+    head( dt )
+    dt = add.obs.data( dt )
 
     ss = calc.summary.stats.oracle( dt )
     ss
@@ -90,12 +92,14 @@ test_that( "Block specific generator works", {
     expect_equal( length( unique( dt$blk ) ), 2 )
     expect_true( is.factor( dt$blk ) )
 
+    dt = add.obs.data( dt )
     ss = calc.summary.stats.oracle( dt )
     ss
     expect_equal( ss$tau, c( 10, 1 ) )
     expect_equal( ss$mu0, c( 0, 10 ) )
 
     dt = generate.individuals.from.blocks( c( 4, 8 ), c( 0, 10 ),c( 10, 1 ),  c(1, 3), c( 3, 1 ), c( 0, 1 ), FALSE )
+    dt = add.obs.data( dt )
     ss = calc.summary.stats.oracle( dt )
     ss
     expect_true( ss$tau[[1]] > ss$tau[[2]] )

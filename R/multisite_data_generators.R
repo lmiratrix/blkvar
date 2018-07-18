@@ -79,7 +79,27 @@ describe.data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
 }
 
 
-# Given 2-level model, generate data to specifications
+#' @title Generate multilevel data from a model
+#'
+#' @description Given a 2-level model, generate data to specifications
+#'
+#' @param n.bar PARAM_DESCRIPTION, Default: 10
+#' @param J PARAM_DESCRIPTION, Default: 30
+#' @param p PARAM_DESCRIPTION, Default: 0.5
+#' @param gamma.00 PARAM_DESCRIPTION
+#' @param gamma.01 PARAM_DESCRIPTION
+#' @param gamma.10 PARAM_DESCRIPTION
+#' @param gamma.11 PARAM_DESCRIPTION
+#' @param tau.00 PARAM_DESCRIPTION
+#' @param tau.01 PARAM_DESCRIPTION
+#' @param tau.11 PARAM_DESCRIPTION
+#' @param sigma2.e PARAM_DESCRIPTION
+#' @param variable.n PARAM_DESCRIPTION, Default: TRUE
+#' @param return.sites PARAM_DESCRIPTION, Default: FALSE
+#' @param verbose PARAM_DESCRIPTION, Default: FALSE
+#' @return OUTPUT_DESCRIPTION
+#' @rdname gen.dat.model
+#' @export
 gen.dat.model  = function( n.bar = 10,
                              J = 30,
                              p = 0.5,
@@ -204,9 +224,23 @@ gen.dat.model.no.cov = function( n.bar = 10,
 }
 
 
-# n.bar average site size
-# J number sites
-# p prop treated
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @param n.bar average site size, Default: 10
+#' @param J number sites, Default: 30
+#' @param p prop treated, Default: 0.5
+#' @param tau.11.star PARAM_DESCRIPTION, Default: 0.3
+#' @param rho2.0X PARAM_DESCRIPTION, Default: 0.1
+#' @param rho2.1X PARAM_DESCRIPTION, Default: 0.5
+#' @param ICC PARAM_DESCRIPTION, Default: 0.7
+#' @param gamma.00 PARAM_DESCRIPTION, Default: 0
+#' @param gamma.10 PARAM_DESCRIPTION, Default: 0.2
+#' @param verbose PARAM_DESCRIPTION, Default: FALSE
+#' @param zero.corr PARAM_DESCRIPTION, Default: FALSE
+#' @param ... Further parameters passed to gen.dat.model()
+#' @return OUTPUT_DESCRIPTION
+#' @rdname gen.dat
+#' @export
 gen.dat = function( n.bar = 10,
                     J = 30,
                     p = 0.5,

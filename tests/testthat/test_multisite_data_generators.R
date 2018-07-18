@@ -37,16 +37,16 @@ test_that( "Other DGP calls work", {
 
     df = gen.dat( n.bar=10, J=300,
                   tau.11.star = 0.3,
-                  verbose=TRUE)
+                  verbose=FALSE)
 
     var( df$Y0 )
     var( df$Y1 )
 
     M0 = lmer( Yobs ~ 1 + Z + (Z|sid), data=df )
-    display( M0 )
+    #display( M0 )
 
     M1 = lmer( Yobs ~ 1 + X*Z + (Z|sid), data=df )
-    display( M1 )
+    #display( M1 )
 
 
     sites = df %>% group_by( sid, X ) %>% summarise( Y0.bar = mean( Y0 ),

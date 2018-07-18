@@ -17,6 +17,6 @@ List of things including a pvalue for cross-site variation
 \description{
 Acknowledgement: taken and adapted from Catherine's weiss.tau() method.
 
-For testing for cross site variation, this will adjust the ratio stat p-value to account for the mixture of
-chi-squared distributions.
+For testing for cross site variation, this will adjust the ratio statistic's
+p-value to account for the mixture of chi-squared distributions.
 }

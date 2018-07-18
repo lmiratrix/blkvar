@@ -206,29 +206,6 @@ if ( FALSE ) {
 ## This is an updated function from Masha's small sample simultions that
 ## extracts the correct p-value
 
-<<<<<<< HEAD
-
-analysis.FIRC <- function( df ) {
-  
-  #fit multilevel model and extract pvalue
-  re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
-                      data = df,
-                      random = ~ 0 + Z | sid,
-                      weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
-                      method="ML",
-                      control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-  
-  # Test for cross site variation
-  re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
-                           data=df,
-                           weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
-                           method = "ML",
-                           control=nlme::lmeControl(opt="optim", returnObject=TRUE))
-  
-  myanova = anova(re.mod.null, re.mod)
-  myanova[2,9]
-  
-=======
 #' Test for treatment heterogeniety with the FIRC model.
 #'
 #' @param anova Use the anova() method to do the test for significance between
@@ -270,7 +247,6 @@ analysis.FIRC <- function( data, REML = FALSE, anova=FALSE ) {
         p.value = 0.5 * pchisq(td, 1, lower.tail = FALSE )
         return( p.value )
     }
->>>>>>> 9f54f7c7d24902d3d0a6f8090a369ee1405b6432
 }
 
 # Testing
