@@ -281,7 +281,7 @@ if ( FALSE ) {
 ##
 
 
-analysis.FIRC.cov <- function( df ) {
+analysis.FIRC.cov <- function( df, REML = FALSE, anova=FALSE ) {
 
   #fit multilevel model and extract pvalue
   re.mod <- nlme::lme(Yobs ~ 0 + Z * X + sid,
@@ -299,8 +299,16 @@ analysis.FIRC.cov <- function( df ) {
                            control=nlme::lmeControl(opt="optim", returnObject=TRUE))
 
 
-  myanova = anova(re.mod.null, re.mod)
-  myanova[2,9]
+  if ( anova ) {
+    stopifnot( REML == FALSE )
+    myanova = anova(re.mod.null, re.mod)
+    p.value.anova = myanova[2,9]
+    return( p.value.anova / 2 )  # divide by 2 by same logic as chi-squared test.
+  } else {
+    td = abs(as.numeric( deviance( re.mod ) - deviance( re.mod.null )))
+    p.value = 0.5 * pchisq(td, 1, lower.tail = FALSE )
+    return( p.value )
+  }
 
 }
 
