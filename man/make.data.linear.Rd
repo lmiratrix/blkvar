@@ -5,11 +5,11 @@
 \alias{make.obs.data.linear}
 \title{Make data from a linear model specification}
 \usage{
-make.data.linear(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55,
-  60, 65), a = 0, b = 0, ATE = 0.2, d = 0)
+make.data.linear(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45,
+  55, 60, 65), a = 0, b = 0, ATE = 0.2, d = 0)
 
-make.obs.data.linear(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45,
-  55, 60, 65), p = 0.5, a = 0, b = 0, ATE = 0.2, d = 0,
+make.obs.data.linear(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43,
+  45, 55, 60, 65), p = 0.5, a = 0, b = 0, ATE = 0.2, d = 0,
   method = c("small", "pair", "big", "none"))
 }
 \arguments{

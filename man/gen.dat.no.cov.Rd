@@ -9,28 +9,27 @@ gen.dat.no.cov(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3,
   variable.n = TRUE, control.sd.Y1 = TRUE, ...)
 }
 \arguments{
-\item{n.bar}{PARAM_DESCRIPTION, Default: 10}
+\item{n.bar}{average site size, Default: 10}
 
-\item{J}{PARAM_DESCRIPTION, Default: 30}
+\item{J}{number sites, Default: 30}
 
-\item{p}{PARAM_DESCRIPTION, Default: 0.5}
+\item{p}{prop treated, Default: 0.5}
 
-\item{tau.11.star}{PARAM_DESCRIPTION, Default: 0.3}
+\item{tau.11.star}{Total amount of cross site treatment variation, both
+explained by covariate and not, Default: 0.3}
 
-\item{ICC}{desired ICC, Default: 0.7}
+\item{ICC}{The ICC, Default: 0.7}
 
-\item{gamma.00}{PARAM_DESCRIPTION, Default: 0}
+\item{gamma.00}{The mean control outcome, Default: 0}
 
-\item{gamma.10}{PARAM_DESCRIPTION, Default: 0.2}
+\item{gamma.10}{The ATE, Default: 0.2}
 
-\item{verbose}{PARAM_DESCRIPTION, Default: FALSE}
-
-\item{variable.n}{PARAM_DESCRIPTION, Default: TRUE}
+\item{verbose}{Say stuff while maing data?, Default: FALSE}
 
 \item{control.sd.Y1}{Make correlation of random intercept and random slope
 such that the variance of the Y1s is 1.0, Default: TRUE}
 
-\item{...}{PARAM_DESCRIPTION}
+\item{...}{Further parameters passed to gen.dat.model()}
 }
 \value{
 Dataframe of individual data from a MLM DGP.

@@ -1,4 +1,5 @@
-##
+
+
 ## Code for generating multi-site randomized trial data with cross-site
 ## impact variation
 ##
@@ -83,21 +84,31 @@ describe.data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
 #'
 #' @description Given a 2-level model, generate data to specifications
 #'
-#' @param n.bar PARAM_DESCRIPTION, Default: 10
-#' @param J PARAM_DESCRIPTION, Default: 30
-#' @param p PARAM_DESCRIPTION, Default: 0.5
-#' @param gamma.00 PARAM_DESCRIPTION
-#' @param gamma.01 PARAM_DESCRIPTION
-#' @param gamma.10 PARAM_DESCRIPTION
-#' @param gamma.11 PARAM_DESCRIPTION
-#' @param tau.00 PARAM_DESCRIPTION
-#' @param tau.01 PARAM_DESCRIPTION
-#' @param tau.11 PARAM_DESCRIPTION
-#' @param sigma2.e PARAM_DESCRIPTION
-#' @param variable.n PARAM_DESCRIPTION, Default: TRUE
-#' @param return.sites PARAM_DESCRIPTION, Default: FALSE
-#' @param verbose PARAM_DESCRIPTION, Default: FALSE
-#' @return OUTPUT_DESCRIPTION
+#' @param n.bar average site size, Default: 10
+#' @param J number sites, Default: 30
+#' @param p prop treated, Default: 0.5
+#' @param tau.11.star Total amount of cross site treatment variation, both
+#'   explained by covariate and not, Default: 0.3
+#' @param rho2.0X Explanatory power of X for control outcomes, Default: 0.1
+#' @param rho2.1X Explanatory power of X for average treatment impact, Default:
+#'   0.5
+#' @param ICC The ICC, Default: 0.7
+#' @param gamma.00 The mean control outcome, Default: 0
+#' @param gamma.10 The ATE, Default: 0.2
+#' @param verbose Say stuff while maing data?, Default: FALSE
+#' @param zero.corr TRUE means treatment impact and mean site outcome are not
+#'   correlated.  TRUE means they are negatively correlated to make the variance
+#'   of the treatment group 1, Default: FALSE
+#' @param gamma.01 Coefficient for X to site control mean
+#' @param gamma.11 Coefficient for X to treatment impact
+#' @param tau.00 Variance of site conrol means
+#' @param tau.01 Correlation of treatment impact and mean site outcome under control
+#' @param tau.11 Treatment impact variance
+#' @param sigma2.e Residual standard error
+#' @param variable.n Allow n to vary around n.bar, Default: TRUE
+#' @param return.sites Return sites, not individual students, Default: FALSE
+#'
+#' @return Dataframe of data!
 #' @rdname gen.dat.model
 #' @export
 gen.dat.model  = function( n.bar = 10,
@@ -109,6 +120,7 @@ gen.dat.model  = function( n.bar = 10,
                              variable.n = TRUE,
                              return.sites=FALSE,
                              verbose = FALSE ) {
+    require( tidyverse )
 
     if ( verbose ) {
         scat( "gammas:\t%.2f\t%.2f (%.2f)\n\t%.2f\t%.2f (%.2f)\n",
@@ -125,7 +137,7 @@ gen.dat.model  = function( n.bar = 10,
     }
     Xj = rnorm( J )
     Sigma = matrix( c( tau.00, tau.01, tau.01, tau.11 ), nrow=2 )
-    mv = mvrnorm( J, c( 0, 0 ), Sigma )
+    mv = MASS::mvrnorm( J, c( 0, 0 ), Sigma )
     beta.0j = gamma.00 + gamma.01 * Xj + mv[,1]
     beta.1j = gamma.10 + gamma.11 * Xj + mv[,2]
 
@@ -163,6 +175,7 @@ gen.dat.model.no.cov = function( n.bar = 10,
                                  return.sites=FALSE,
                                  finite.model=FALSE,
                                  verbose = FALSE ) {
+    require( tidyverse )
 
     # generate site sizes (all the same or poisson distribution)
     if ( variable.n ) {
@@ -177,7 +190,7 @@ gen.dat.model.no.cov = function( n.bar = 10,
         # Make a canonical set of site charactaristics and then never change
         # them.
         if ( is.null( CANONICAL ) || nrow( CANONICAL ) != J ) {
-            CC <- mvrnorm( J, c( 0, 0 ), Sigma )
+            CC <- MASS::mvrnorm( J, c( 0, 0 ), Sigma )
             if ( var( CC[,2] ) > 0 ) {
                 CC[,2] = sqrt( tau.11 ) * CC[,2] / sd( CC[,2] )
             }
@@ -188,7 +201,7 @@ gen.dat.model.no.cov = function( n.bar = 10,
         }
         mv = CANONICAL
     } else {
-        mv <- mvrnorm( J, c( 0, 0 ), Sigma )
+        mv <- MASS::mvrnorm( J, c( 0, 0 ), Sigma )
     }
 
     # Calculate site intercept and average impacts
@@ -224,21 +237,26 @@ gen.dat.model.no.cov = function( n.bar = 10,
 }
 
 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @title gen.dat
+#' @description Generate data for a multisite trial with a given collection of
+#'   features.
 #' @param n.bar average site size, Default: 10
 #' @param J number sites, Default: 30
 #' @param p prop treated, Default: 0.5
-#' @param tau.11.star PARAM_DESCRIPTION, Default: 0.3
-#' @param rho2.0X PARAM_DESCRIPTION, Default: 0.1
-#' @param rho2.1X PARAM_DESCRIPTION, Default: 0.5
-#' @param ICC PARAM_DESCRIPTION, Default: 0.7
-#' @param gamma.00 PARAM_DESCRIPTION, Default: 0
-#' @param gamma.10 PARAM_DESCRIPTION, Default: 0.2
-#' @param verbose PARAM_DESCRIPTION, Default: FALSE
-#' @param zero.corr PARAM_DESCRIPTION, Default: FALSE
+#' @param tau.11.star Total amount of cross site treatment variation, both
+#'   explained by covariate and not, Default: 0.3
+#' @param rho2.0X Explanatory power of X for control outcomes, Default: 0.1
+#' @param rho2.1X Explanatory power of X for average treatment impact, Default:
+#'   0.5
+#' @param ICC The ICC, Default: 0.7
+#' @param gamma.00 The mean control outcome, Default: 0
+#' @param gamma.10 The ATE, Default: 0.2
+#' @param verbose Say stuff while maing data?, Default: FALSE
+#' @param zero.corr TRUE means treatment impact and mean site outcome are not
+#'   correlated.  TRUE means they are negatively correlated to make the variance
+#'   of the treatment group 1, Default: FALSE
 #' @param ... Further parameters passed to gen.dat.model()
-#' @return OUTPUT_DESCRIPTION
+#' @return Dataframe of data!
 #' @rdname gen.dat
 #' @export
 gen.dat = function( n.bar = 10,
@@ -284,18 +302,9 @@ gen.dat = function( n.bar = 10,
 #'
 #' @title  Simplified version of gen.dat() with no X covariate.
 #' @description Generate fake data for simulation studies
-#' @param n.bar PARAM_DESCRIPTION, Default: 10
-#' @param J PARAM_DESCRIPTION, Default: 30
-#' @param p PARAM_DESCRIPTION, Default: 0.5
-#' @param tau.11.star PARAM_DESCRIPTION, Default: 0.3
-#' @param ICC desired ICC, Default: 0.7
-#' @param gamma.00 PARAM_DESCRIPTION, Default: 0
-#' @param gamma.10 PARAM_DESCRIPTION, Default: 0.2
-#' @param verbose PARAM_DESCRIPTION, Default: FALSE
-#' @param variable.n PARAM_DESCRIPTION, Default: TRUE
+#' @inheritParams gen.dat
 #' @param control.sd.Y1 Make correlation of random intercept and random slope
 #'   such that the variance of the Y1s is 1.0, Default: TRUE
-#' @param ... PARAM_DESCRIPTION
 #' @return Dataframe of individual data from a MLM DGP.
 #' @rdname gen.dat.no.cov
 #' @export

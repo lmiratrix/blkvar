@@ -31,6 +31,7 @@ test_that( "Multisite DGP works", {
 } )
 
 test_that( "Other DGP calls work", {
+    set.seed( 101010 )
 
     df = gen.dat.model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1, variable.n=FALSE)
     expect_equal( nrow(df), 3000 )

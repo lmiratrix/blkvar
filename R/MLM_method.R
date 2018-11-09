@@ -39,7 +39,7 @@ analysis.systematic = function( df ) {
     require( lme4 )
 
     M0 = lme4::lmer( Yobs ~ 1 + Z * X + (1|sid), data=df )
-    tstat = fixef( M0 ) / se.coef(M0)$fixef
+    tstat = lme4::fixef( M0 ) / se.coef(M0)$fixef
     2 * pnorm( - abs( tstat[["Z:X"]] ) )
 }
 
@@ -52,7 +52,7 @@ analysis.systematic.RTx = function( df ) {
     require( lme4 )
 
     M0 = lme4::lmer( Yobs ~ 1 + Z * X + (Z|sid), data=df )
-    tstat = fixef( M0 ) / se.coef(M0)$fixef
+    tstat = lme4::fixef( M0 ) / se.coef(M0)$fixef
     2 * pnorm( - abs( tstat[["Z:X"]] ) )
 }
 
@@ -80,7 +80,15 @@ analysis.combination = function( df ) {
 }
 
 
+#' Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC) Models
+#'
+#' @inheritParams estimate.ATE.FIRC
+#' @rdname estimate.ATE.RIRC
+#'
+#' @export
 estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE) {
+
+    stopifnot( !( include.testing && REML ) )
 
     # get our variables
     if ( is.null( data ) ) {
@@ -149,13 +157,13 @@ if ( FALSE ) {
 
     dat = catherine.gen.dat( 0.2, 5, 30, 50 )
     head( dat )
-    describe.data( dat, Y0 = "y0", Y1="y1" )
+    describe.data( dat, Y0 = "Y0", Y1="Y1" )
 
 
     estimate.ATE.RIRC( Yobs, Z, sid, data=dat )
 
     dat = catherine.gen.dat( 0.2, 0, 30, 50 )
-    describe.data( dat, Y0 = "y0", Y1="y1" )
+    describe.data( dat, Y0 = "Y0", Y1="Y1" )
 
     estimate.ATE.RIRC( Yobs, Z, sid, data=dat )
 }
@@ -214,11 +222,12 @@ if ( FALSE ) {
     source( "R/multisite_data_generators.R")
     dat = catherine.gen.dat( 0.2, 0.2, 30, 50 )
     head( dat )
-    analysis.idio.RIRC.pool( Yobs, Z, sid, data=dat )
-    fit.RIRC.pool( Yobs, Z, sid, data=dat )
+    #analysis.idio.RIRC.pool( Yobs, Z, sid, data=dat )
+    #fit.RIRC.pool( Yobs, Z, sid, data=dat )
 
     estimate.ATE.RIRC( Yobs, Z, sid, data=dat )
+    estimate.ATE.RIRC.pool( Yobs, Z, sid, data=dat )
 
-    fit.RIRC( dat$Yobs, dat$Z, dat$sid )
+    #    fit.RIRC( dat$Yobs, dat$Z, dat$sid )
 }
 

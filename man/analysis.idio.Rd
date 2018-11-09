@@ -20,9 +20,6 @@ We have:
   * Testing for systematic covariate (two versions, one with random coeff and one not)
   * Hybrid test doing a likelihood ratio of the hybrid model vs. no-variation model
 
-Systematic test with the random ideosyncratic variation.  This tests for
-systematic variation, ignoring explicitly modeled random treatment variation.
-
 This is a combination test: it uses
 a liklihood ratio test on model with both systematic and ideosyncratic
 variation

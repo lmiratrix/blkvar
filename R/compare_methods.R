@@ -3,10 +3,10 @@
 #
 
 
-# Multilevel modeling methods
+# Calculate estimates for the Multilevel modeling methods
 compare.MLM.methods = function( Y, Z, B ) {
-    FIRC = estimate.ATE.FIRC( Y, Z, B, REML = TRUE )
-    RIRC = estimate.ATE.RIRC( Y, Z, B, REML = TRUE )
+    FIRC = estimate.ATE.FIRC( Y, Z, B, REML = TRUE, include.testing = FALSE )
+    RIRC = estimate.ATE.RIRC( Y, Z, B, REML = TRUE, include.testing = FALSE )
     mlms = data.frame( method=c("FIRC", "RIRC"),
                        tau = c( FIRC$ATE, RIRC$ATE ),
                        SE = c( FIRC$SE.ATE, RIRC$SE.ATE ),
@@ -14,6 +14,8 @@ compare.MLM.methods = function( Y, Z, B ) {
 
     mlms
 }
+
+
 
 #' Block variance method comparison function
 #'
@@ -27,15 +29,28 @@ compare.MLM.methods = function( Y, Z, B ) {
 #'   of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.
 #' @param include.MLM Include MLM estimators
 #' @param include.RCTYes Include RCTYes estimators
-#' @param include.LM Include Linear Model-based estimators (including Huber-White SEs, etc.)
+#' @param include.LM Include Linear Model-based estimators (including
+#'   Huber-White SEs, etc.)
+#' @param include.RCTYesBlended Include RCTYes estimator applied to small block
+#'   and classic Neyman to large blocks.
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-compare.methods<-function(Y, Z, B, data=NULL, include.MLM = TRUE, include.RCTYes = TRUE, include.LM = TRUE ){
+compare_methods<-function(Y, Z, B, data=NULL, include.block = TRUE, include.MLM = TRUE,
+                          include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE ){
     if(!is.null(data)){
-        Y<-data[,1]
-        Z<-data[,2]
-        B<-data[,3]
+        if ( missing( "Y" ) ) {
+
+            Y<-data[,1]
+            Z<-data[,2]
+            B<-data[,3]
+        } else {
+
+            Y = eval( substitute( Y ), data )
+            Z = eval( substitute( Z ), data )
+            B = eval( substitute( B ), data)
+
+        }
     }
     n<-length(Y)
 
@@ -49,19 +64,30 @@ compare.methods<-function(Y, Z, B, data=NULL, include.MLM = TRUE, include.RCTYes
     #Get data into table
     data.table<-block.data(Y,Z,B)
 
-    methods_list<-c("hybrid_m", "hybrid_p", "plug_in_big")
-    fits = sapply( methods_list, function( m ) {
-        dd = fitdata.sumtable( data.table=data.table, method=m, throw.warnings=FALSE )
-        c( dd$tau_est, dd$se_est )
-    } )
 
-    # Aggregate into summary table
-    SE_estimates<-fits[2,]
-    tau_estimates<-fits[1,]
-    summary_table<-data.frame( method = methods_list,
-                               tau = tau_estimates,
-                               SE = SE_estimates, stringsAsFactors = FALSE )
+    if ( include.block || include.RCTYesBlended ) {
+        method_list = c()
+        if ( include.block ) {
+            methods_list<-c("hybrid_m", "hybrid_p", "plug_in_big")
+        }
+        if ( include.RCTYesBlended ) {
+            methods_list<-c( methods_list, "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small")
+        }
 
+        fits = sapply( methods_list, function( m ) {
+            dd = fitdata.sumtable( data.table=data.table, method=m, throw.warnings=FALSE )
+            c( dd$tau_est, dd$se_est )
+        } )
+        # Aggregate into summary table
+        SE_estimates<-fits[2,]
+        tau_estimates<-fits[1,]
+        summary_table<-data.frame( method = methods_list,
+                                   tau = tau_estimates,
+                                   SE = SE_estimates, stringsAsFactors = FALSE )
+
+    } else {
+        summary_table = data.frame()
+    }
 
 
     if ( include.RCTYes ) {
@@ -92,6 +118,193 @@ compare.methods<-function(Y, Z, B, data=NULL, include.MLM = TRUE, include.RCTYes
 
     return(summary_table)
 }
+
+
+
+
+
+
+
+
+
+
+#' Function to compare estimators using the true values (i.e., whole science
+#' table).  This is for simulaton studies where we know all the potential
+#' outcomes.
+#'
+#' Function that returns some variance function estimates based on all potential
+#' outcomes.
+#'
+#' @param Y vector of all outcomes
+#' @param Z vector that indicates if outcome is under treatment or control
+#' @param B block ids
+#' @param data alternatively is matrix of Y,Z,B
+#' @param p.mat  matrix with first column Blk_ID,second column prop treated in
+#'   that block, p
+#' @importFrom stats aggregate lm quantile rnorm sd var
+#'
+#' @export
+compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
+    if(!is.null(data)){
+        Y<-data[,1]
+        Z<-data[,2]
+        B<-data[,3]
+    }
+    n<-length(Y)
+    Y1<-Y[1:(n/2)]
+    Y0<-Y[(n/2+1):n]
+    #Quick test that input is correct
+    if(is.numeric(Z)==FALSE){
+        stop("Treatment indicator should be vector of ones and zeros")
+    }
+    if((sum(Z==1)+sum(Z==0))!=n){
+        stop("Treatment indicator should be vector of ones and zeros")
+    }
+    #Get data into table
+    s.tc.bk<-aggregate(list(s.tc.bk=Y1-Y0), list(Blk_ID=B[1:(n/2)]), FUN=s.tc.func)
+    data.table<-block.data.sim(Y,Z,B, p.mat)
+    K<-max(data.table$Blk_ID)
+    n<-sum(data.table$Num_Trt)+sum(data.table$Num_Ctrl)
+    data.table$nk<-data.table$Num_Trt+data.table$Num_Ctrl
+    #Split into big and small blocks
+    data.big<-data.table[data.table$Num_Trt>1&data.table$Num_Ctrl>1,]
+    data.small<-data.table[data.table$Num_Trt==1|data.table$Num_Ctrl==1,]
+    #Calculate variance for big blocks
+    var_big<-sum(data.big$se_ney^2*(data.big$nk)^2)/n^2
+    #If no small blocks, just use big block variance
+    if(nrow(data.small)==0){
+        hybrid_m_est<-var_big
+        hybrid_p_est<-var_big
+        plug_in_big_est<-var_big
+    }
+    #Otherwise calculate variance estimates for each method considered
+    else{
+        combine_table<-merge(s.tc.bk, data.table, by="Blk_ID")
+        mod.small<-combine_table[data.table$Num_Trt==1|data.table$Num_Ctrl==1,]
+        var_small<-sum((mod.small$se_ney^2-mod.small$s.tc.bk/mod.small$nk)*(mod.small$nk)^2)/n^2
+        hybrid_m_est<-hybrid_m(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
+        hybrid_p_est<-hybrid_p(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
+        plug_in_big_est<-plug_in_big(data.small, data.big)*sum(data.small$nk)^2/n^2+var_big
+    }
+    #Get trt effect estimates and aggregate
+    tau_vec<-data.table$Y1-data.table$Y0
+    tau_est<-sum(tau_vec*data.table$nk)/n
+
+    #Get linear model estimates (sandwich)
+    M0 = lm(Y ~ Z + as.factor(B))
+    tau_est_lm<-summary(M0)$coefficients[2,1]
+    var_est_lm<-sandwich::vcovHC(M0, type = "HC1")[2,2]
+    blk.id<-as.numeric(as.factor(B))
+    num.c.vec<-data.table[match(blk.id,data.table$Blk_ID),]$nk/data.table[match(blk.id,data.table$Blk_ID),]$Num_Ctrl
+    num.t.vec<-data.table[match(blk.id,data.table$Blk_ID),]$nk/data.table[match(blk.id,data.table$Blk_ID),]$Num_Trt
+    weight.vec<-num.c.vec*(1-Z) + num.t.vec*(Z)
+    p.overall<-sum(data.table$Num_Trt)/sum(data.table$Num_Trt+data.table$Num_Ctrl)
+    weight.vec<-num.c.vec*(1-Z)*(1-p.overall) + num.t.vec*(Z)*p.overall
+
+    # Get linear model estimates (Weighted OLS)
+    M1 = lm(Y ~ Z + as.factor(B), weights=weight.vec)
+    tau_est_weighted_fixed<-summary(M1)$coefficients[2,1]
+    var_est_weighted_fixed<-summary(M1)$coefficients[2,2]^2
+
+    # Aggregate into summary table
+    methods_list<-c("hybrid_m", "hybrid_p", "plug_in_big", "fixed effects-no int", "weighted regression-fixed effects")
+    var_estimates<-c(hybrid_m_est, hybrid_p_est, plug_in_big_est, var_est_lm, var_est_weighted_fixed)
+    tau_estimates<-c(rep(tau_est, 3), tau_est_lm, tau_est_weighted_fixed)
+    summary_table<-data.frame( Methods = methods_list,
+                               tau = tau_estimates,
+                               SE = sqrt( var_estimates ) )
+    return(summary_table)
+}
+
+
+
+
+
+
+#' Compare different estimates of cross site variation.
+#'
+#' Given a dataframe, use the different methods to pull out point estimates and
+#' (if desired) pvalues and return them all.
+#'
+#' @inheritParams compare_methods
+#' @param long.results TRUE means each estimator gets a line in a data.frame.  FALSE gives all as columns in a 1-row dataframe.
+#'
+#' @export
+compare_methods_variation = function( Yobs, Z, B, data = NULL, include.testing = TRUE, long.results = FALSE) {
+    if(!is.null(data)){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs<-data[,1],
+                               Z<-data[,2],
+                               sid<-data[,3] )
+            n.tx.lvls = table( data$Z )
+            stopifnot( n.tx.lvls == 2 )
+            stopifnot( is.numeric( data$Yobs ) )
+        } else {
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               sid = eval( substitute( B ), data) )
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           sid = B )
+    }
+    n<-nrow( data )
+
+    #Quick check that input is correct
+    if(is.numeric(data$Z)==FALSE){
+        stop("Treatment indicator should be vector of ones and zeros")
+    }
+    if((sum(data$Z==1)+sum(data$Z==0))!=n){
+        stop("Treatment indicator should be vector of ones and zeros")
+    }
+
+    df = data
+
+    # FIRC model (separate variances)
+    FIRC = estimate.ATE.FIRC( Yobs, Z, sid, data=df, include.testing=include.testing )
+
+    # FIRC model (with pooled residual variances)
+    FIRC.pool = estimate.ATE.FIRC.pool( Yobs, Z, sid, data=df, include.testing=include.testing )
+
+    # the random-intercept, random-coefficient (RIRC) model
+    RIRC = estimate.ATE.RIRC( Yobs, Z, sid, df, include.testing=include.testing )
+
+    # the random-intercept, random-coefficient (RIRC) model
+    RIRC.pool = estimate.ATE.RIRC.pool( Yobs, Z, sid, df, include.testing=include.testing )
+
+    # collect results
+
+    res = data.frame( tau.hat.FIRC = FIRC$tau.hat,
+                      tau.hat.RIRC = RIRC$tau.hat,
+                      tau.hat.FIRC.pool = FIRC.pool$tau.hat,
+                      tau.hat.RIRC.pool = RIRC.pool$tau.hat )
+
+    if ( include.testing ) {
+        res$pv.FIRC = FIRC$p.variation
+        res$pv.RIRC = RIRC$p.variation
+        res$pv.FIRC.pool = FIRC.pool$p.variation
+        res$pv.RIRC.pool = RIRC.pool$p.variation
+        res$pv.Qstat = analysis.Qstatistic( df )
+    }
+
+    if ( long.results ) {
+        if ( include.testing ) {
+            res = data.frame( method = c("FIRC", "RIRC", "FIRC.pool", "RIRC.pool", "Q" ),
+                              tau.hat = c( as.numeric( res[1:4] ), NA ),
+                              pv = as.numeric( res[5:9] ) )
+        } else {
+            res = data.frame( method = c("FIRC", "RIRC", "FIRC.pool", "RIRC.pool" ),
+                              tau.hat = as.numeric( c( res[1:4]) ) )
+        }
+
+    }
+    res
+}
+
+
+
+#### Testing and demo of this code ####
 
 if  (FALSE ) {
     dat = make.obs.data( n_k = 4:10, p = 0.2 )

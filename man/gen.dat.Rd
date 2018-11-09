@@ -2,11 +2,11 @@
 % Please edit documentation in R/multisite_data_generators.R
 \name{gen.dat}
 \alias{gen.dat}
-\title{FUNCTION_TITLE}
+\title{gen.dat}
 \usage{
-gen.dat(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0X = 0.1,
-  rho2.1X = 0.5, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2,
-  verbose = FALSE, zero.corr = FALSE, ...)
+gen.dat(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3,
+  rho2.0X = 0.1, rho2.1X = 0.5, ICC = 0.7, gamma.00 = 0,
+  gamma.10 = 0.2, verbose = FALSE, zero.corr = FALSE, ...)
 }
 \arguments{
 \item{n.bar}{average site size, Default: 10}
@@ -15,27 +15,32 @@ gen.dat(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0X = 0.1,
 
 \item{p}{prop treated, Default: 0.5}
 
-\item{tau.11.star}{PARAM_DESCRIPTION, Default: 0.3}
+\item{tau.11.star}{Total amount of cross site treatment variation, both
+explained by covariate and not, Default: 0.3}
 
-\item{rho2.0X}{PARAM_DESCRIPTION, Default: 0.1}
+\item{rho2.0X}{Explanatory power of X for control outcomes, Default: 0.1}
 
-\item{rho2.1X}{PARAM_DESCRIPTION, Default: 0.5}
+\item{rho2.1X}{Explanatory power of X for average treatment impact, Default:
+0.5}
 
-\item{ICC}{PARAM_DESCRIPTION, Default: 0.7}
+\item{ICC}{The ICC, Default: 0.7}
 
-\item{gamma.00}{PARAM_DESCRIPTION, Default: 0}
+\item{gamma.00}{The mean control outcome, Default: 0}
 
-\item{gamma.10}{PARAM_DESCRIPTION, Default: 0.2}
+\item{gamma.10}{The ATE, Default: 0.2}
 
-\item{verbose}{PARAM_DESCRIPTION, Default: FALSE}
+\item{verbose}{Say stuff while maing data?, Default: FALSE}
 
-\item{zero.corr}{PARAM_DESCRIPTION, Default: FALSE}
+\item{zero.corr}{TRUE means treatment impact and mean site outcome are not
+correlated.  TRUE means they are negatively correlated to make the variance
+of the treatment group 1, Default: FALSE}
 
 \item{...}{Further parameters passed to gen.dat.model()}
 }
 \value{
-OUTPUT_DESCRIPTION
+Dataframe of data!
 }
 \description{
-FUNCTION_DESCRIPTION
+Generate data for a multisite trial with a given collection of
+  features.
 }

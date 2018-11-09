@@ -24,7 +24,7 @@ test_that("compare functions doesn't crash when called on big blocks", {
     res
     expect_equal( class( res ), "var_dat" )
 
-    res <- compare.methods( dat$Yobs, dat$Z, dat$blk, include.MLM = FALSE )
+    res <- compare_methods( dat$Yobs, dat$Z, dat$blk, include.MLM = FALSE )
     res
     expect_true( sd( res$tau ) <= 0.0001 )
 })
@@ -39,7 +39,7 @@ test_that("compare functions doesn't crash when called on small blocks", {
 
     expect_warning( res <- fitdata(dat$Yobs, dat$Z, dat$blk, method=c("hybrid_m") ) )
 
-    res <- compare.methods( dat$Yobs, dat$Z, dat$blk, include.MLM = FALSE )
+    res <- compare_methods( dat$Yobs, dat$Z, dat$blk, include.MLM = FALSE )
     res
 })
 
@@ -70,7 +70,7 @@ test_that( "further tests of output, etc", {
     expect_equal( method.hybrid.p$percent_small_blocks, 35 )
     expect_equal( dim( method.hybrid.p$block_sizes ), c( 5,3) )
 
-    comp = compare.methods(Y.a, Z.a, B.a, include.MLM = FALSE)
+    comp = compare_methods(Y.a, Z.a, B.a, include.MLM = FALSE)
     comp
     expect_equal( ncol( comp ), 3 )
 #    expect_equal( nrow( comp ), 5 )

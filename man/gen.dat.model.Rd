@@ -4,41 +4,55 @@
 \alias{gen.dat.model}
 \title{Generate multilevel data from a model}
 \usage{
-gen.dat.model(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma.10,
-  gamma.11, tau.00, tau.01, tau.11, sigma2.e, variable.n = TRUE,
-  return.sites = FALSE, verbose = FALSE)
+gen.dat.model(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01,
+  gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e,
+  variable.n = TRUE, return.sites = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{n.bar}{PARAM_DESCRIPTION, Default: 10}
+\item{n.bar}{average site size, Default: 10}
 
-\item{J}{PARAM_DESCRIPTION, Default: 30}
+\item{J}{number sites, Default: 30}
 
-\item{p}{PARAM_DESCRIPTION, Default: 0.5}
+\item{p}{prop treated, Default: 0.5}
 
-\item{gamma.00}{PARAM_DESCRIPTION}
+\item{gamma.00}{The mean control outcome, Default: 0}
 
-\item{gamma.01}{PARAM_DESCRIPTION}
+\item{gamma.01}{Coefficient for X to site control mean}
 
-\item{gamma.10}{PARAM_DESCRIPTION}
+\item{gamma.10}{The ATE, Default: 0.2}
 
-\item{gamma.11}{PARAM_DESCRIPTION}
+\item{gamma.11}{Coefficient for X to treatment impact}
 
-\item{tau.00}{PARAM_DESCRIPTION}
+\item{tau.00}{Variance of site conrol means}
 
-\item{tau.01}{PARAM_DESCRIPTION}
+\item{tau.01}{Correlation of treatment impact and mean site outcome under control}
 
-\item{tau.11}{PARAM_DESCRIPTION}
+\item{tau.11}{Treatment impact variance}
 
-\item{sigma2.e}{PARAM_DESCRIPTION}
+\item{sigma2.e}{Residual standard error}
 
-\item{variable.n}{PARAM_DESCRIPTION, Default: TRUE}
+\item{variable.n}{Allow n to vary around n.bar, Default: TRUE}
 
-\item{return.sites}{PARAM_DESCRIPTION, Default: FALSE}
+\item{return.sites}{Return sites, not individual students, Default: FALSE}
 
-\item{verbose}{PARAM_DESCRIPTION, Default: FALSE}
+\item{verbose}{Say stuff while maing data?, Default: FALSE}
+
+\item{tau.11.star}{Total amount of cross site treatment variation, both
+explained by covariate and not, Default: 0.3}
+
+\item{rho2.0X}{Explanatory power of X for control outcomes, Default: 0.1}
+
+\item{rho2.1X}{Explanatory power of X for average treatment impact, Default:
+0.5}
+
+\item{ICC}{The ICC, Default: 0.7}
+
+\item{zero.corr}{TRUE means treatment impact and mean site outcome are not
+correlated.  TRUE means they are negatively correlated to make the variance
+of the treatment group 1, Default: FALSE}
 }
 \value{
-OUTPUT_DESCRIPTION
+Dataframe of data!
 }
 \description{
 Given a 2-level model, generate data to specifications

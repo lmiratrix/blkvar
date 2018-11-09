@@ -5,8 +5,8 @@
 \alias{make.obs.data}
 \title{Make simulated dataset from a list of block sizes}
 \usage{
-make.data(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1,
-  sigma_1 = 1, corr = 0.5, exact = FALSE)
+make.data(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5,
+  sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact = FALSE)
 
 make.obs.data(n_k = c(2, 3, 4, 8), p = 0.5, ...)
 }

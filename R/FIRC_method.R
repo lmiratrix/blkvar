@@ -22,6 +22,8 @@ library( tidyverse )
 #' @export
 estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE ) {
 
+    stopifnot( !( include.testing && REML ) )
+
     # get our variables
     if ( is.null( data ) ) {
         data = data.frame( Yobs = Yobs, Z = Z, sid= factor(sid) )
@@ -173,7 +175,7 @@ estimate.ATE.FIRC.pool = function(  Yobs, Z, sid, data=NULL, include.testing = T
     suppressWarnings(storage.mode(vc) <- "numeric")
     tau.hat.FIRC.pool <- vc["Z","StdDev"]
 
-    list( ATE = fixef( re.mod )[[1]],
+    list( ATE = nlme::fixef( re.mod )[[1]],
           tau.hat = tau.hat.FIRC.pool,
           p.variation = p.variation,
           deviance = td)

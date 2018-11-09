@@ -9,7 +9,8 @@ treatment variation.}
 estimate.ATE.FIRC(Yobs, Z, sid, data = NULL, REML = FALSE,
   include.testing = TRUE)
 
-estimate.ATE.FIRC.pool(Yobs, Z, sid, data = NULL, include.testing = TRUE)
+estimate.ATE.FIRC.pool(Yobs, Z, sid, data = NULL,
+  include.testing = TRUE)
 }
 \value{
 List of things including a pvalue for cross-site variation
