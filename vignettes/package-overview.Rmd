@@ -1,0 +1,80 @@
+---
+title: "Overview of the blkvar package"
+author: "Luke Miratrix"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library( blkvar )
+library( tidyverse )
+```
+
+The `blkvar` package implements a variety of methods for estimating the average treatment impact in a blocked or multisite randomized trial. It also provides methods for estimating the amount of cross-site (or cross-block) treatment variation, defined as the variance of the individual block (or site) ATEs. It finally provides a variety of methods to implement blocked or multisite simulation studies.
+
+## Estimating the ATE
+
+There are several classes of methods for estimating the ATE:
+
+* Linear regression with block dummies
+* Multilevel regression
+* Design based estimators
+    
+For a running example we generate some data
+```{r}
+df = gen.dat.no.cov( n.bar=50, J=30,
+                         gamma.10 = 0,
+                         tau.11.star = 0.2^2,
+                         ICC = 0.65,
+                         variable.n = TRUE )
+head( df )
+```
+
+To estimate the ATE using (almost) all the various methods provided we have
+```{r}
+compare_methods(Yobs, Z, sid, data=df )
+```
+
+One can select which methods to use:
+```{r}
+compare_methods(Yobs, Z, sid, data=df, include.block = FALSE, include.MLM = FALSE,
+                include.RCTYes = FALSE)
+```
+
+## Estimating cross site variation
+
+We can estimate cross site variation using some of the multilevel modeling methods.  The `estimate.ATE.FIRC` method, for example, provides `tau.hat`, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).
+```{r}
+ests <- estimate.ATE.FIRC( Yobs, Z, sid, data=df )
+t( ests )
+```
+(We transpose with `t()` to make it a nice row instead of a list.)
+
+This can also be done as
+```{r}
+ests <- estimate.ATE.FIRC( df$Yobs, df$Z, df$sid )
+```
+
+
+We also have
+```{r}
+ests.RIRC = estimate.ATE.RIRC( Yobs, Z, sid, data=df )
+t( ests.RIRC )
+```
+
+These methods also have a `pool` option which uses a MLM with a single variance parameter for all individuals, rather than separate ones for the treatment and control groups (which is still pooled across block).
+
+We can compare these estimators via
+```{r}
+compare_methods_variation( Yobs, Z, sid, data=df, long.results=TRUE )
+```
+The $p$-values are testing for these estimates being nonzero.
+
