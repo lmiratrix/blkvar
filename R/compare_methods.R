@@ -5,17 +5,72 @@
 
 # Calculate estimates for the Multilevel modeling methods
 compare.MLM.methods = function( Y, Z, B ) {
+    RICC = estimate.ATE.RICC( Y, Z, B, REML = TRUE )
     FIRC = estimate.ATE.FIRC( Y, Z, B, REML = TRUE, include.testing = FALSE )
     RIRC = estimate.ATE.RIRC( Y, Z, B, REML = TRUE, include.testing = FALSE )
-    mlms = data.frame( method=c("FIRC", "RIRC"),
-                       tau = c( FIRC$ATE, RIRC$ATE ),
-                       SE = c( FIRC$SE.ATE, RIRC$SE.ATE ),
+    mlms = data.frame( method=c("RICC", "FIRC", "RIRC"),
+                       tau = c( RICC$ATE, FIRC$ATE, RIRC$ATE ),
+                       SE = c( RICC$SE.ATE, FIRC$SE.ATE, RIRC$SE.ATE ),
                        stringsAsFactors=FALSE )
 
     mlms
 }
 
+#' Get list of methods in package along with characteristics of those methods
+#'
+#' Each method name comes with whether it targets average impact for individuals
+#' or average impact of sites, and also whether it appears to be a finite-sample
+#' method (assuming fixed sites, even if individuals are sampled within site) or
+#' superpopulation method (assuming sites/blocks are themselves sampled).
+#'
+#' @return A tibble of characteristics.
+#'
+#' @export
+method.characteristics = function() {
+    # Code to make the hard-coded list of characteristics
+    if ( FALSE ) {
+        dat = make.obs.data( n_k = 4:10, p = 0.2 )
+        a = compare_methods( data = dat[ c("Yobs", "Z","blk" ) ] )
+        a = a[1]
+        print( a, row.names = FALSE )
+        a$code = c("hybrid_m","hybrid_p","plug_in_big", "DB-FP-Persons",
+                   "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites", "FE",
+                   "FE-Het", "FE-CR", "FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites",
+                   "FE-Int-Sites", "FE-Int-Persons", "RICC", "FIRC", "RIRC" )
+        a$finite = c(1,1,1,1,1,0,0,1,1,0,1,1,1,1,1,1,0,0)
+        a$site = c(0,0,0,0,1,0,1,0,0,0,0,0,1,1,0,0,1,1)
+        print( a, row.names = FALSE )
+        a$weight = ifelse( a$site == 1, "site", "person" )
+        a$population = ifelse( a$finite, "finite", "superpop" )
+        a$site = a$finite = NULL
+        print( a, row.names = FALSE )
+        dput( a )
+        a$biased = c(0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1)
+        datapasta::tribble_paste( a )
 
+}
+    tibble::tribble(
+        ~method,            ~code,  ~weight, ~population, ~biased,
+        "hybrid_m",       "hybrid_m", "person",    "finite",       0,
+        "hybrid_p",       "hybrid_p", "person",    "finite",       0,
+        "plug_in_big",    "plug_in_big", "person",    "finite",       0,
+        "RCT.yes (individual-finite)",  "DB-FP-Persons", "person",    "finite",       0,
+        "RCT.yes (site-finite)",    "DB-FP-Sites",   "site",    "finite",       0,
+        "RCT.yes (individual-superpop)",  "DB-SP-Persons", "person",  "superpop",       0,
+        "RCT.yes (site-superpop)",    "DB-SP-Sites",   "site",  "superpop",       0,
+        "fixed effects",             "FE", "person",    "finite",       1,
+        "fixed effects (sand SE)",         "FE-Het", "person",    "finite",       1,
+        "fixed effects (cluster SE)",          "FE-CR", "person",  "superpop",       1,
+        "IPTW weighted regression (naive)",     "FE-IPTW(n)", "person",    "finite",       0,
+        "IPTW weighted regression",        "FE-IPTW", "person",    "finite",       0,
+        "IPTW weighted regression (site)",  "FE-IPTW-Sites",   "site",    "finite",       0,
+        "fixed effects interact (site)",   "FE-Int-Sites",   "site",    "finite",       0,
+        "fixed effects interact (indiv)", "FE-Int-Persons", "person",    "finite",       0,
+        "RICC",           "RICC", "person",    "finite",       1,
+        "FIRC",           "FIRC",   "site",  "superpop",       1,
+        "RIRC",           "RIRC",   "site",  "superpop",       1
+    )
+}
 
 #' Block variance method comparison function
 #'
@@ -33,11 +88,14 @@ compare.MLM.methods = function( Y, Z, B ) {
 #'   Huber-White SEs, etc.)
 #' @param include.RCTYesBlended Include RCTYes estimator applied to small block
 #'   and classic Neyman to large blocks.
+#' @param include.block Include the Pashley blocking variants.
+#' @param include.method.characteristics Include details of the methods (target estimands and sampling framework assumed).
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
 compare_methods<-function(Y, Z, B, data=NULL, include.block = TRUE, include.MLM = TRUE,
-                          include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE ){
+                          include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE,
+                          include.method.characteristics = FALSE ){
     if(!is.null(data)){
         if ( missing( "Y" ) ) {
 
@@ -64,7 +122,6 @@ compare_methods<-function(Y, Z, B, data=NULL, include.block = TRUE, include.MLM 
     #Get data into table
     data.table<-block.data(Y,Z,B)
 
-
     if ( include.block || include.RCTYesBlended ) {
         method_list = c()
         if ( include.block ) {
@@ -89,9 +146,8 @@ compare_methods<-function(Y, Z, B, data=NULL, include.block = TRUE, include.MLM 
         summary_table = data.frame()
     }
 
-
     if ( include.RCTYes ) {
-        dt = convert.table.names( data.table )
+        dt = blkvar:::convert.table.names( data.table )
 
         # Design based methods
         RCT.yes.fi = calc.RCT.Yes.SE( dt, method="finite", weight="individual" )
@@ -114,6 +170,11 @@ compare_methods<-function(Y, Z, B, data=NULL, include.block = TRUE, include.MLM 
     if ( include.MLM ) {
         mlms = compare.MLM.methods( Y, Z, B )
         summary_table = dplyr::bind_rows( summary_table, mlms )
+    }
+
+    if ( include.method.characteristics ) {
+        mc = method.characteristics()
+        summary_table = merge( summary_table, mc, by="method", all.x=TRUE, all.y=FALSE )
     }
 
     return(summary_table)
@@ -310,7 +371,7 @@ if  (FALSE ) {
     dat = make.obs.data( n_k = 4:10, p = 0.2 )
     dat
     table( dat$Z, dat$blk )
-    compare.methods( data = dat[ c("Yobs", "Z","blk" ) ] )
+    compare_methods( data = dat[ c("Yobs", "Z","blk" ) ] )
 
     debug( fitdata )
     fitdata( dat$Yobs, dat$Z, dat$blk, method="hybrid_p")

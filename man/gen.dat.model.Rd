@@ -6,7 +6,8 @@
 \usage{
 gen.dat.model(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01,
   gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e,
-  variable.n = TRUE, return.sites = FALSE, verbose = FALSE)
+  variable.n = TRUE, cluster.rand = FALSE, return.sites = FALSE,
+  verbose = FALSE)
 }
 \arguments{
 \item{n.bar}{average site size, Default: 10}
@@ -32,6 +33,8 @@ gen.dat.model(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01,
 \item{sigma2.e}{Residual standard error}
 
 \item{variable.n}{Allow n to vary around n.bar, Default: TRUE}
+
+\item{cluster.rand}{TRUE means cluster-randomized.  FALSE means randomized within site.}
 
 \item{return.sites}{Return sites, not individual students, Default: FALSE}
 

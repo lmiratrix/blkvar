@@ -130,8 +130,8 @@ estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
     }
 
     # get ATE and SE
-    ATE = nlme::fixef( re.mod )[[1]]
-    SE.ATE = sqrt( vcov( re.mod )[1,1] )
+    ATE = nlme::fixef( re.mod )[[2]]
+    SE.ATE = sqrt( vcov( re.mod )[2,2] )
 
     #extract tau
     vc <- nlme::VarCorr(re.mod)
@@ -144,6 +144,56 @@ estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
                  p.variation = p.variation,
                  deviance = td ))
 }
+
+
+
+#' Estimate the ATE using Random-Intercept, Constant-Coefficient (RICC) Model.
+#'
+#' This model has a single treatment coefficient, and a random intercept for the
+#' site control average. So it is analogous to a fixed effect model, but with a
+#' random effect.
+#'
+#' There is no test for cross site variation for this method, since we assume none.
+#'
+#' @inheritParams estimate.ATE.FIRC
+#' @rdname estimate.ATE.RIRC
+#'
+#' @export
+estimate.ATE.RICC <- function( Yobs, Z, sid, data=NULL, REML = FALSE ) {
+
+    # get our variables
+    if ( is.null( data ) ) {
+        data = data.frame( Yobs = Yobs, Z = Z, sid= factor(sid) )
+        #Yobs = eval( substitute( Yobs ), data )
+        #Z = eval( substitute( Z ), data )
+        #sid = eval( substitute( sid ), data )
+    } else {
+        sid.name = as.character( quote( sid ) )
+        data[ sid.name ] = factor( eval( substitute( sid ), data ) )
+    }
+
+    #fit multilevel model and extract tau
+    method = ifelse( REML, "REML", "ML" )
+
+    re.mod <- nlme::lme(Yobs ~ 1 + Z,
+                        data = data,
+                        random = ~ 1 | sid,
+                        weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                        method = method,
+                        control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+
+
+    # get ATE and SE
+    ATE = nlme::fixef( re.mod )[[2]]
+    SE.ATE = sqrt( vcov( re.mod )[2,2] )
+
+    return( list(ATE = ATE, SE.ATE = SE.ATE,
+                 tau.hat = NA, SE.tau=NA,
+                 p.variation = NA,
+                 deviance = NA ))
+}
+
+
 
 
 localsource = function( filename ) {

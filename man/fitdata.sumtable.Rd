@@ -9,9 +9,9 @@ fitdata.sumtable(data.table, method = c("hybrid_m", "hybrid_p",
   "rct_yes_mod_small"), throw.warnings = TRUE)
 }
 \arguments{
-\item{data.table}{Summary statistics of blocks in a dataset.  In particular, the output of block.data method.}
+\item{data.table}{Summary statistics of all the blocks in a dataset.  In particular, this is the output of block.data method.}
 
-\item{method}{is method of variance estimation, defauly "hybrid_m"}
+\item{method}{The method to be used for variance estimation, defauly "hybrid_m"}
 
 \item{throw.warnings}{TRUE means throw warnings if the hybrid estimators are breaking down due to violation of assumptions.}
 }

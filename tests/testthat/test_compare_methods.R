@@ -37,6 +37,18 @@ test_that("Check for lack warnings, etc., from compare_methods", {
 
 
 
+test_that("Check method characteristics works", {
+
+    set.seed( 101974 )
+    dat = gen.dat( n.bar = 30, J = 30 )
+
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = TRUE )
+    expect_true( all( c( "weight","population","biased") %in% names(fulltab) ) )
+
+})
+
+
+
 
 test_that("Check for asking for different parts", {
 
@@ -47,7 +59,8 @@ test_that("Check for asking for different parts", {
 
     rs =  compare_methods( Yobs, Z, sid, data=dat, include.block = FALSE, include.LM = FALSE, include.RCTYes = FALSE )
     rs
-    expect_equal( nrow( rs ), 2 )
+    # Three MLM methods
+    expect_equal( nrow( rs ), 3 )
 
     rs =  compare_methods( Yobs, Z, sid, data=dat, include.block = FALSE, include.LM = FALSE, include.RCTYes = FALSE, include.MLM = FALSE )
     expect_equal( nrow( rs ), 0 )

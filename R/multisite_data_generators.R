@@ -107,6 +107,7 @@ describe.data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
 #' @param sigma2.e Residual standard error
 #' @param variable.n Allow n to vary around n.bar, Default: TRUE
 #' @param return.sites Return sites, not individual students, Default: FALSE
+#' @param cluster.rand TRUE means cluster-randomized.  FALSE means randomized within site.
 #'
 #' @return Dataframe of data!
 #' @rdname gen.dat.model
@@ -118,6 +119,7 @@ gen.dat.model  = function( n.bar = 10,
                              tau.00, tau.01, tau.11,
                              sigma2.e,
                              variable.n = TRUE,
+                             cluster.rand = FALSE,
                              return.sites=FALSE,
                              verbose = FALSE ) {
     require( tidyverse )
@@ -141,18 +143,30 @@ gen.dat.model  = function( n.bar = 10,
     beta.0j = gamma.00 + gamma.01 * Xj + mv[,1]
     beta.1j = gamma.10 + gamma.11 * Xj + mv[,2]
 
+    if ( cluster.rand ) {
+        Zj = 0 + (sample( J ) <= J * p)
+    }
+
     if ( return.sites ) {
-        data.frame( n = nj, X = Xj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2] )
-    } else {
+        if ( cluster.rand ) {
+            data.frame( n = nj, X = Xj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2], Zj = Zj )
+        } else {
+            data.frame( n = nj, X = Xj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2] )
+        }
+    } else {    # generate individual level outcomes
         sid = rep( 1:J, nj )
 
-        # generate individual level outcomes
         N = sum( nj )
-        #Zij = as.numeric( sample( N ) <= N*p )
-        dd = data.frame( sid = as.factor(sid) )
-        dd = dd %>% group_by( sid ) %>%
-            mutate( Z = as.numeric( sample( n() ) <= n()/2 ) )
-        Zij = dd$Z
+
+        if ( cluster.rand ) {
+            Zij = rep( Zj, nj )
+        } else {
+            #Zij = as.numeric( sample( N ) <= N*p )
+            dd = data.frame( sid = as.factor(sid) )
+            dd = dd %>% group_by( sid ) %>%
+                mutate( Z = as.numeric( sample( n() ) <= p*n() ) )
+            Zij = dd$Z
+        }
 
         e = rnorm( N, mean=0, sd=sqrt( sigma2.e ) )
         Y0 = beta.0j[sid] + e
@@ -163,23 +177,33 @@ gen.dat.model  = function( n.bar = 10,
 }
 
 
+
+
 # Generate multilevel data with no covariates.  A simplification of function
 # above.
-gen.dat.model.no.cov = function( n.bar = 10,
+#
+# @return multisite data with at least 2 tx and 2 co units in each block.
+gen.dat.model.no.cov = function( n.bar = 16,
                                  J = 30,
                                  p = 0.5,
                                  gamma.00, gamma.10,
                                  tau.00, tau.01, tau.11,
                                  sigma2.e,
                                  variable.n = TRUE,
+                                 variable.p = FALSE,
                                  return.sites=FALSE,
                                  finite.model=FALSE,
+                                 size.impact.correlate = FALSE,
                                  verbose = FALSE ) {
     require( tidyverse )
 
-    # generate site sizes (all the same or poisson distribution)
+    # generate site sizes (all the same or different sizes)
     if ( variable.n ) {
-        nj = rpois( J, n.bar)
+        #nj = rpois( J, n.bar)
+        nj = round( n.bar * runif( J, 0.25, 1.75 ) )
+        if ( any( nj < 4 ) ) {
+            warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
+        }
     } else {
         nj = rep( n.bar, J )
     }
@@ -204,6 +228,15 @@ gen.dat.model.no.cov = function( n.bar = 10,
         mv <- MASS::mvrnorm( J, c( 0, 0 ), Sigma )
     }
 
+    if ( size.impact.correlate ) {
+        if ( !variable.n ) {
+            warning( "Can't have correlated site size with site impact without variable sized sites" )
+        } else {
+            mv = mv[ order( mv[,2] + rnorm( J, sd=sqrt( tau.11 ) )), ]
+            nj = sort( nj )
+        }
+    }
+
     # Calculate site intercept and average impacts
     beta.0j = gamma.00 + mv[,1]
     beta.1j = gamma.10 + mv[,2]
@@ -211,16 +244,27 @@ gen.dat.model.no.cov = function( n.bar = 10,
     if ( return.sites ) {
         data.frame( n = nj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2] )
     } else {
+        # generate individual level outcomes
+
         sid = as.factor( rep( 1:J, nj ) )
 
-        # generate individual level outcomes
         N = sum( nj )
 
         # randomize units within each site (proportion p to treatment)
         dd = data.frame( sid = sid  )
+
+        if ( variable.p ) {
+
+            #threshold to ensure we always have 2 units in tx and co for all blocks
+            ths = min( p, 1-p ) * 0.75
+            ps =  pmin( (nj-2)/nj, pmax( 2/nj, runif( J, p - ths, p + ths ) ) )
+
+            dd$p = ps[ as.numeric( dd$sid ) ]
+        }
         dd = dd %>% group_by( sid ) %>%
             mutate( Z = as.numeric( sample( n() ) <= n()*p ) )
         Zij = dd$Z
+        dd$p = NULL
 
         # individual residuals
         e = rnorm( N, mean=0, sd=sqrt( sigma2.e ) )
@@ -234,6 +278,23 @@ gen.dat.model.no.cov = function( n.bar = 10,
         attr( df, "tau.S" ) <- sd( beta.1j )
         df
     }
+}
+
+#' Rerandomize a given multisite simulated dataset and recalulate observed
+#' outcomes
+#'
+#' Useful for simulations of finite sample inference where the dataset should be
+#' held static and only randomization is necessary.
+#'
+#' @param dat Dataframe from, e.g., gen.dat()
+#'
+#' @return Same dataframe with treatment shuffled and Yobs recalculated.
+#' @export
+rerandomize.data = function( dat ) {
+    dat = dat %>% group_by( sid ) %>%
+        mutate( Z = sample( Z ) ) %>% ungroup()
+    dat = mutate( dat, Yobs = ifelse( Z, Y1, Y0 ) )
+    dat
 }
 
 

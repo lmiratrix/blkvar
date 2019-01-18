@@ -1,4 +1,7 @@
 
+##
+## This file contains the various estimators discussed in Pashley et al
+##
 
 
 #' Utility to help printing out nicely formatted stuff.
@@ -104,6 +107,7 @@ if ( FALSE ) {
 #' Plot diagnostic function
 #'
 #' Function that plots variance estimates versus size of treatment group.
+#'
 #' @param Y vector observed outcomes
 #' @param Z vector of assignment indicators (1==treated)
 #' @param B block ids
@@ -222,11 +226,13 @@ plug_in_big<-function(data.small, data.big){
 #' This function takes the block-level summary statistics of a dataset and returns a treatment effect estimate,
 #' variance estimate and some summary info about the block structure.
 #'
-#' @param data.table  Summary statistics of blocks in a dataset.  In particular, the output of block.data method.
-#' @param method is method of variance estimation, defauly "hybrid_m"
+#' @param data.table  Summary statistics of all the blocks in a dataset.  In particular, this is the output of block.data method.
+#' @param method The method to be used for variance estimation, defauly "hybrid_m"
 #' @param throw.warnings TRUE means throw warnings if the hybrid estimators are breaking down due to violation of assumptions.
 #' @export
-fitdata.sumtable = function( data.table, method=c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"), throw.warnings=TRUE ) {
+fitdata.sumtable = function( data.table,
+                             method=c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"), throw.warnings=TRUE ) {
+    method = match.arg( method )
     K<-nrow(data.table)
     data.table$nk<-data.table$Num_Trt+data.table$Num_Ctrl
     n<-sum(data.table$nk)
@@ -345,101 +351,6 @@ print.var_dat<-function(x, ...){
     cat(paste(x$percent_small_blocks, "% of units are in small blocks", sep=""), "\n")
     cat("\nBlock Sizes:\n")
     print(x$block_sizes)
-}
-
-
-#' Estimate a series of linear models using different weighting schemes and
-#' standard errors.
-#'
-#' @importFrom dplyr group_by ungroup mutate
-#' @importFrom sandwich vcovHC vcovCL
-#' @importFrom stats coef
-#' @return Data frame of the various results.
-linear.model.estimators = function( Y, Z, B, data=NULL ) {
-    require( multiwayvcov )
-    require( tidyverse )
-
-    if ( !is.null( data ) ) {
-        dat = data
-        names( dat )[1:3] = c( "Yobs", "Z", "blk" )
-    }  else {
-        dat = data.frame( Yobs = Y, Z =Z, blk= B )
-    }
-    dat$blk<-as.factor(dat$blk)
-    nj = table( dat$blk )
-
-    # simple linear model
-    M0 = lm( Yobs ~ Z + blk, data=dat )
-    SE.lm = summary( M0 )$coeff["Z",2]
-
-    # Huber-White SEs
-    vcov_sand = sandwich::vcovHC(M0, type = "HC1")
-    SE.lm.sand <-sqrt( vcov_sand[2,2] )
-
-    # Cluster robust SEs
-    #vcov_id <- multiwayvcov::cluster.vcov(M0, B)
-    vcov_clust = sandwich::vcovCL( M0, B )
-    SE.lm.clust = sqrt( vcov_clust[2,2] )
-
-    FEmodels = data.frame( method=c("fixed effects (no inter)", "fixed effects (sand)", "fixed effects (cluster)" ),
-                tau = c( coef(M0)[["Z"]], coef(M0)[["Z"]], coef(M0)[["Z"]] ),
-                SE = c( SE.lm, SE.lm.sand, SE.lm.clust ), stringsAsFactors = FALSE )
-
-
-    # Individual Weighted regression models
-    Z.bar = mean( dat$Z )
-    n = nrow( dat )
-    J = length( unique( dat$blk ) )
-    n.bar = n / J
-    dat = dat %>% dplyr::group_by( blk ) %>%
-        dplyr::mutate( p = mean( Z ),
-                nj = n(),
-                w.orig = ifelse( Z, 1/p, 1/(1-p) ),
-                weight = ifelse( Z, Z.bar / p, (1-Z.bar)/(1-p) ),
-                weight.site = weight * n.bar / nj ) %>%
-        dplyr::ungroup()
-
-    M0w = lm( Yobs ~ Z + blk, weights=dat$w.orig, data=dat )
-    SE.w = summary( M0w )$coeff["Z",2]
-
-    M0w2 = lm( Yobs ~ Z + blk, weights=dat$weight, data=dat )
-    SE.w2 = summary( M0w2 )$coeff["Z",2]
-
-    # Site weighted regression models
-    M0w.site = lm( Yobs ~ Z + blk, weights=dat$weight.site, data=dat )
-    tau.w.site = coef( M0w.site )[[2]]
-    SE.w.site = summary( M0w.site )$coeff["Z",2]
-
-    weightModels = data.frame( method=c("IPTW weighted regression (naive)", "IPTW-weighted regression", "IPTW-weighted regression (site)"),
-                         tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
-                         SE = c( SE.w, SE.w2, SE.w.site ), stringsAsFactors = FALSE )
-
-
-    # Interacted linear regression models
-    M0.int = lm( Yobs ~ 0 + Z * blk - Z, data = dat )
-    VC = vcov( M0.int )
-
-    tau.hats = coef(M0.int)[J + 1:J]
-
-    wts = c( rep( 0, J ), rep( 1/J, J ) )
-    tau.site = mean( tau.hats )
-    SE.site = sqrt( t(wts) %*% VC %*% wts )
-
-    wts.indiv = c( rep( 0, J ), nj/n )
-    tau.indiv = weighted.mean( tau.hats, nj )
-    SE.indiv = sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
-
-    interactModels = data.frame( method=c("fixed effects interact (site)", "fixed effects-interact (indiv)"),
-                                 tau = c( tau.site, tau.indiv ),
-                                 SE = c( SE.site, SE.indiv ),
-                                 stringsAsFactors = FALSE)
-    # combine and return results
-    bind_rows( FEmodels, weightModels, interactModels )
-}
-
-if ( FALSE ) {
-    dat = make.obs.data(p = 0.2)
-    linear.model.estimators( dat$Yobs, dat$Z, dat$blk )
 }
 
 

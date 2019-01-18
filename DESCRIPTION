@@ -1,11 +1,14 @@
 Package: blkvar
 Title: Blocked design variance estimation
-Version: 0.0.0.9
+Version: 0.0.1.0
 Authors@R: c(
     person("Nicole", "Pashley", email = "npashley@g.harvard.edu", role = "cre"),
     person("Luke", "Miratrix", email = "lmiratrix@stat.harvard.edu", role = "aut"))
 Description: Calculates variance estimates for treatment effect estimator under block randomized design.
-Depends: R (>= 3.3.2)
+Depends: R (>= 3.3.2),
+    lme4,
+    dplyr,
+    survey
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -13,6 +16,7 @@ Suggests: testthat,
     knitr,
     rmarkdown
 Imports: sandwich,
-    randomizationInference
+    randomizationInference,
+    survey
 RoxygenNote: 6.1.0
 VignetteBuilder: knitr

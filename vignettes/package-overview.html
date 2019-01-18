@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Luke Miratrix" />
+
+<meta name="date" content="2018-11-21" />
+
+<title>Overview of the blkvar package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Overview of the blkvar package</h1>
+<h4 class="author"><em>Luke Miratrix</em></h4>
+<h4 class="date"><em>2018-11-21</em></h4>
+
+
+
+<p>The <code>blkvar</code> package implements a variety of methods for estimating the average treatment impact in a blocked or multisite randomized trial. It also provides methods for estimating the amount of cross-site (or cross-block) treatment variation, defined as the variance of the individual block (or site) ATEs. It finally provides a variety of methods to implement blocked or multisite simulation studies.</p>
+<div id="estimating-the-ate" class="section level2">
+<h2>Estimating the ATE</h2>
+<p>There are several classes of methods for estimating the ATE:</p>
+<ul>
+<li>Linear regression with block dummies</li>
+<li>Multilevel regression</li>
+<li>Design based estimators</li>
+</ul>
+<p>For a running example we generate some data</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df =<span class="st"> </span><span class="kw">gen.dat.no.cov</span>( <span class="dt">n.bar=</span><span class="dv">50</span>, <span class="dt">J=</span><span class="dv">30</span>,
+                         <span class="dt">gamma.10 =</span> <span class="dv">0</span>,
+                         <span class="dt">tau.11.star =</span> <span class="fl">0.2</span><span class="op">^</span><span class="dv">2</span>,
+                         <span class="dt">ICC =</span> <span class="fl">0.65</span>,
+                         <span class="dt">variable.n =</span> <span class="ot">TRUE</span> )
+<span class="kw">head</span>( df )
+<span class="co">#&gt;   sid            Y0          Y1 Z        Yobs</span>
+<span class="co">#&gt; 1   1 -0.4709672553 -0.50693465 0 -0.47096726</span>
+<span class="co">#&gt; 2   1 -0.4934583981 -0.52942580 1 -0.52942580</span>
+<span class="co">#&gt; 3   1 -0.2917504213 -0.32771782 1 -0.32771782</span>
+<span class="co">#&gt; 4   1 -0.0011316271 -0.03709902 1 -0.03709902</span>
+<span class="co">#&gt; 5   1 -0.1763554556 -0.21232285 0 -0.17635546</span>
+<span class="co">#&gt; 6   1  0.0009618776 -0.03500552 1 -0.03500552</span></code></pre></div>
+<p>To estimate the ATE using (almost) all the various methods provided we have</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods</span>(Yobs, Z, sid, <span class="dt">data=</span>df )
+<span class="co">#&gt; Loading required package: multiwayvcov</span>
+<span class="co">#&gt; Warning in logLik.reStruct(object, conLin): Singular precision matrix in</span>
+<span class="co">#&gt; level -1, block 1</span>
+<span class="co">#&gt;                              method        tau         SE</span>
+<span class="co">#&gt; 1                          hybrid_m 0.04126280 0.03024261</span>
+<span class="co">#&gt; 2                          hybrid_p 0.04126280 0.03024261</span>
+<span class="co">#&gt; 3                       plug_in_big 0.04126280 0.03024261</span>
+<span class="co">#&gt; 4       RCT.yes (individual-finite) 0.04126280 0.03024261</span>
+<span class="co">#&gt; 5             RCT.yes (site-finite) 0.03425875 0.03064948</span>
+<span class="co">#&gt; 6     RCT.yes (individual-superpop) 0.04126280 0.04695593</span>
+<span class="co">#&gt; 7           RCT.yes (site-superpop) 0.03425875 0.04508930</span>
+<span class="co">#&gt; 8                     fixed effects 0.04126619 0.04126619</span>
+<span class="co">#&gt; 9           fixed effects (sand SE) 0.04126619 0.03060845</span>
+<span class="co">#&gt; 10       fixed effects (cluster SE) 0.04126619 0.04741251</span>
+<span class="co">#&gt; 11 IPTW weighted regression (naive) 0.04126280 0.03031103</span>
+<span class="co">#&gt; 12         IPTW weighted regression 0.04126280 0.03031123</span>
+<span class="co">#&gt; 13  IPTW weighted regression (site) 0.03425875 0.03065768</span>
+<span class="co">#&gt; 14    fixed effects interact (site) 0.03425875 0.03061213</span>
+<span class="co">#&gt; 15   fixed effects interact (indiv) 0.04126280 0.03025026</span>
+<span class="co">#&gt; 16                             FIRC 0.03679470 0.04562297</span>
+<span class="co">#&gt; 17                             RIRC 0.03786509 0.04542760</span></code></pre></div>
+<p>One can select which methods to use:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods</span>(Yobs, Z, sid, <span class="dt">data=</span>df, <span class="dt">include.block =</span> <span class="ot">FALSE</span>, <span class="dt">include.MLM =</span> <span class="ot">FALSE</span>,
+                <span class="dt">include.RCTYes =</span> <span class="ot">FALSE</span>)
+<span class="co">#&gt;                             method        tau         SE</span>
+<span class="co">#&gt; 1                    fixed effects 0.04126619 0.04126619</span>
+<span class="co">#&gt; 2          fixed effects (sand SE) 0.04126619 0.03060845</span>
+<span class="co">#&gt; 3       fixed effects (cluster SE) 0.04126619 0.04741251</span>
+<span class="co">#&gt; 4 IPTW weighted regression (naive) 0.04126280 0.03031103</span>
+<span class="co">#&gt; 5         IPTW weighted regression 0.04126280 0.03031123</span>
+<span class="co">#&gt; 6  IPTW weighted regression (site) 0.03425875 0.03065768</span>
+<span class="co">#&gt; 7    fixed effects interact (site) 0.03425875 0.03061213</span>
+<span class="co">#&gt; 8   fixed effects interact (indiv) 0.04126280 0.03025026</span></code></pre></div>
+</div>
+<div id="estimating-cross-site-variation" class="section level2">
+<h2>Estimating cross site variation</h2>
+<p>We can estimate cross site variation using some of the multilevel modeling methods. The <code>estimate.ATE.FIRC</code> method, for example, provides <code>tau.hat</code>, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests &lt;-<span class="st"> </span><span class="kw">estimate.ATE.FIRC</span>( Yobs, Z, sid, <span class="dt">data=</span>df )
+<span class="kw">t</span>( ests )
+<span class="co">#&gt;      ATE        SE.ATE     tau.hat   SE.tau     p.variation deviance</span>
+<span class="co">#&gt; [1,] 0.03857534 0.03630213 0.1104088 0.01163927 0.1193488   1.388269</span></code></pre></div>
+<p>(We transpose with <code>t()</code> to make it a nice row instead of a list.)</p>
+<p>This can also be done as</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests &lt;-<span class="st"> </span><span class="kw">estimate.ATE.FIRC</span>( df<span class="op">$</span>Yobs, df<span class="op">$</span>Z, df<span class="op">$</span>sid )</code></pre></div>
+<p>We also have</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests.RIRC =<span class="st"> </span><span class="kw">estimate.ATE.RIRC</span>( Yobs, Z, sid, <span class="dt">data=</span>df )
+<span class="co">#&gt; Warning in logLik.reStruct(object, conLin): Singular precision matrix in</span>
+<span class="co">#&gt; level -1, block 1</span>
+<span class="kw">t</span>( ests.RIRC )
+<span class="co">#&gt;      ATE        SE.ATE    tau.hat   SE.tau p.variation  deviance</span>
+<span class="co">#&gt; [1,] 0.03800709 0.0446802 0.1793571 NA     0.0001427928 16.66209</span></code></pre></div>
+<p>These methods also have a <code>pool</code> option which uses a MLM with a single variance parameter for all individuals, rather than separate ones for the treatment and control groups (which is still pooled across block).</p>
+<p>We can compare these estimators via</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods_variation</span>( Yobs, Z, sid, <span class="dt">data=</span>df, <span class="dt">long.results=</span><span class="ot">TRUE</span> )
+<span class="co">#&gt; Warning in logLik.reStruct(object, conLin): Singular precision matrix in</span>
+<span class="co">#&gt; level -1, block 1</span>
+<span class="co">#&gt;      method   tau.hat           pv</span>
+<span class="co">#&gt; 1      FIRC 0.1104088 0.1193488483</span>
+<span class="co">#&gt; 2      RIRC 0.1793571 0.0001427928</span>
+<span class="co">#&gt; 3 FIRC.pool 0.1183777 0.0701191528</span>
+<span class="co">#&gt; 4 RIRC.pool 0.1792796 0.0001632499</span>
+<span class="co">#&gt; 5         Q        NA 0.0001042025</span></code></pre></div>
+<p>The <span class="math inline">\(p\)</span>-values are testing for these estimates being nonzero.</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

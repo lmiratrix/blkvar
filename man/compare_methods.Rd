@@ -6,7 +6,8 @@
 \usage{
 compare_methods(Y, Z, B, data = NULL, include.block = TRUE,
   include.MLM = TRUE, include.RCTYes = TRUE, include.LM = TRUE,
-  include.RCTYesBlended = FALSE)
+  include.RCTYesBlended = FALSE,
+  include.method.characteristics = FALSE)
 }
 \arguments{
 \item{Y}{vector observed outcomes}
@@ -18,6 +19,8 @@ compare_methods(Y, Z, B, data = NULL, include.block = TRUE,
 \item{data}{matrix of Y, Z, B, as alternative to using vectors.  The columns
 of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.}
 
+\item{include.block}{Include the Pashley blocking variants.}
+
 \item{include.MLM}{Include MLM estimators}
 
 \item{include.RCTYes}{Include RCTYes estimators}
@@ -27,6 +30,8 @@ Huber-White SEs, etc.)}
 
 \item{include.RCTYesBlended}{Include RCTYes estimator applied to small block
 and classic Neyman to large blocks.}
+
+\item{include.method.characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
 }
 \description{
 This function calculates the point estimates and SE estimates for a variety

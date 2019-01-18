@@ -30,6 +30,90 @@ test_that( "Multisite DGP works", {
 
 } )
 
+test_that( "Variable p and n works", {
+    set.seed( 1019 )
+    df = gen.dat.no.cov( n.bar=200, J=20,
+                         tau.11.star = 0.1^2,
+                         ICC = 0.20,
+                         variable.n = TRUE,
+                         variable.p = TRUE,
+                         finite.model = FALSE )
+
+    sites = df %>% group_by( sid ) %>%
+        summarise( n = n(),
+                   p.Z = mean( Z ),
+                   Y.hat = mean( Yobs[Z==1] ) - mean( Yobs[Z==0] ) )
+
+    head( sites )
+    qplot( sites$n )
+    range( sites$n )
+    rat = max( sites$n ) / min( sites$n )
+    rat
+    qplot( sites$p.Z )
+    mean( sites$p.Z )
+    rat.Z = max( sites$p.Z ) / min( sites$p.Z )
+    rat.Z
+    expect_true( rat > 2 )
+    expect_true( rat.Z > 2 )
+
+} )
+
+test_that( "Site impact correlation works", {
+    set.seed( 1019 )
+    df = gen.dat.no.cov( n.bar=200, J=200,
+                         tau.11.star = 0.3^2,
+                         ICC = 0.20,
+                         variable.n = TRUE,
+                         variable.p = TRUE,
+                         size.impact.correlate = TRUE,
+                         finite.model = FALSE )
+    head( df )
+    sites = df %>% group_by( sid ) %>%
+        summarise( n = n(),
+                   p.Z = mean( Z ),
+                   Y.hat = mean( Yobs[Z==1] ) - mean( Yobs[Z==0] ),
+                   Y.true = mean( Y1 ) - mean( Y0 ) )
+
+    head( sites )
+    qplot( sites$n, sites$Y.true )
+    cor(  sites$n, sites$Y.true )
+
+    ATE.site = mean( sites$Y.true )
+    ATE.site
+    ATE.indiv = mean( df$Y1 - df$Y0 )
+    ATE.indiv
+
+} )
+
+
+
+test_that( "Bounding of 2 tx and 2 co units works", {
+    set.seed( 1019 )
+    df = gen.dat.no.cov( n.bar=16, J=200,
+                         tau.11.star = 0.3^2,
+                         ICC = 0.20,
+                         variable.n = TRUE,
+                         variable.p = TRUE,
+                         size.impact.correlate = TRUE,
+                         finite.model = FALSE )
+    head( df )
+    sites = df %>% group_by( sid ) %>%
+        summarise( n = n(),
+                   nT = sum( Z ),
+                   nC = sum( 1-Z ),
+                   p.Z = mean( Z ),
+                   Y.hat = mean( Yobs[Z==1] ) - mean( Yobs[Z==0] ),
+                   Y.true = mean( Y1 ) - mean( Y0 ) )
+
+    table( sites$n )
+    table( sites$nT )
+    table( sites$nC )
+    expect_true( all( sites$nT >= 2 ) )
+    expect_true( all( sites$nC >= 2 ) )
+
+} )
+
+
 test_that( "Other DGP calls work", {
     set.seed( 101010 )
 
@@ -65,6 +149,23 @@ test_that( "Other DGP calls work", {
                                        p = mean( p.Tx ),
                                        X.bar = mean( X ) )
     expect_true( abs( rst$X.bar ) < 0.05 )
+
+} )
+
+
+test_that( "Cluster randomization options work", {
+    df = gen.dat( n.bar=10, J=300,
+                  tau.11.star = 0.3,
+                  verbose=FALSE,
+                  cluster.rand=TRUE)
+    tb = table( df$Z, df$sid)
+    expect_true( all( tb[1,] * tb[2,] == 0 ) )
+    df = gen.dat( n.bar=10, J=300,
+                  tau.11.star = 0.3,
+                  verbose=FALSE,
+                  cluster.rand=FALSE)
+    tb = table( df$Z, df$sid)
+    expect_true( all( tb[1,] * tb[2,] != 0 ) )
 
 } )
 
