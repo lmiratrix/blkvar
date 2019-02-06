@@ -7,10 +7,10 @@
 #'
 #' Taken from page 83 of Shochet RCT-YES paper (eq 6.25).
 #'
-#' The `superpop2` variant is a modification of the original, pulling the
-#' weights from inside the squared term to outside. This method suggested in
-#' personal correspondance with Schochet.  If the weights are not all 1, this
-#' can make a difference.
+#' The `superpop` variant is a modification of the original 'superpop.original',
+#' pulling the weights from inside the squared term to outside. This method
+#' suggested in personal correspondance with Schochet.  If the weights are not
+#' all 1, this can make a difference.
 #'
 #' @param sum_tab Table of summary statistics by block, from, e.g.,
 #'   `block.data()`
@@ -57,7 +57,7 @@ calc.RCT.Yes.SE = function( sum_tab,
 
         asyVar = sum( w^2 * (tau.hat.b - tau.hat)^2 ) / ((h-1)*h * wbar^2 )
         SE = sqrt( asyVar)
-    } else {
+    } else { # finite pop (Neyman)
         w.tot = sum( w )
         # calculate SEs for each block by itself
         block.vars = with( sum_tab, (var.1 / n.1 + var.0 / n.0 ) )

@@ -179,10 +179,15 @@ gen.dat.model  = function( n.bar = 10,
 
 
 
-# Generate multilevel data with no covariates.  A simplification of function
-# above.
-#
-# @return multisite data with at least 2 tx and 2 co units in each block.
+#' Generate multilevel data with no covariates.  A simplification of function
+#' above.
+#'
+#' @inheritParams gen.dat
+#' @param size.impact.correlate    TRUE/FALSE: Are site impacts correlated with site size?
+#' @param proptx.impact.correlate  TRUE/FALSE: Are proportion of units treated correlated with site size?
+#'
+#' @return multisite data with at least 2 tx and 2 co units in each block.
+#' @export
 gen.dat.model.no.cov = function( n.bar = 16,
                                  J = 30,
                                  p = 0.5,
@@ -194,6 +199,7 @@ gen.dat.model.no.cov = function( n.bar = 16,
                                  return.sites=FALSE,
                                  finite.model=FALSE,
                                  size.impact.correlate = FALSE,
+                                 proptx.impact.correlate = FALSE,
                                  verbose = FALSE ) {
     require( tidyverse )
 
@@ -208,11 +214,12 @@ gen.dat.model.no.cov = function( n.bar = 16,
         nj = rep( n.bar, J )
     }
 
+    # Generate average control outcome and average ATE for all sites
     Sigma = matrix( c( tau.00, tau.01, tau.01, tau.11 ), nrow=2 )
 
     if ( finite.model ) {
         # Make a canonical set of site charactaristics and then never change
-        # them.
+        # them until J changes.
         if ( is.null( CANONICAL ) || nrow( CANONICAL ) != J ) {
             CC <- MASS::mvrnorm( J, c( 0, 0 ), Sigma )
             if ( var( CC[,2] ) > 0 ) {
@@ -228,11 +235,14 @@ gen.dat.model.no.cov = function( n.bar = 16,
         mv <- MASS::mvrnorm( J, c( 0, 0 ), Sigma )
     }
 
+    if ( size.impact.correlate || proptx.impact.correlate ) {
+        mv = mv[ order( mv[,2] + rnorm( J, sd = 0.75 * sqrt( tau.11 ) )), ]
+    }
+
     if ( size.impact.correlate ) {
         if ( !variable.n ) {
             warning( "Can't have correlated site size with site impact without variable sized sites" )
         } else {
-            mv = mv[ order( mv[,2] + rnorm( J, sd=sqrt( tau.11 ) )), ]
             nj = sort( nj )
         }
     }
@@ -255,11 +265,20 @@ gen.dat.model.no.cov = function( n.bar = 16,
 
         if ( variable.p ) {
 
-            #threshold to ensure we always have 2 units in tx and co for all blocks
             ths = min( p, 1-p ) * 0.75
-            ps =  pmin( (nj-2)/nj, pmax( 2/nj, runif( J, p - ths, p + ths ) ) )
+            ps =  runif( J, p - ths, p + ths )
+
+            if ( proptx.impact.correlate ) {
+                ps = sort( ps )
+            }
+
+            #threshold to ensure we always have 2 units in tx and co for all blocks
+            # regardless of assigned p
+            ps = pmin( (nj-2)/nj, pmax( 2/nj, ps ) )
 
             dd$p = ps[ as.numeric( dd$sid ) ]
+        } else if ( proptx.impact.correlate ) {
+            warning( "Can't have proportion treated correlated with impact if the proportion treated does not vary." )
         }
         dd = dd %>% group_by( sid ) %>%
             mutate( Z = as.numeric( sample( n() ) <= n()*p ) )

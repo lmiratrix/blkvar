@@ -77,6 +77,9 @@ weighted.linear.estimators.naive = function( dat ) {
     weightModels
 }
 
+
+
+
 #' Survey-weighted adjusted linear regression
 #'
 #' Use survey weight regression to reweight blocks to target unbiased ATE estimators.

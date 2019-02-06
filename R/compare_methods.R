@@ -80,6 +80,7 @@ method.characteristics = function() {
 #' @param Y vector observed outcomes
 #' @param Z vector of assignment indicators (1==treated)
 #' @param B block ids
+#' @param site site ids (if randomization blocks are nested in site).
 #' @param data matrix of Y, Z, B, as alternative to using vectors.  The columns
 #'   of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.
 #' @param include.MLM Include MLM estimators
@@ -93,12 +94,12 @@ method.characteristics = function() {
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-compare_methods<-function(Y, Z, B, data=NULL, include.block = TRUE, include.MLM = TRUE,
+compare_methods<-function(Y, Z, B, site = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
                           include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE,
                           include.method.characteristics = FALSE ){
+
     if(!is.null(data)){
         if ( missing( "Y" ) ) {
-
             Y<-data[,1]
             Z<-data[,2]
             B<-data[,3]
@@ -107,6 +108,7 @@ compare_methods<-function(Y, Z, B, data=NULL, include.block = TRUE, include.MLM 
             Y = eval( substitute( Y ), data )
             Z = eval( substitute( Z ), data )
             B = eval( substitute( B ), data)
+            site = eval( substitute( site ), data)
 
         }
     }
