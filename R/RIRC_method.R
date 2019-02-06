@@ -86,7 +86,7 @@ analysis.combination = function( df ) {
 #' @rdname estimate.ATE.RIRC
 #'
 #' @export
-estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE) {
+estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE, pool = FALSE ) {
 
     stopifnot( !( include.testing && REML ) )
 
@@ -104,23 +104,41 @@ estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
 
-    re.mod <- nlme::lme(Yobs ~ 1 + Z,
+    if ( pool ) {
+        re.mod <- nlme::lme(Yobs ~ 1 + Z,
+                            data = data,
+                            random = ~ 1 + Z | sid,
+                            na.action=na.exclude,
+                            method = method,
+                            control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+    } else {
+        re.mod <- nlme::lme(Yobs ~ 1 + Z,
                         data = data,
                         random = ~ 1 + Z | sid,
-                        weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                        weights = nlme::varIdent(form = ~ 1 | Z),
+                        na.action=na.exclude,
                         method = method,
                         control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+    }
 
     if ( include.testing ) {
 
         # Test for cross site variation (???)
-        re.mod.null <- nlme::lme(Yobs ~ 1 + Z,
+        if ( pool ) {
+            re.mod.null <- nlme::lme(Yobs ~ 1 + Z,
+                                     data = data,
+                                     random = ~ 1 | sid, na.action=na.exclude,
+                                     method = method,
+                                     control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+
+        } else {
+            re.mod.null <- nlme::lme(Yobs ~ 1 + Z,
                                  data = data,
                                  random = ~ 1 | sid,
                                  weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                                  method = method,
                                  control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-
+        }
         #M0.null = lm( Yobs ~ 0 + sid + Z, data=data )
         td = as.numeric( deviance( re.mod.null ) - deviance( re.mod ) )
         p.variation = 0.5 * pchisq(td, 2, lower.tail = FALSE ) + 0.5 * pchisq(td, 1, lower.tail = FALSE )
@@ -229,11 +247,11 @@ if ( FALSE ) {
 #' @importFrom lme4 lmer VarCorr
 #' @export
 estimate.ATE.RIRC.pool = function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE ) {
+
     M0.full = lme4::lmer( Yobs ~ 1 + Z + (1+Z|sid), data=data, REML = REML )
 
-
     if ( include.testing ) {
-        M0.null = lme4::lmer( Yobs ~ 1 + Z + (1|sid), data=data, REML= FALSE )
+        M0.null = lme4::lmer( Yobs ~ 1 + Z + (1|sid), data=data, REML = REML )
 
         # I _think_ this is what is suggested to handle the boundary by Snijders and Bosker
         td = deviance( M0.null ) - deviance( M0.full )

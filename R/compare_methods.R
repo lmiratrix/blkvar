@@ -4,10 +4,10 @@
 
 
 # Calculate estimates for the Multilevel modeling methods
-compare.MLM.methods = function( Y, Z, B ) {
-    RICC = estimate.ATE.RICC( Y, Z, B, REML = TRUE )
-    FIRC = estimate.ATE.FIRC( Y, Z, B, REML = TRUE, include.testing = FALSE )
-    RIRC = estimate.ATE.RIRC( Y, Z, B, REML = TRUE, include.testing = FALSE )
+compare.MLM.methods = function( Y, Z, B, siteID = NULL ) {
+    RICC = estimate.ATE.RICC( Y, Z, B, siteID, REML = TRUE )
+    FIRC = estimate.ATE.FIRC( Y, Z, B, siteID, REML = TRUE, include.testing = FALSE )
+    RIRC = estimate.ATE.RIRC( Y, Z, B, siteID, REML = TRUE, include.testing = FALSE )
     mlms = data.frame( method=c("RICC", "FIRC", "RIRC"),
                        tau = c( RICC$ATE, FIRC$ATE, RIRC$ATE ),
                        SE = c( RICC$SE.ATE, FIRC$SE.ATE, RIRC$SE.ATE ),
@@ -30,7 +30,7 @@ method.characteristics = function() {
     # Code to make the hard-coded list of characteristics
     if ( FALSE ) {
         dat = make.obs.data( n_k = 4:10, p = 0.2 )
-        a = compare_methods( data = dat[ c("Yobs", "Z","blk" ) ] )
+        a = compare_methods( data = dat[ c("Yobs", "Z","B" ) ] )
         a = a[1]
         print( a, row.names = FALSE )
         a$code = c("hybrid_m","hybrid_p","plug_in_big", "DB-FP-Persons",
@@ -77,12 +77,11 @@ method.characteristics = function() {
 #' This function calculates the point estimates and SE estimates for a variety
 #' of the blocked designs.
 #'
-#' @param Y vector observed outcomes
-#' @param Z vector of assignment indicators (1==treated)
-#' @param B block ids
-#' @param site site ids (if randomization blocks are nested in site).
-#' @param data matrix of Y, Z, B, as alternative to using vectors.  The columns
-#'   of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.
+#' @param Y vector observed outcomes (or column name in data)
+#' @param Z vector of assignment indicators (1==treated) (or column name in data)
+#' @param B vector of block ids (or column name in data)
+#' @param siteID site ids (variable name as string if data frame passed) (if randomization blocks are nested in site).
+#' @param data frame holding Y, Z, B and (possibly a column with name specified by siteID).
 #' @param include.MLM Include MLM estimators
 #' @param include.RCTYes Include RCTYes estimators
 #' @param include.LM Include Linear Model-based estimators (including
@@ -94,7 +93,7 @@ method.characteristics = function() {
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-compare_methods<-function(Y, Z, B, site = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
+compare_methods<-function(Y, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
                           include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE,
                           include.method.characteristics = FALSE ){
 
@@ -103,13 +102,16 @@ compare_methods<-function(Y, Z, B, site = NULL, data=NULL, include.block = TRUE,
             Y<-data[,1]
             Z<-data[,2]
             B<-data[,3]
+            if ( !is.null( siteID ) && (length( siteID ) == 1 ) ) {
+                siteID = data[, siteID ]
+            }
         } else {
-
             Y = eval( substitute( Y ), data )
             Z = eval( substitute( Z ), data )
             B = eval( substitute( B ), data)
-            site = eval( substitute( site ), data)
-
+            #if ( !is.null( siteID ) ) {
+            #    siteID = data[[ siteID ]]
+            #}
         }
     }
     n<-length(Y)
@@ -121,8 +123,9 @@ compare_methods<-function(Y, Z, B, site = NULL, data=NULL, include.block = TRUE,
     if((sum(Z==1)+sum(Z==0))!=n){
         stop("Treatment indicator should be vector of ones and zeros")
     }
+
     #Get data into table
-    data.table<-block.data(Y,Z,B)
+    data.table<-calc.summary.stats(Y,Z,B, siteID=siteID)
 
     if ( include.block || include.RCTYesBlended ) {
         method_list = c()
@@ -149,13 +152,12 @@ compare_methods<-function(Y, Z, B, site = NULL, data=NULL, include.block = TRUE,
     }
 
     if ( include.RCTYes ) {
-        dt = blkvar:::convert.table.names( data.table )
 
         # Design based methods
-        RCT.yes.fi = calc.RCT.Yes.SE( dt, method="finite", weight="individual" )
-        RCT.yes.fs = calc.RCT.Yes.SE( dt, method="finite", weight="site" )
-        RCT.yes.si = calc.RCT.Yes.SE( dt, method="superpop", weight="individual" )
-        RCT.yes.ss = calc.RCT.Yes.SE( dt, method="superpop", weight="site" )
+        RCT.yes.fi = estimate.ATE.design.based( data.table, method="finite", weight="individual" )
+        RCT.yes.fs = estimate.ATE.design.based( data.table, method="finite", weight="site" )
+        RCT.yes.si = estimate.ATE.design.based( data.table, method="superpop", weight="individual" )
+        RCT.yes.ss = estimate.ATE.design.based( data.table, method="superpop", weight="site" )
         rctyes = dplyr::bind_rows( RCT.yes.fi, RCT.yes.fs, RCT.yes.si, RCT.yes.ss )
         rctyes$method = with( rctyes, paste( "RCT.yes (", weight, "-", method, ")", sep="" ) )
         rctyes$weight = NULL
@@ -202,7 +204,7 @@ compare_methods<-function(Y, Z, B, site = NULL, data=NULL, include.block = TRUE,
 #' @param Z vector that indicates if outcome is under treatment or control
 #' @param B block ids
 #' @param data alternatively is matrix of Y,Z,B
-#' @param p.mat  matrix with first column Blk_ID,second column prop treated in
+#' @param p.mat  matrix with first column B,second column prop treated in
 #'   that block, p
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #'
@@ -224,14 +226,14 @@ compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
         stop("Treatment indicator should be vector of ones and zeros")
     }
     #Get data into table
-    s.tc.bk<-aggregate(list(s.tc.bk=Y1-Y0), list(Blk_ID=B[1:(n/2)]), FUN=s.tc.func)
+    s.tc.bk<-aggregate(list(s.tc.bk=Y1-Y0), list(B=B[1:(n/2)]), FUN=s.tc.func)
     data.table<-block.data.sim(Y,Z,B, p.mat)
-    K<-max(data.table$Blk_ID)
-    n<-sum(data.table$Num_Trt)+sum(data.table$Num_Ctrl)
-    data.table$nk<-data.table$Num_Trt+data.table$Num_Ctrl
+    K<-max(data.table$B)
+    n<-sum(data.table$n1)+sum(data.table$n0)
+    data.table$nk<-data.table$n1+data.table$n0
     #Split into big and small blocks
-    data.big<-data.table[data.table$Num_Trt>1&data.table$Num_Ctrl>1,]
-    data.small<-data.table[data.table$Num_Trt==1|data.table$Num_Ctrl==1,]
+    data.big<-data.table[data.table$n1>1&data.table$n0>1,]
+    data.small<-data.table[data.table$n1==1|data.table$n0==1,]
     #Calculate variance for big blocks
     var_big<-sum(data.big$se_ney^2*(data.big$nk)^2)/n^2
     #If no small blocks, just use big block variance
@@ -242,8 +244,8 @@ compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
     }
     #Otherwise calculate variance estimates for each method considered
     else{
-        combine_table<-merge(s.tc.bk, data.table, by="Blk_ID")
-        mod.small<-combine_table[data.table$Num_Trt==1|data.table$Num_Ctrl==1,]
+        combine_table<-merge(s.tc.bk, data.table, by="B")
+        mod.small<-combine_table[data.table$n1==1|data.table$n0==1,]
         var_small<-sum((mod.small$se_ney^2-mod.small$s.tc.bk/mod.small$nk)*(mod.small$nk)^2)/n^2
         hybrid_m_est<-hybrid_m(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
         hybrid_p_est<-hybrid_p(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
@@ -258,10 +260,10 @@ compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
     tau_est_lm<-summary(M0)$coefficients[2,1]
     var_est_lm<-sandwich::vcovHC(M0, type = "HC1")[2,2]
     blk.id<-as.numeric(as.factor(B))
-    num.c.vec<-data.table[match(blk.id,data.table$Blk_ID),]$nk/data.table[match(blk.id,data.table$Blk_ID),]$Num_Ctrl
-    num.t.vec<-data.table[match(blk.id,data.table$Blk_ID),]$nk/data.table[match(blk.id,data.table$Blk_ID),]$Num_Trt
+    num.c.vec<-data.table[match(blk.id,data.table$B),]$nk/data.table[match(blk.id,data.table$B),]$n0
+    num.t.vec<-data.table[match(blk.id,data.table$B),]$nk/data.table[match(blk.id,data.table$B),]$n1
     weight.vec<-num.c.vec*(1-Z) + num.t.vec*(Z)
-    p.overall<-sum(data.table$Num_Trt)/sum(data.table$Num_Trt+data.table$Num_Ctrl)
+    p.overall<-sum(data.table$n1)/sum(data.table$n1+data.table$n0)
     weight.vec<-num.c.vec*(1-Z)*(1-p.overall) + num.t.vec*(Z)*p.overall
 
     # Get linear model estimates (Weighted OLS)
@@ -291,9 +293,10 @@ compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
 #'
 #' @inheritParams compare_methods
 #' @param long.results TRUE means each estimator gets a line in a data.frame.  FALSE gives all as columns in a 1-row dataframe.
+#' @param siteID if blocks B nested in sites, then pass the site indicator.
 #'
 #' @export
-compare_methods_variation = function( Yobs, Z, B, data = NULL, include.testing = TRUE, long.results = FALSE) {
+compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, include.testing = TRUE, long.results = FALSE) {
     if(!is.null(data)){
         if ( missing( "Yobs" ) ) {
             data = data.frame( Yobs<-data[,1],
@@ -303,15 +306,34 @@ compare_methods_variation = function( Yobs, Z, B, data = NULL, include.testing =
             stopifnot( n.tx.lvls == 2 )
             stopifnot( is.numeric( data$Yobs ) )
         } else {
+            if ( !is.null( siteID ) ) {
+                siteID = data[[siteID]]
+            }
             data = data.frame( Yobs = eval( substitute( Yobs ), data ),
                                Z = eval( substitute( Z ), data ),
                                sid = eval( substitute( B ), data) )
+            data$siteID = siteID
+
+            # if ( !missing( siteID ) ) {
+            #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+            #                        Z = eval( substitute( Z ), data ),
+            #                        sid = eval( substitute( B ), data),
+            #                        siteID = eval( substitute( siteID ), data ) )
+            # } else {
+            #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+            #                        Z = eval( substitute( Z ), data ),
+            #                        sid = eval( substitute( B ), data) )
+            # }
         }
     } else {
         data = data.frame( Yobs = Yobs,
                            Z = Z,
                            sid = B )
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
+        }
     }
+
     n<-nrow( data )
 
     #Quick check that input is correct
@@ -322,22 +344,23 @@ compare_methods_variation = function( Yobs, Z, B, data = NULL, include.testing =
         stop("Treatment indicator should be vector of ones and zeros")
     }
 
-    df = data
+    if ( !is.null( siteID ) ) {
+        siteID = "siteID" #quote( siteID )
+    }
 
     # FIRC model (separate variances)
-    FIRC = estimate.ATE.FIRC( Yobs, Z, sid, data=df, include.testing=include.testing )
+    FIRC = estimate.ATE.FIRC( Yobs, Z, sid, siteID=siteID, data=data, include.testing=include.testing )
 
     # FIRC model (with pooled residual variances)
-    FIRC.pool = estimate.ATE.FIRC.pool( Yobs, Z, sid, data=df, include.testing=include.testing )
+    FIRC.pool = estimate.ATE.FIRC( Yobs, Z, sid, siteID=siteID, data=data, include.testing=include.testing, pool=TRUE )
 
     # the random-intercept, random-coefficient (RIRC) model
-    RIRC = estimate.ATE.RIRC( Yobs, Z, sid, df, include.testing=include.testing )
+    RIRC = estimate.ATE.RIRC( Yobs, Z, sid, data, include.testing=include.testing )
 
     # the random-intercept, random-coefficient (RIRC) model
-    RIRC.pool = estimate.ATE.RIRC.pool( Yobs, Z, sid, df, include.testing=include.testing )
+    RIRC.pool = estimate.ATE.RIRC( Yobs, Z, sid, data, include.testing=include.testing, pool=TRUE)
 
     # collect results
-
     res = data.frame( tau.hat.FIRC = FIRC$tau.hat,
                       tau.hat.RIRC = RIRC$tau.hat,
                       tau.hat.FIRC.pool = FIRC.pool$tau.hat,
@@ -348,8 +371,9 @@ compare_methods_variation = function( Yobs, Z, B, data = NULL, include.testing =
         res$pv.RIRC = RIRC$p.variation
         res$pv.FIRC.pool = FIRC.pool$p.variation
         res$pv.RIRC.pool = RIRC.pool$p.variation
-        res$pv.Qstat = analysis.Qstatistic( df )
+        res$pv.Qstat = analysis.Qstatistic( data )
     }
+
 
     if ( long.results ) {
         if ( include.testing ) {
@@ -372,9 +396,9 @@ compare_methods_variation = function( Yobs, Z, B, data = NULL, include.testing =
 if  (FALSE ) {
     dat = make.obs.data( n_k = 4:10, p = 0.2 )
     dat
-    table( dat$Z, dat$blk )
-    compare_methods( data = dat[ c("Yobs", "Z","blk" ) ] )
+    table( dat$Z, dat$B )
+    compare_methods( data = dat[ c("Yobs", "Z","B" ) ] )
 
     debug( fitdata )
-    fitdata( dat$Yobs, dat$Z, dat$blk, method="hybrid_p")
+    fitdata( dat$Yobs, dat$Z, dat$B, method="hybrid_p")
 }

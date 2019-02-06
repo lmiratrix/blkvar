@@ -14,16 +14,19 @@
 #'
 #' @param sum_tab Table of summary statistics by block, from, e.g.,
 #'   `block.data()`
+#' @param siteID Vector of site IDs if the randomization blocks should be
+#'   aggregated by site (for site weighting only).
 #' @param weight Individual weight (i.e., number of individuals in each block)
 #'   or site weight (average block estimates).
 #' @param method finite, superpop, or superpop2 to give SEs that either capture
 #'   uncertainty due to targeting a superpopulation quantity or not.
+#' @return dataframe with calculated impacts and standard errors.
 #' @export
-calc.RCT.Yes.SE = function( sum_tab,
+estimate.ATE.design.based = function( sum_tab, siteID = NULL,
                     method = c( "finite", "superpop", "superpop.original" ),
                     weight = c( "individual", "site" ) ) {
 
-    if ( !( "Y.bar.1" %in% names( sum_tab ) ) ) {
+    if ( !( "Ybar1" %in% names( sum_tab ) ) ) {
         sum_tab = convert.table.names( sum_tab )
     }
 
@@ -35,11 +38,17 @@ calc.RCT.Yes.SE = function( sum_tab,
     if ( weight == "individual" ) {
         w = sum_tab$n
     } else {
-        w = rep(1, h )
+        if ( !is.null( siteID ) ) {
+            sum_tab = sum_tab %>% dplyr::group_by_( siteID ) %>%
+                dplyr::mutate( .weight = 1 / n() )
+            w = sum_tab$.weight
+        } else {
+            w = rep(1, h )
+        }
     }
 
     # calculate individual block treatment impact estimates
-    tau.hat.b = with( sum_tab, Y.bar.1 - Y.bar.0 )
+    tau.hat.b = with( sum_tab, Ybar1 - Ybar0 )
 
     # calculate overall ATE estimate by taking a weighted average of the
     # individual
@@ -51,16 +60,22 @@ calc.RCT.Yes.SE = function( sum_tab,
         # This is the formula 6.25
         asyVar = sum( (w * tau.hat.b - wbar * tau.hat)^2 ) / ((h-1)*h * wbar^2 )
         SE = sqrt( asyVar)
+        if ( !is.null( siteID ) ) {
+            warning( "Assuming superpopulation of sites when we have randomization blocks is not correctly handeled." )
+        }
     } else if ( method == "superpop" ) {
         # This is based on the email chain with Weiss, Pashley, etc.
         wbar = mean( w )
 
         asyVar = sum( w^2 * (tau.hat.b - tau.hat)^2 ) / ((h-1)*h * wbar^2 )
         SE = sqrt( asyVar)
+        if ( !is.null( siteID ) ) {
+            warning( "Assuming superpopulation of sites when we have randomization blocks is not correctly handeled." )
+        }
     } else { # finite pop (Neyman)
         w.tot = sum( w )
         # calculate SEs for each block by itself
-        block.vars = with( sum_tab, (var.1 / n.1 + var.0 / n.0 ) )
+        block.vars = with( sum_tab, (var1 / n1 + var0 / n0 ) )
 
         # and then take a weighted sum of these
         var =  sum ( w^2 * block.vars ) / w.tot^2
@@ -90,10 +105,10 @@ if ( FALSE ) {
     sdat
     #write_csv( sdat, path="summary_fake_data.csv" )
 
-    calc.RCT.Yes.SE( sdat, weight="individual", method="finite" )
-    calc.RCT.Yes.SE( sdat, weight="site", method="finite" )
-    calc.RCT.Yes.SE( sdat, weight="individual", method="superpop" )
-    calc.RCT.Yes.SE( sdat, weight="site", method="superpop" )
+    estimate.design.based( sdat, weight="individual", method="finite" )
+    estimate.design.based( sdat, weight="site", method="finite" )
+    estimate.design.based( sdat, weight="individual", method="superpop" )
+    estimate.design.based( sdat, weight="site", method="superpop" )
 
-    compare_methods( dat$Yobs, dat$Z, dat$blk )
+    compare_methods( dat$Yobs, dat$Z, dat$B )
 }

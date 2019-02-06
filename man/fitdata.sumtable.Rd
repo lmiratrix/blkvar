@@ -9,7 +9,7 @@ fitdata.sumtable(data.table, method = c("hybrid_m", "hybrid_p",
   "rct_yes_mod_small"), throw.warnings = TRUE)
 }
 \arguments{
-\item{data.table}{Summary statistics of all the blocks in a dataset.  In particular, this is the output of block.data method.}
+\item{data.table}{Summary statistics of all the blocks in a dataset.  In particular, this is the output of calc.summary.stats method.}
 
 \item{method}{The method to be used for variance estimation, defauly "hybrid_m"}
 

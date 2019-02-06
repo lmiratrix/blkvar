@@ -2,14 +2,10 @@
 % Please edit documentation in R/FIRC_method.R
 \name{analysis.FIRC}
 \alias{analysis.FIRC}
-\title{Test for treatment heterogeniety with the FIRC model.}
+\title{Obtain p-value from testing for treatment heterogeniety with the FIRC model.}
 \usage{
-analysis.FIRC(data, REML = FALSE, anova = FALSE)
-}
-\arguments{
-\item{anova}{Use the anova() method to do the test for significance between
-the models.  FALSE means do the modified chi-squared test.}
+analysis.FIRC(data, REML = FALSE, anova = FALSE, pool = FALSE)
 }
 \description{
-Test for treatment heterogeniety with the FIRC model.
+Utility function for simulation studies.  Simply calls estimate.ATE.FIRC and extracts p-value
 }

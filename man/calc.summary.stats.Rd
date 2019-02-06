@@ -4,14 +4,19 @@
 \alias{calc.summary.stats}
 \title{Summarise data by block.}
 \usage{
-calc.summary.stats(dat)
+calc.summary.stats(Yobs, Z, B, data = NULL, siteID = NULL,
+  add.neyman = FALSE)
 }
 \arguments{
-\item{dat}{Dataframe with defined Yobs, Z, and blk variables.}
+\item{siteID}{If not null, name of siteID that has randomization blocks
+nested inside.}
+
+\item{dat}{Dataframe with defined Yobs, Z, and B variables.}
 }
 \value{
 dataframe with summary statistics by block
 }
 \description{
-Summarise data by block.
+Given dataframe or list of variables, return table of stats for each
+randomization block.
 }

@@ -4,20 +4,21 @@
 \alias{compare_methods}
 \title{Block variance method comparison function}
 \usage{
-compare_methods(Y, Z, B, data = NULL, include.block = TRUE,
-  include.MLM = TRUE, include.RCTYes = TRUE, include.LM = TRUE,
-  include.RCTYesBlended = FALSE,
+compare_methods(Y, Z, B, siteID = NULL, data = NULL,
+  include.block = TRUE, include.MLM = TRUE, include.RCTYes = TRUE,
+  include.LM = TRUE, include.RCTYesBlended = FALSE,
   include.method.characteristics = FALSE)
 }
 \arguments{
-\item{Y}{vector observed outcomes}
+\item{Y}{vector observed outcomes (or column name in data)}
 
-\item{Z}{vector of assignment indicators (1==treated)}
+\item{Z}{vector of assignment indicators (1==treated) (or column name in data)}
 
-\item{B}{block ids}
+\item{B}{vector of block ids (or column name in data)}
 
-\item{data}{matrix of Y, Z, B, as alternative to using vectors.  The columns
-of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.}
+\item{siteID}{site ids (variable name as string if data frame passed) (if randomization blocks are nested in site).}
+
+\item{data}{frame holding Y, Z, B and (possibly a column with name specified by siteID).}
 
 \item{include.block}{Include the Pashley blocking variants.}
 

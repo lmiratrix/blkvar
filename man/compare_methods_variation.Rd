@@ -4,16 +4,17 @@
 \alias{compare_methods_variation}
 \title{Compare different estimates of cross site variation.}
 \usage{
-compare_methods_variation(Yobs, Z, B, data = NULL,
+compare_methods_variation(Yobs, Z, B, siteID = NULL, data = NULL,
   include.testing = TRUE, long.results = FALSE)
 }
 \arguments{
-\item{Z}{vector of assignment indicators (1==treated)}
+\item{Z}{vector of assignment indicators (1==treated) (or column name in data)}
 
-\item{B}{block ids}
+\item{B}{vector of block ids (or column name in data)}
 
-\item{data}{matrix of Y, Z, B, as alternative to using vectors.  The columns
-of the data matrix have to be in the order of Y, Z, B as column 1, 2, 3.}
+\item{siteID}{if blocks B nested in sites, then pass the site indicator.}
+
+\item{data}{frame holding Y, Z, B and (possibly a column with name specified by siteID).}
 
 \item{long.results}{TRUE means each estimator gets a line in a data.frame.  FALSE gives all as columns in a 1-row dataframe.}
 }

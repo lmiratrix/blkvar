@@ -98,3 +98,32 @@ test_that( "Comparing variation methods works", {
     expect_equal( rs, rs2 )
 
 })
+
+
+
+
+
+
+
+test_that( "Comparing variation with site and block works", {
+    set.seed( 1019 )
+    dat = gen.dat( n.bar = 30, J = 30 )
+    nrow( dat )
+    head( dat )
+    dat$siteNo = as.factor( round( as.numeric( dat$sid ) / 4 ) )
+
+    rsA =  compare_methods_variation( Yobs, Z, sid, siteID = "siteNo", data=dat )
+    rsA
+    expect_true( is.data.frame(rsA) )
+
+    rsA2 =  compare_methods_variation( Yobs, Z, sid, data=dat )
+    rsA2
+
+    expect_equal( rsA$tau.hat.RIRC, rsA2$tau.hat.RIRC )
+    expect_equal( ncol( rsA ), ncol( rsA2 ) )
+    expect_true( rsA$tau.hat.FIRC != rsA2$tau.hat.FIRC )
+    expect_true( rsA$tau.hat.FIRC.pool != rsA2$tau.hat.FIRC.pool )
+
+
+
+})

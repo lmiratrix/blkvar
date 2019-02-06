@@ -5,19 +5,19 @@
 
 #' Summarise simulation data by block (where we know both Y0 and Y1)
 #'
-#' @param dat Dataframe with defined Y0, Y1, and blk variables.
+#' @param dat Dataframe with defined Y0, Y1, and B variables.
 #'
 #' @return dataframe with summary statistics by block
 #' @export
-calc.summary.stats.oracle = function( data, Y0="Y0", Y1="Y1", Z="Z", blk="blk" ) {
+calc.summary.stats.oracle = function( data, Y0="Y0", Y1="Y1", Z="Z", B="B" ) {
     require( tidyverse )
 
             data = rename( data, Y0 = !!rlang::sym(Y0),
                        Y1 = !!rlang::sym(Y1),
                        Z = !!rlang::sym(Z),
-                       blk = !!rlang::sym(blk) )
+                       B = !!rlang::sym(B) )
 
-            sdat <- data %>% dplyr::group_by( blk ) %>%
+            sdat <- data %>% dplyr::group_by( B ) %>%
         dplyr::summarise( n = n(),
                           mu0 = mean( Y0 ),
                           mu1 = mean( Y1 ),
@@ -65,8 +65,8 @@ make.blocks = function(X,
     } else if (method == "pair") {
         B = paste("B", rep(1:(length(X) / 2), each = 2), sep = "")
     } else if (method == "big") {
-        minblk = trunc(length(X) / 4)
-        B = cut(X, quantile(X, seq(0, 1, length.out = minblk + 1)), include.lowest =
+        minB = trunc(length(X) / 4)
+        B = cut(X, quantile(X, seq(0, 1, length.out = minB + 1)), include.lowest =
                     TRUE)
     } else {
         B = paste("B", rep(1, length(X)), sep = "")
@@ -135,10 +135,10 @@ add.obs.data = function(dat,
                         p = 0.5,
                         Y0 = "Y0",
                         Y1 = "Y1",
-                        blockvar = "blk") {
+                        blockvar = "B") {
     N = nrow(dat)
-    blk = as.factor( dat[[blockvar]] )
-    K = nlevels( blk )
+    B = as.factor( dat[[blockvar]] )
+    K = nlevels( B )
 
     if ( length( p ) == 1 ) {
         p = rep( p, K )
@@ -146,8 +146,8 @@ add.obs.data = function(dat,
 
     # Make initial treatment assignment vector to shuffle in subsequent step
     Z = rep( NA, N )
-    for ( i in 1:nlevels(blk) ) {
-        nk = sum( blk == levels(blk)[[i]] )
+    for ( i in 1:nlevels(B) ) {
+        nk = sum( B == levels(B)[[i]] )
         stopifnot( nk > 1 )
         ntx = round( nk * p[[i]] )
         if ( ntx == 0 ) {
@@ -156,7 +156,7 @@ add.obs.data = function(dat,
         if ( ntx == nk ) {
             ntx = nk - 1
         }
-        Z[ blk == levels(blk)[[i]] ] = sample( nk ) <= ntx
+        Z[ B == levels(B)[[i]] ] = sample( nk ) <= ntx
     }
     #    dat$Z = randomizationInference::blockRand(Z, 1, dat[[blockvar]])[[1]]
 
@@ -230,16 +230,16 @@ generate.individuals.from.blocks <- function( n_k, alpha = 0, beta = 0, sigma_c 
         Y[j:sum(n_k[1:i]),]<-mvrnorm(n_k[i], mu, Sigma, empirical=exact)
         j<-j+n_k[i]
     }
-    blk =  rep( 1:K, n_k )
-    blk = factor( blk, levels = 1:K, labels=paste( "B", 1:K, sep="" ) )
-    data.frame( blk = blk, Y0 = Y[,1], Y1=Y[,2] )
+    B =  rep( 1:K, n_k )
+    B = factor( B, levels = 1:K, labels=paste( "B", 1:K, sep="" ) )
+    data.frame( B = B, Y0 = Y[,1], Y1=Y[,2] )
 }
 
 if ( FALSE ) {
     dt = generate.individuals.from.blocks( c( 4, 8 ), c( 0, 10 ), c(1, 3), c( 10, 1 ), c( 3, 1 ), c( 0, 1 ), TRUE )
     dt
-    levels( dt$blk )
-    block.data( dt )
+    levels( dt$B )
+    calc.summary.stats( data=dt )
 }
 
 
@@ -294,7 +294,7 @@ make.obs.data.linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 4
                          d = 0,
                          method = c("small", "pair", "big", "none")) {
     dat = make.data.linear(X, a, b, ATE, d)
-    dat$blk = make.blocks(dat$X, method = method)
+    dat$B = make.blocks(dat$X, method = method)
     dat = add.obs.data(dat, p = p)
     dat
 }
@@ -331,7 +331,7 @@ make.obs.data = function( n_k = c( 2, 3, 4, 8 ), p = 0.5, ... ) {
 #' @param Z vector that indicates if outcome is under treatment or control
 #' @param B block ids
 #' @param data alternatively is matrix of Y,Z,B
-#' @param p.mat  matrix with first column Blk_ID,second column prop treated in that block, p
+#' @param p.mat  matrix with first column B,second column prop treated in that block, p
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
 block.data.sim<-function(Y, Z, B, p.mat, data=NULL){
@@ -349,27 +349,27 @@ block.data.sim<-function(Y, Z, B, p.mat, data=NULL){
     return("Treatment indicator should be vector of ones and zeros")
   }
   #First convert block ids into numbers
-  blk_id<-factor(B)
-  blk_id<-as.numeric(blk_id)
-  p.mat$Blk_ID<-factor(p.mat$Blk_ID)
-  p.mat$Blk_ID<-as.numeric(p.mat$Blk_ID)
+  B<-factor(B)
+  B<-as.numeric(B)
+  p.mat$B<-factor(p.mat$B)
+  p.mat$B<-as.numeric(p.mat$B)
   #Get number of units assigned to each treatment
   #In each block
-  n_matrix<-aggregate(list(n_k=blk_id), list(Blk_ID=blk_id), FUN=length)
+  n_matrix<-aggregate(list(n_k=B), list(B=B), FUN=length)
   n_matrix$n_k<-n_matrix$n_k/2
-  n_ctk_matrix<-merge(n_matrix, p.mat, by="Blk_ID")
+  n_ctk_matrix<-merge(n_matrix, p.mat, by="B")
   n_ctk_matrix$Num_Trt<-n_ctk_matrix$n_k*n_ctk_matrix$p
   n_ctk_matrix$Num_Ctrl<-n_ctk_matrix$n_k-n_ctk_matrix$Num_Trt
-  treated_mat<-cbind(Y[Z==1], blk_id[Z==1])
-  control_mat<-cbind(Y[Z==0], blk_id[Z==0])
-  Y1_matrix<-aggregate(list(Y1=treated_mat[,1]), list(Blk_ID=treated_mat[,2]), FUN=mean)
-  Y0_matrix<-aggregate(list(Y0=control_mat[,1]), list(Blk_ID=control_mat[,2]), FUN=mean)
-  Ybar_matrix<-merge(Y1_matrix, Y0_matrix, by="Blk_ID")
-  var1_matrix<-aggregate(list(var1=treated_mat[,1]), list(Blk_ID=treated_mat[,2]), FUN=var)
-  var0_matrix<-aggregate(list(var0=control_mat[,1]), list(Blk_ID=control_mat[,2]), FUN=var)
-  var_matrix<-merge(var1_matrix, var0_matrix, by="Blk_ID")
-  overall_mat<-merge(n_ctk_matrix, Ybar_matrix, by="Blk_ID")
-  overall_mat<-merge(overall_mat, var_matrix, by="Blk_ID")
+  treated_mat<-cbind(Y[Z==1], B[Z==1])
+  control_mat<-cbind(Y[Z==0], B[Z==0])
+  Y1_matrix<-aggregate(list(Y1=treated_mat[,1]), list(B=treated_mat[,2]), FUN=mean)
+  Y0_matrix<-aggregate(list(Y0=control_mat[,1]), list(B=control_mat[,2]), FUN=mean)
+  Ybar_matrix<-merge(Y1_matrix, Y0_matrix, by="B")
+  var1_matrix<-aggregate(list(var1=treated_mat[,1]), list(B=treated_mat[,2]), FUN=var)
+  var0_matrix<-aggregate(list(var0=control_mat[,1]), list(B=control_mat[,2]), FUN=var)
+  var_matrix<-merge(var1_matrix, var0_matrix, by="B")
+  overall_mat<-merge(n_ctk_matrix, Ybar_matrix, by="B")
+  overall_mat<-merge(overall_mat, var_matrix, by="B")
   overall_mat$se_ney<-sqrt(overall_mat$var1/overall_mat$Num_Trt + overall_mat$var0/overall_mat$Num_Ctrl)
   drops <- c("n_k","p")
   overall_mat<-overall_mat[ , !(names(overall_mat) %in% drops)]

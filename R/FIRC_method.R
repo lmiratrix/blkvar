@@ -11,51 +11,91 @@
 
 library( tidyverse )
 
-## ---------- unpooled methods (from Catherine)  ------------
+## ---------- Both pooled and unpooled FIRC method ------------
 
 
 #' Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
 #' treatment variation.
 #'
-#' Acknowledgement: taken and adapted from Catherine's weiss.tau() method.
+#' Acknowledgement: Unpooled version taken and adapted from Catherine's weiss.tau() method.
 #'
+#' @param anova Use the anova() method to do the test for significance between
+#'   the models.  FALSE means do the modified chi-squared test.
+#' @param pool  TRUE means tx and co have same residual variance. FALSE gives seperate estimates for each (recommended, default).
+#' @param sid Name of the block indicator.
+#' @param siteID ID of site (blocks are considered nested in site).  If omitted, then blocks are considered sites (the default).
 #' @export
-estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE ) {
+estimate.ATE.FIRC <- function( Yobs, Z, sid, siteID = NULL, data=NULL, REML = FALSE, include.testing=TRUE, anova=FALSE, pool = FALSE ) {
 
     stopifnot( !( include.testing && REML ) )
 
     # get our variables
     if ( is.null( data ) ) {
-        data = data.frame( Yobs = Yobs, Z = Z, sid= factor(sid) )
+        data = data.frame( Yobs = Yobs, Z = Z, sid = factor(sid) )
+        if ( !is.null( siteID ) ) {
+            data$siteID = factor( siteID )
+        }
         #Yobs = eval( substitute( Yobs ), data )
         #Z = eval( substitute( Z ), data )
         #sid = eval( substitute( sid ), data )
     } else {
         sid.name = as.character( quote( sid ) )
         data[ sid.name ] = factor( eval( substitute( sid ), data ) )
+        if ( !is.null( siteID ) ) {
+            data$siteID = factor( data[[ siteID ]] )
+            #siteID.name = as.character( quote( siteID ) )
+            #data[ siteID.name ] = factor( eval( substitute( siteID ), data ) )
+        }
+    }
+
+    if ( is.null( siteID ) ) {
+        data$siteID = data$sid
     }
 
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
 
-    re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
+    if ( pool ) {
+        re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
+                            data = data,
+                            random = ~ 0 + Z | siteID,
+                            method = method,
+                            control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+    } else {
+        re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
                         data = data,
-                        random = ~ 0 + Z | sid,
+                        random = ~ 0 + Z | siteID,
                         weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                         method = method,
                         control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+    }
 
     if ( include.testing ) {
         # Test for cross site variation (???)
-        re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
+        if ( pool ) {
+            re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
+                                     data=data,
+                                     method = method,
+                                     control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+
+        } else {
+            re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
                                  data=data,
                                  weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                                  method = method,
                                  control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-
+        }
         #M0.null = lm( Yobs ~ 0 + sid + Z, data=data )
-        td = as.numeric( deviance( re.mod.null ) - deviance( re.mod ) )
-        p.variation = 0.5 * pchisq(td, 1, lower.tail = FALSE )
+        if ( anova ) {
+            stopifnot( REML == FALSE )
+            myanova = anova(re.mod.null, re.mod)
+            p.value.anova = myanova[2,9]
+            p.variation = ( p.value.anova / 2 )  # divide by 2 by same logic as chi-squared test.
+            td = NA
+        } else {
+            td = as.numeric( deviance( re.mod.null ) - deviance( re.mod ) )
+            p.variation = 0.5 * pchisq(td, 1, lower.tail = FALSE )
+        }
     } else {
         p.variation = NA
         td = NA
@@ -95,6 +135,21 @@ estimate.ATE.FIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
 }
 
 
+
+
+#' Obtain p-value from testing for treatment heterogeniety with the FIRC model.
+#'
+#' Utility function for simulation studies.  Simply calls estimate.ATE.FIRC and extracts p-value
+#'
+#' @export
+analysis.FIRC <- function( data, REML = FALSE, anova=FALSE, pool= FALSE) {
+    rs = estimate.ATE.FIRC( Yobs = Yobs, Z=Z, sid=sid, data=data, REML=REML, anova=anova, include.testing = TRUE, pool=pool )
+    rs$p.variation
+}
+
+
+
+
 # For the debugging code to get the DGP files
 localsource = function( filename ) {
     source( file.path( dirname( rstudioapi::getActiveDocumentContext()$path ), filename ) )
@@ -124,63 +179,6 @@ if ( FALSE ) {
 
 
 
-## ---------------- pooled methods -----------------
-
-#' Fit the FIRC model, but using the same residual variance for both treatment
-#' and control groups.  This can be done with a simple call to `lmer()`.
-#'
-#' For testing for cross site variation, this will adjust the ratio statistic's
-#' p-value to account for the mixture of chi-squared distributions.
-
-#' @return List of things including a pvalue for cross-site variation
-#'
-#' @rdname estimate.ATE.FIRC
-#' @export
-estimate.ATE.FIRC.pool = function(  Yobs, Z, sid, data=NULL, include.testing = TRUE ) {
-
-    #    M0 = lmer( Yobs ~ 0 + Z + sid + (0+Z|sid), data=data, REML = FALSE )
-    #    M0.null = lm( Yobs ~ 0 + Z + sid, data=data )
-
-    # obtain the estimate of cross-site variation
-    #    tau.hat.FIRC.pool = sqrt( VarCorr( M0 )$sid[1,1] )
-
-    # Can we get deviance from the lm and the lmer models?
-    #    td = deviance( M0.null ) - deviance( M0 )
-
-    re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
-                        data = data,
-                        random = ~ 0 + Z | sid,
-                        method = "ML",
-                        control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-
-    if ( include.testing ) {
-        # Test for cross site variation (???)
-        re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
-                                 data=data,
-                                 method = "ML",
-                                 control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-
-
-        td = as.numeric( deviance( re.mod.null ) - deviance( re.mod ) )
-        p.variation = 0.5 * pchisq(td, 1, lower.tail = FALSE )
-    } else {
-        p.variation = NA
-        td = NA
-    }
-    #pvalue = 0.5 * pchisq(-td, 1, lower.tail = FALSE )
-    #tst = lrtest( M0, M0.null )
-    #tst[[5]][[2]]
-
-    vc <- nlme::VarCorr(re.mod)
-    suppressWarnings(storage.mode(vc) <- "numeric")
-    tau.hat.FIRC.pool <- vc["Z","StdDev"]
-
-    list( ATE = nlme::fixef( re.mod )[[1]],
-          tau.hat = tau.hat.FIRC.pool,
-          p.variation = p.variation,
-          deviance = td)
-}
-
 
 
 
@@ -193,63 +191,17 @@ if ( FALSE ) {
     dat = catherine.gen.dat( 0.2, 0.0, 30, 50 )
     describe.data( dat )
 
-    estimate.ATE.FIRC.pool( Yobs, Z, sid, data=dat )
+    estimate.ATE.FIRC( Yobs, Z, sid, data=dat, pool=TRUE )
 
     dat = catherine.gen.dat( 0.2, 0.5, 30, 50 )
     describe.data( dat )
 
-    estimate.ATE.FIRC.pool( Yobs, Z, sid, data=dat )
+    estimate.ATE.FIRC( Yobs, Z, sid, data=dat, pool=TRUE )
 
 }
 
 
-## ---------------- unpooled FIRC: small sample sim -----------------
-##
-## This is an updated function from Masha's small sample simultions that
-## extracts the correct p-value
 
-#' Test for treatment heterogeniety with the FIRC model.
-#'
-#' @param anova Use the anova() method to do the test for significance between
-#'   the models.  FALSE means do the modified chi-squared test.
-analysis.FIRC <- function( data, REML = FALSE, anova=FALSE ) {
-
-    # get variables
-    #if ( is.null( df ) ) {
-    #    data = data.frame( Yobs = Yobs, Z = Z, sid= factor(sid) )
-    #} else {
-    #    sid.name = as.character( quote( sid ) )
-    #    data[ sid.name ] = factor( eval( substitute( sid ), df ) )
-    #}
-
-    #fit multilevel model and extract pvalue
-    method = ifelse( REML, "REML", "ML" )
-
-    re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
-                        data = data,
-                        random = ~ 0 + Z | sid,
-                        weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
-                        method = method,
-                        control=nlme::lmeControl(opt="optim",returnObject=TRUE))
-
-    # Test for cross site variation
-    re.mod.null <- nlme::gls(Yobs ~ 0 + Z + sid,
-                             data=data,
-                             weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
-                             method = method,
-                             control=nlme::lmeControl(opt="optim", returnObject=TRUE))
-
-    if ( anova ) {
-        stopifnot( REML == FALSE )
-        myanova = anova(re.mod.null, re.mod)
-        p.value.anova = myanova[2,9]
-        return( p.value.anova / 2 )  # divide by 2 by same logic as chi-squared test.
-    } else {
-        td = abs(as.numeric( deviance( re.mod ) - deviance( re.mod.null )))
-        p.value = 0.5 * pchisq(td, 1, lower.tail = FALSE )
-        return( p.value )
-    }
-}
 
 # Testing
 if ( FALSE ) {
@@ -279,10 +231,19 @@ if ( FALSE ) {
 }
 
 
-## ---------------- unpooled FIRC: accoutning for covariates -----------------
+## ---------------- unpooled FIRC: accounting for covariates -----------------
 ##
 
 
+#' Covariate adjusted test for cross-site variation
+#'
+#' This method fits a FIRC model but also includes a site-level covariate, X,
+#' potentially predictive of treatment impact.
+#'
+#' This fits unpooled FIRC models.
+#'
+#' @param df  Dataframe to fit.  Needs Z, X, sid, and Yobs columns.
+#'
 analysis.FIRC.cov <- function( df, REML = FALSE, anova=FALSE ) {
 
   #fit multilevel model and extract pvalue

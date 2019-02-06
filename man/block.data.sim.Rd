@@ -13,7 +13,7 @@ block.data.sim(Y, Z, B, p.mat, data = NULL)
 
 \item{B}{block ids}
 
-\item{p.mat}{matrix with first column Blk_ID,second column prop treated in that block, p}
+\item{p.mat}{matrix with first column B,second column prop treated in that block, p}
 
 \item{data}{alternatively is matrix of Y,Z,B}
 }

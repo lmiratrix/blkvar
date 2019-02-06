@@ -4,7 +4,7 @@
 \alias{weighted.linear.estimators.naive}
 \title{Individual Weighted regression models using the lm and precision weighting}
 \usage{
-weighted.linear.estimators.naive(dat)
+weighted.linear.estimators.naive(Yobs, Z, B, data = NULL)
 }
 \description{
 WARNING: This is the wrong kind of regression.  The weights are correct, but

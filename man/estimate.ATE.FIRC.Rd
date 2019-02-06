@@ -2,22 +2,23 @@
 % Please edit documentation in R/FIRC_method.R
 \name{estimate.ATE.FIRC}
 \alias{estimate.ATE.FIRC}
-\alias{estimate.ATE.FIRC.pool}
 \title{Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
 treatment variation.}
 \usage{
-estimate.ATE.FIRC(Yobs, Z, sid, data = NULL, REML = FALSE,
-  include.testing = TRUE)
-
-estimate.ATE.FIRC.pool(Yobs, Z, sid, data = NULL,
-  include.testing = TRUE)
+estimate.ATE.FIRC(Yobs, Z, sid, siteID = NULL, data = NULL,
+  REML = FALSE, include.testing = TRUE, anova = FALSE,
+  pool = FALSE)
 }
-\value{
-List of things including a pvalue for cross-site variation
+\arguments{
+\item{sid}{Name of the block indicator.}
+
+\item{siteID}{ID of site (blocks are considered nested in site).  If omitted, then blocks are considered sites (the default).}
+
+\item{anova}{Use the anova() method to do the test for significance between
+the models.  FALSE means do the modified chi-squared test.}
+
+\item{pool}{TRUE means tx and co have same residual variance. FALSE gives seperate estimates for each (recommended, default).}
 }
 \description{
-Acknowledgement: taken and adapted from Catherine's weiss.tau() method.
-
-For testing for cross site variation, this will adjust the ratio statistic's
-p-value to account for the mixture of chi-squared distributions.
+Acknowledgement: Unpooled version taken and adapted from Catherine's weiss.tau() method.
 }

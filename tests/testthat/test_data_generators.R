@@ -21,13 +21,13 @@ test_that("data generation functions work", {
     expect_true( all( table( dat$blk ) > 1 ) )
 
 
-    dat = add.obs.data( dat )
+    dat = add.obs.data( dat, blockvar="blk" )
     expect_true( all( table( dat$blk, dat$Z ) > 0 ) )
 
     dat$blk = make.blocks( dat$X, method="big" )
     expect_true( all( table( dat$blk ) >= 4 ) )
 
-    dat = add.obs.data( dat )
+    dat = add.obs.data( dat, blockvar="blk" )
     expect_true( all( table( dat$blk, dat$Z ) >= 2 ) )
 
 })
@@ -39,7 +39,7 @@ test_that( "testing equispaced X", {
 
     dat = make.obs.data.linear( method="small", X=1:10 )
     dat
-    table( dat$blk )
+    table( dat$B )
     expect_equal( nrow(dat), 10 )
 } )
 
@@ -60,7 +60,7 @@ test_that( "out of order X", {
 test_that( "Pashley paper data generators work", {
     dat = make.data( c( 2,3,4) )
     dat
-    expect_equal( as.numeric( table( dat$blk ) ), c( 2, 3, 4 ) )
+    expect_equal( as.numeric( table( dat$B ) ), c( 2, 3, 4 ) )
 
     dat = make.obs.data( c( 2,3,4, 20), p=0.001 )
     dat
@@ -73,8 +73,8 @@ test_that( "Block specific generator works", {
     dt = generate.individuals.from.blocks( c( 4, 3 ), exact=TRUE )
     dt
     expect_equal( nrow( dt ), 7 )
-    expect_equal( length( unique( dt$blk ) ), 2 )
-    expect_true( is.factor( dt$blk ) )
+    expect_equal( length( unique( dt$B ) ), 2 )
+    expect_true( is.factor( dt$B ) )
     head( dt )
     dt = add.obs.data( dt )
 
@@ -89,8 +89,8 @@ test_that( "Block specific generator works", {
     dt = generate.individuals.from.blocks( c( 4, 8 ), c( 0, 10 ),  c( 10, 1 ), c(1, 3), c( 3, 1 ), c( 0, 1 ), TRUE )
     dt
     expect_equal( nrow( dt ), 12 )
-    expect_equal( length( unique( dt$blk ) ), 2 )
-    expect_true( is.factor( dt$blk ) )
+    expect_equal( length( unique( dt$B ) ), 2 )
+    expect_true( is.factor( dt$B ) )
 
     dt = add.obs.data( dt )
     ss = calc.summary.stats.oracle( dt )
@@ -110,10 +110,10 @@ test_that( "Block specific generator works", {
 test_that( "Block factors are factors and in increasing order even if we hit 10+ blocks", {
     dat = make.data( rep( c( 5, 10, 20, 40, 60 ), each=2 ), sigma_alpha = 2, sigma_tau=1 )
     head( dat )
-    expect_true( is.factor( dat$blk ) )
-    expect_equal( nlevels( dat$blk ), 10 )
-    levels( dat$blk )
-    expect_equal( levels( dat$blk ), paste( "B", 1:10, sep="" ) )
+    expect_true( is.factor( dat$B ) )
+    expect_equal( nlevels( dat$B ), 10 )
+    levels( dat$B )
+    expect_equal( levels( dat$B ), paste( "B", 1:10, sep="" ) )
 } )
 
 

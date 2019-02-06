@@ -16,34 +16,55 @@ test_that("RCT Yes functions work", {
     sdat = calc.summary.stats( dat )
     sdat
 
-    a = calc.RCT.Yes.SE( sdat, weight="individual", method="finite" )
-    b = calc.RCT.Yes.SE( sdat, weight="site", method="finite" )
-    c = calc.RCT.Yes.SE( sdat, weight="individual", method="superpop" )
-    d = calc.RCT.Yes.SE( sdat, weight="site", method="superpop" )
+    a = estimate.ATE.design.based( sdat, weight="individual", method="finite" )
+    b = estimate.ATE.design.based( sdat, weight="site", method="finite" )
+    c = estimate.ATE.design.based( sdat, weight="individual", method="superpop" )
+    d = estimate.ATE.design.based( sdat, weight="site", method="superpop" )
 
     expect_equal( a$tau.hat, c$tau.hat )
     expect_equal( b$tau.hat, d$tau.hat )
 
-    scat = function( str, ... ) {
-        cat( sprintf( str, ... ) )
-    }
-   # scat( "A se = %.2f\nC se = %.2f\n", a$SE, c$SE )
-   # expect_true( a$SE <= c$SE )
-   # expect_true( b$SE <= d$SE )
 
-    sdat = block.data( dat$Yobs, B = dat$blk, Z=dat$Z )
-    sdat
-    dt = blkvar:::convert.table.names( sdat )
-    dt
-    d2 = calc.RCT.Yes.SE( dt, weight="site", method="superpop" )
-    d2
-    expect_equal( d, d2 )
 
-    # checking auto-conversion of table names
-    d3 = calc.RCT.Yes.SE( sdat, weight="site", method="superpop" )
-    expect_equal( d, d3 )
 })
 
+
+
+test_that("calc summary stats with site works", {
+    set.seed( 1019 )
+    dat = make.obs.data.linear( X=1:50, method="big" )
+    #dat = make.obs.data( method="small")
+    nrow( dat )
+    dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
+    table( dat$siteNo )
+    table( dat$B )
+
+    sdat = calc.summary.stats( dat, siteID="siteNo" )
+    sdat
+    expect_true( "siteID" %in% names(sdat) )
+    expect_true( all( sdat$siteID %in% unique( dat$siteNo ) ) )
+} )
+
+
+test_that("RCT Yes functions work with nested randomization blocks", {
+    set.seed( 1019 )
+    dat = make.obs.data.linear( X=1:50, method="big" )
+    dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
+
+    sdat = calc.summary.stats( dat, siteID="siteNo" )
+    sdat
+
+    a = estimate.ATE.design.based( sdat, siteID="siteID", weight="individual", method="finite" )
+    b = estimate.ATE.design.based( sdat, siteID="siteID", weight="site", method="finite" )
+
+    a2 = estimate.ATE.design.based( sdat, weight="individual", method="finite" )
+    expect_equal( a, a2 )
+
+    b2 = estimate.ATE.design.based( sdat, weight="site", method="finite" )
+    b2
+    b
+    expect_true( b$tau.hat != b2$tau.hat )
+})
 
 
 

@@ -5,7 +5,7 @@
 \title{Given potential outcomes schedule, randomize within block and generate
 observed potential outcomes and add them to the schedule.}
 \usage{
-add.obs.data(dat, p = 0.5, Y0 = "Y0", Y1 = "Y1", blockvar = "blk")
+add.obs.data(dat, p = 0.5, Y0 = "Y0", Y1 = "Y1", blockvar = "B")
 }
 \arguments{
 \item{dat}{Dataframe with a named Y0, Y1, and block column}

@@ -4,10 +4,10 @@
 \alias{weighted.linear.estimators}
 \title{Survey-weighted adjusted linear regression}
 \usage{
-weighted.linear.estimators(dat)
+weighted.linear.estimators(Yobs, Z, B, data = NULL)
 }
 \arguments{
-\item{dat}{Dataframe to analyze, with Y, Z, and blk columns.}
+\item{dat}{Dataframe to analyze, with Y, Z, and B columns.}
 }
 \value{
 Dataframe of results for different estimators.
