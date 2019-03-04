@@ -64,6 +64,28 @@ test_that("RCT Yes functions work with nested randomization blocks", {
     b2
     b
     expect_true( b$tau.hat != b2$tau.hat )
+
+
+    a = make.data( c( 4, 4, 4 ), tau = c( 10, 20, 30 ), exact=TRUE )
+    a$sssite = c( 1, 1, 1, 1, 1, 1, 1, 1, 2, 2 , 2, 2)
+    a$Z = 1
+    a$Yobs = a$Y1
+    b = a
+    b$Z = 0
+    b$Yobs = b$Y0
+    a = bind_rows( a, b )
+    a
+    a %>% group_by( B ) %>% summarise( tau = mean( Y1 ) - mean( Y0 ),
+                                       ybar1 = mean( Y1 ),
+                                       ybar0 = mean( Y0 ) )
+    aa = calc.summary.stats( a, siteID="sssite" )
+    aa
+
+
+    expect_equal( 20, estimate.ATE.design.based( aa, weight="site", method="finite"  )$tau.hat )
+    expect_equal( (10+20)/4 + 15, estimate.ATE.design.based( aa, siteID="siteID", weight="site", method="finite"  )$tau.hat )
+
+
 })
 
 

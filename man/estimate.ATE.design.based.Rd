@@ -18,7 +18,8 @@ aggregated by site (for site weighting only).}
 uncertainty due to targeting a superpopulation quantity or not.}
 
 \item{weight}{Individual weight (i.e., number of individuals in each block)
-or site weight (average block estimates).}
+or site weight (average site estimates (which will be considered block
+estimates if siteID is null)).}
 }
 \value{
 dataframe with calculated impacts and standard errors.

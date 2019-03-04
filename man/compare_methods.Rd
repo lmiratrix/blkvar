@@ -4,14 +4,12 @@
 \alias{compare_methods}
 \title{Block variance method comparison function}
 \usage{
-compare_methods(Y, Z, B, siteID = NULL, data = NULL,
+compare_methods(Yobs, Z, B, siteID = NULL, data = NULL,
   include.block = TRUE, include.MLM = TRUE, include.RCTYes = TRUE,
   include.LM = TRUE, include.RCTYesBlended = FALSE,
   include.method.characteristics = FALSE)
 }
 \arguments{
-\item{Y}{vector observed outcomes (or column name in data)}
-
 \item{Z}{vector of assignment indicators (1==treated) (or column name in data)}
 
 \item{B}{vector of block ids (or column name in data)}
@@ -33,6 +31,8 @@ Huber-White SEs, etc.)}
 and classic Neyman to large blocks.}
 
 \item{include.method.characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
+
+\item{Y}{vector observed outcomes (or column name in data)}
 }
 \description{
 This function calculates the point estimates and SE estimates for a variety

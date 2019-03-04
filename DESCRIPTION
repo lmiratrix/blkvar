@@ -1,6 +1,6 @@
 Package: blkvar
 Title: Blocked design variance estimation
-Version: 0.0.1.0
+Version: 0.0.1.1
 Authors@R: c(
     person("Nicole", "Pashley", email = "npashley@g.harvard.edu", role = "cre"),
     person("Luke", "Miratrix", email = "lmiratrix@stat.harvard.edu", role = "aut"))

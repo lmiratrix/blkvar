@@ -10,6 +10,8 @@ test_that("Check call options of the compare_methods", {
     head( dat )
 
     rs = compare_methods( Yobs, Z, sid, data=dat, include.MLM = FALSE )
+    rs
+    expect_true( all( rs$SE > 0 ) )
 
     rs2 = compare_methods( Y=dat$Yobs, Z=dat$Z, B=dat$sid, include.MLM = FALSE )
 

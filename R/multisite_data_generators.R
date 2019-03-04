@@ -183,8 +183,12 @@ gen.dat.model  = function( n.bar = 10,
 #' above.
 #'
 #' @inheritParams gen.dat
-#' @param size.impact.correlate    TRUE/FALSE: Are site impacts correlated with site size?
-#' @param proptx.impact.correlate  TRUE/FALSE: Are proportion of units treated correlated with site size?
+#' @param size.impact.correlate    Takes values of -1, 0, or 1: Are site impacts
+#'   negatively correlated, uncorrelated, or positively correlated with site
+#'   size?
+#' @param proptx.impact.correlate  Takes values of -1, 0, or 1: Are proportion
+#'   of units treated negatively correlated, uncorrelated, or positively
+#'   correlated with site size?
 #'
 #' @return multisite data with at least 2 tx and 2 co units in each block.
 #' @export
@@ -198,10 +202,12 @@ gen.dat.model.no.cov = function( n.bar = 16,
                                  variable.p = FALSE,
                                  return.sites=FALSE,
                                  finite.model=FALSE,
-                                 size.impact.correlate = FALSE,
-                                 proptx.impact.correlate = FALSE,
+                                 size.impact.correlate = 0,
+                                 proptx.impact.correlate = 0,
                                  verbose = FALSE ) {
     require( tidyverse )
+    stopifnot( size.impact.correlate %in% c(-1, 0, 1 ) )
+    stopifnot( proptx.impact.correlate %in% c(-1, 0, 1 ) )
 
     # generate site sizes (all the same or different sizes)
     if ( variable.n ) {
@@ -235,15 +241,17 @@ gen.dat.model.no.cov = function( n.bar = 16,
         mv <- MASS::mvrnorm( J, c( 0, 0 ), Sigma )
     }
 
-    if ( size.impact.correlate || proptx.impact.correlate ) {
+    # If we want a relationship of impact to site size or proportion treated,
+    # sort our random effects from small to large (with some noise so the ordering is not perfect).
+    if ( (size.impact.correlate != 0) || (proptx.impact.correlate != 0) ) {
         mv = mv[ order( mv[,2] + rnorm( J, sd = 0.75 * sqrt( tau.11 ) )), ]
     }
 
-    if ( size.impact.correlate ) {
+    if ( size.impact.correlate != 0 ) {
         if ( !variable.n ) {
             warning( "Can't have correlated site size with site impact without variable sized sites" )
         } else {
-            nj = sort( nj )
+            nj = sort( nj, decreasing = (size.impact.correlate < 0) )
         }
     }
 
@@ -268,11 +276,11 @@ gen.dat.model.no.cov = function( n.bar = 16,
             ths = min( p, 1-p ) * 0.75
             ps =  runif( J, p - ths, p + ths )
 
-            if ( proptx.impact.correlate ) {
-                ps = sort( ps )
+            if ( proptx.impact.correlate != 0 ) {
+                ps = sort( ps, decreasing = (proptx.impact.correlate < 0) )
             }
 
-            #threshold to ensure we always have 2 units in tx and co for all blocks
+            # threshold to ensure we always have 2 units in tx and co for all blocks
             # regardless of assigned p
             ps = pmin( (nj-2)/nj, pmax( 2/nj, ps ) )
 

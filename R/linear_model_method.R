@@ -18,12 +18,6 @@ grab.SE = function( MOD, coef="Z" ) {
 
 
 fixed.effect.estimators = function( Yobs, Z, B, data=NULL ) {
-    if ( is.data.frame(Yobs) ) {
-        stopifnot( is.null( data ) )
-        B = Yobs$B
-        Z = Yobs$Z
-        Yobs = Yobs$Yobs
-    }
     if(!is.null(data)){
         if ( missing( "Yobs" ) ) {
             Yobs<-data[,1]
@@ -33,6 +27,13 @@ fixed.effect.estimators = function( Yobs, Z, B, data=NULL ) {
             Yobs = eval( substitute( Yobs ), data )
             Z = eval( substitute( Z ), data )
             B = eval( substitute( B ), data)
+        }
+    } else {
+        if ( is.data.frame(Yobs) ) {
+            stopifnot( is.null( data ) )
+            B = Yobs$B
+            Z = Yobs$Z
+            Yobs = Yobs$Yobs
         }
     }
 

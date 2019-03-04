@@ -95,7 +95,7 @@ test_that( "prop treated by impact correlation works", {
                          ICC = 0.20,
                          variable.n = TRUE,
                          variable.p = TRUE,
-                         proptx.impact.correlate = TRUE,
+                         proptx.impact.correlate = 1,
                          finite.model = FALSE )
     head( df )
     sites = df %>% group_by( sid ) %>%
@@ -113,6 +113,38 @@ test_that( "prop treated by impact correlation works", {
 
     expect_true( cor(  sites$p.Z, sites$Y.true ) > 0.50 )
     expect_true( abs( cor(  sites$n, sites$Y.true ) ) < 0.10 )
+
+
+
+
+    df = gen.dat.no.cov( n.bar=20, J=200,
+                         tau.11.star = 0.3^2,
+                         ICC = 0.20,
+                         variable.n = TRUE,
+                         variable.p = TRUE,
+                         proptx.impact.correlate = -1,
+                         finite.model = FALSE )
+    head( df )
+    sites = df %>% group_by( sid ) %>%
+        summarise( n = n(),
+                   p.Z = mean( Z ),
+                   Y.hat = mean( Yobs[Z==1] ) - mean( Yobs[Z==0] ),
+                   Y.true = mean( Y1 ) - mean( Y0 ) )
+
+    head( sites )
+    qplot( sites$n, sites$Y.true )
+    cor(  sites$n, sites$Y.true )
+
+    qplot( sites$p.Z, sites$Y.true )
+    cor( sites$p.Z, sites$Y.true )
+
+    expect_true( cor(  sites$p.Z, sites$Y.true ) < -0.50 )
+    expect_true( abs( cor(  sites$n, sites$Y.true ) ) < 0.15 )
+    expect_true( abs( cor(  sites$n, sites$Y.true ) ) > -0.15 )
+
+
+
+
 
     df = gen.dat.no.cov( n.bar=200, J=200,
                          tau.11.star = 0.3^2,

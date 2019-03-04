@@ -8,7 +8,7 @@ above.}
 gen.dat.model.no.cov(n.bar = 16, J = 30, p = 0.5, gamma.00, gamma.10,
   tau.00, tau.01, tau.11, sigma2.e, variable.n = TRUE,
   variable.p = FALSE, return.sites = FALSE, finite.model = FALSE,
-  size.impact.correlate = FALSE, proptx.impact.correlate = FALSE,
+  size.impact.correlate = 0, proptx.impact.correlate = 0,
   verbose = FALSE)
 }
 \arguments{
@@ -22,9 +22,13 @@ gen.dat.model.no.cov(n.bar = 16, J = 30, p = 0.5, gamma.00, gamma.10,
 
 \item{gamma.10}{The ATE, Default: 0.2}
 
-\item{size.impact.correlate}{TRUE/FALSE: Are site impacts correlated with site size?}
+\item{size.impact.correlate}{Takes values of -1, 0, or 1: Are site impacts
+negatively correlated, uncorrelated, or positively correlated with site
+size?}
 
-\item{proptx.impact.correlate}{TRUE/FALSE: Are proportion of units treated correlated with site size?}
+\item{proptx.impact.correlate}{Takes values of -1, 0, or 1: Are proportion
+of units treated negatively correlated, uncorrelated, or positively
+correlated with site size?}
 
 \item{verbose}{Say stuff while maing data?, Default: FALSE}
 }

@@ -17,7 +17,8 @@
 #' @param siteID Vector of site IDs if the randomization blocks should be
 #'   aggregated by site (for site weighting only).
 #' @param weight Individual weight (i.e., number of individuals in each block)
-#'   or site weight (average block estimates).
+#'   or site weight (average site estimates (which will be considered block
+#'   estimates if siteID is null)).
 #' @param method finite, superpop, or superpop2 to give SEs that either capture
 #'   uncertainty due to targeting a superpopulation quantity or not.
 #' @return dataframe with calculated impacts and standard errors.
@@ -25,6 +26,9 @@
 estimate.ATE.design.based = function( sum_tab, siteID = NULL,
                     method = c( "finite", "superpop", "superpop.original" ),
                     weight = c( "individual", "site" ) ) {
+
+    stopifnot( is.data.frame( sum_tab ) )
+    stopifnot( all( c("Ybar0","Ybar1","n", "var1","var0", "n1","n0" ) %in% names( sum_tab ) ) )
 
     if ( !( "Ybar1" %in% names( sum_tab ) ) ) {
         sum_tab = convert.table.names( sum_tab )
@@ -40,7 +44,7 @@ estimate.ATE.design.based = function( sum_tab, siteID = NULL,
     } else {
         if ( !is.null( siteID ) ) {
             sum_tab = sum_tab %>% dplyr::group_by_( siteID ) %>%
-                dplyr::mutate( .weight = 1 / n() )
+                dplyr::mutate( .weight = n / sum( n ) )
             w = sum_tab$.weight
         } else {
             w = rep(1, h )
@@ -61,7 +65,7 @@ estimate.ATE.design.based = function( sum_tab, siteID = NULL,
         asyVar = sum( (w * tau.hat.b - wbar * tau.hat)^2 ) / ((h-1)*h * wbar^2 )
         SE = sqrt( asyVar)
         if ( !is.null( siteID ) ) {
-            warning( "Assuming superpopulation of sites when we have randomization blocks is not correctly handeled." )
+            warning( "Assuming superpopulation of sites when we have nested randomization blocks is not correctly handeled." )
         }
     } else if ( method == "superpop" ) {
         # This is based on the email chain with Weiss, Pashley, etc.

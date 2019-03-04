@@ -9,15 +9,36 @@
 
 # Taken from Catherine's 'weiss.reject' method
 # Dataframe has variables of
-# - sid (site id)
+# - B (site id)
 # - Yobs (outcome)
 # - Z (binary treatment 0/1)
-estimate.Q.confint <- function(data=data){
-    s = length( unique( data$sid ) )
+estimate.Q.confint <- function(Yobs, Z, B, data=NULL ){
+    if(!is.null(data)){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs<-data[,1],
+                               Z<-data[,2],
+                               B<-data[,3] )
+            n.tx.lvls = length( unique( data$Z ) )
+            stopifnot( n.tx.lvls == 2 )
+            stopifnot( is.numeric( data$Yobs ) )
+        } else {
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
+    }
+    n = nrow( data )
+
+
+    s = length( unique( data$B ) )
 
     #calculate Q-statistic
     #run ols model with no intercept and no "treatment intercept"
-    ols <- lm(Yobs ~ 0 + Z*factor(sid) - Z, data=data, na.action=na.exclude)
+    ols <- lm(Yobs ~ 0 + Z*factor(B) - Z, data=data, na.action=na.exclude)
     #model ^^ does not estimate sigma^2 separate for T & C --
     #generated data have same variance across conditions, so temporarily okay
     bj <- ols$coefficients[(s+1):(2*s)]
@@ -89,17 +110,37 @@ estimate.Q.confint <- function(data=data){
 
 #' Weiss et al. Q-statistic test
 #' Dataframe has variables of
-#' - sid (site id)
+#' - B (site id)
 #' - Yobs (outcome)
 #' - Z (binary treatment 0/1)
 #' @rdname analysis.Qstatistic
 #' @export
-analysis.Qstatistic.extended = function( df ){
-    s = length( unique( df$sid ) ) # max(as.numeric(as.character(df$sid)))
-    df$sid = as.factor(df$sid)
+analysis.Qstatistic = function( Yobs, Z, B, data=NULL ){
+    if(!is.null(data)){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs<-data[,1],
+                               Z<-data[,2],
+                               B<-data[,3] )
+            n.tx.lvls = length( unique( data$Z ) )
+            stopifnot( n.tx.lvls == 2 )
+            stopifnot( is.numeric( data$Yobs ) )
+        } else {
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
+    }
+    n = nrow( data )
+
+    s = length( unique( data$B ) ) # max(as.numeric(as.character(data$B)))
+    data$B = as.factor(data$B)
 
     # get the model matrix we need to estimate the relevant betas
-    Mtest = lm( Yobs ~ sid*Z - 1 - Z, data=df)
+    Mtest = lm( Yobs ~ B*Z - 1 - Z, data=data)
 
     # Tidy this up!
     coef_table = summary(Mtest)$coef
@@ -122,32 +163,28 @@ analysis.Qstatistic.extended = function( df ){
 }
 
 
-#' Utility wrapper function to just get the p-value without all the other stuff.
-#' @export
-analysis.Qstatistic = function( df ){
-
-    analysis.Qstatistic.extended(df)$p.value.Q
-}
 
 
 
 
 
+
+####                     Covariate inclusion attempt                   ####
 
 
 #' Weiss et al. Q-statistic test when there is an individual level covariate X
 #'
 #' TO DO: Is the above description correct?
-analysis.Qstatistic.X = function( df ){
-    s = length( unique( df$sid ) ) # max(as.numeric(as.character(df$sid)))
-    df$sid = as.factor(df$sid)
+analysis.Qstatistic.X = function( data ){
+    s = length( unique( data$B ) ) # max(as.numeric(as.character(data$B)))
+    data$B = as.factor(data$B)
 
     # get the model matrix we need to estimate the relevant betas
-    M0 = lm( Yobs ~ sid*(-1+Z) + X, data=df)
+    M0 = lm( Yobs ~ B*(-1+Z) + X, data=data)
     mmat = as.data.frame(model.matrix(M0))
-    mmat$`sid1:Z` = with(mmat,sid1*Z)
+    mmat$`B1:Z` = with(mmat,B1*Z)
     mmat$Z = NULL
-    mmat$Yobs = df$Yobs
+    mmat$Yobs = data$Yobs
 
     # Estimate our model
     Mtest = lm(Yobs~.,data=mmat)
@@ -199,48 +236,6 @@ if ( FALSE ) {
 }
 
 
-##
-## Methods of detection and estimation of cross site variation based on the
-## Q-statistic/meta analysis approach
-##
-##
-
-
-# This function doesn't incorporate covariates and is used for small sample simulations
-analysis.Qstatistic.extended = function( df ){
-    s = length( unique( df$sid ) ) # max(as.numeric(as.character(df$sid)))
-    df$sid = as.factor(df$sid)
-
-    # get the model matrix we need to estimate the relevant betas
-    Mtest = lm( Yobs ~ sid*Z - 1 - Z, data=df)
-
-    # Tidy this up!
-    coef_table = summary(Mtest)$coef
-    hetero_vars = grep("Z",rownames(coef_table))
-
-    ### pool treatment effect estimates and compute their variance estimates
-    bj = coef_table[hetero_vars,"Estimate"]
-    vj = coef_table[hetero_vars,"Std. Error"]^2
-
-    ## estimate q and pvalue
-    wj = 1/vj
-    bbar <- sum(wj*bj)/(sum(wj))
-    q <- sum((bj - bbar)^2/vj)
-
-    pval <- pchisq(q, df=(s-1),lower.tail=FALSE)
-
-    data.frame( p.value.Q = pval,
-                Q = q, b.bar = bbar, mean.vj = mean( vj ),
-                tau.hat.raw = sd( bj ) )
-}
-
-# Utility wrapper function to just get the p-value without all the other stuff.
-analysis.Qstatistic = function( df ){
-    analysis.Qstatistic.extended(df)$p.value.Q
-}
-
-
-
 
 
 ## --------- Blending the MLM and the Q-statistic approach ---------
@@ -249,9 +244,9 @@ analysis.Qstatistic = function( df ){
 
 # This is unfinished code trying to do the Q-statistic with the random effects
 # from a MLM.
-analysis.Q.MLM = function( df ) {
+analysis.Q.MLM = function( data ) {
     # Fit MLM
-    M0 = lme4::lmer( Yobs ~ 1 + Z * X + (1|sid), data=df )
+    M0 = lme4::lmer( Yobs ~ 1 + Z * X + (1|B), data=data )
     tstat = lme4::fixef( M0 ) / se.coef(M0)$fixef
     2 * pnorm( - abs( tstat[["Z:X"]] ) )
 

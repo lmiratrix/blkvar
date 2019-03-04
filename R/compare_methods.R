@@ -4,10 +4,10 @@
 
 
 # Calculate estimates for the Multilevel modeling methods
-compare.MLM.methods = function( Y, Z, B, siteID = NULL ) {
-    RICC = estimate.ATE.RICC( Y, Z, B, siteID, REML = TRUE )
-    FIRC = estimate.ATE.FIRC( Y, Z, B, siteID, REML = TRUE, include.testing = FALSE )
-    RIRC = estimate.ATE.RIRC( Y, Z, B, siteID, REML = TRUE, include.testing = FALSE )
+compare.MLM.methods = function( Y, Z, B, data = NULL, siteID = NULL ) {
+    RICC = estimate.ATE.RICC( Y, Z, B, data=data, REML = TRUE )
+    FIRC = estimate.ATE.FIRC( Y, Z, B, data=data, siteID = siteID, REML = TRUE, include.testing = FALSE )
+    RIRC = estimate.ATE.RIRC( Y, Z, B, data=data, REML = TRUE, include.testing = FALSE )
     mlms = data.frame( method=c("RICC", "FIRC", "RIRC"),
                        tau = c( RICC$ATE, FIRC$ATE, RIRC$ATE ),
                        SE = c( RICC$SE.ATE, FIRC$SE.ATE, RIRC$SE.ATE ),
@@ -93,39 +93,58 @@ method.characteristics = function() {
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-compare_methods<-function(Y, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
+compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
                           include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE,
                           include.method.characteristics = FALSE ){
 
     if(!is.null(data)){
-        if ( missing( "Y" ) ) {
-            Y<-data[,1]
-            Z<-data[,2]
-            B<-data[,3]
-            if ( !is.null( siteID ) && (length( siteID ) == 1 ) ) {
-                siteID = data[, siteID ]
-            }
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
+            n.tx.lvls = length( unique( data$Z ) )
+            stopifnot( n.tx.lvls == 2 )
+            stopifnot( is.numeric( data$Yobs ) )
         } else {
-            Y = eval( substitute( Y ), data )
-            Z = eval( substitute( Z ), data )
-            B = eval( substitute( B ), data)
-            #if ( !is.null( siteID ) ) {
-            #    siteID = data[[ siteID ]]
-            #}
+            if ( !is.null( siteID ) ) {
+                siteID = data[[siteID]]
+            }
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+            data$siteID = siteID
+
+            # if ( !missing( siteID ) ) {
+            #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+            #                        Z = eval( substitute( Z ), data ),
+            #                        B = eval( substitute( B ), data),
+            #                        siteID = eval( substitute( siteID ), data ) )
+            # } else {
+            #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+            #                        Z = eval( substitute( Z ), data ),
+            #                        B = eval( substitute( B ), data) )
+            # }
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
         }
     }
-    n<-length(Y)
+    n = nrow( data )
 
     #Quick check that input is correct
-    if(is.numeric(Z)==FALSE){
+    if(is.numeric(data$Z)==FALSE){
         stop("Treatment indicator should be vector of ones and zeros")
     }
-    if((sum(Z==1)+sum(Z==0))!=n){
+    if((sum(data$Z==1)+sum(data$Z==0))!=n){
         stop("Treatment indicator should be vector of ones and zeros")
     }
 
     #Get data into table
-    data.table<-calc.summary.stats(Y,Z,B, siteID=siteID)
+    data.table<-calc.summary.stats(Yobs,Z,B, data=data, siteID=siteID, add.neyman = TRUE )
 
     if ( include.block || include.RCTYesBlended ) {
         method_list = c()
@@ -151,13 +170,18 @@ compare_methods<-function(Y, Z, B, siteID = NULL, data=NULL, include.block = TRU
         summary_table = data.frame()
     }
 
+    # stash canonical name for site ID, if we have one.
+    if ( ! is.null( siteID ) ) {
+        siteID = "siteID"
+    }
+
     if ( include.RCTYes ) {
 
         # Design based methods
-        RCT.yes.fi = estimate.ATE.design.based( data.table, method="finite", weight="individual" )
-        RCT.yes.fs = estimate.ATE.design.based( data.table, method="finite", weight="site" )
-        RCT.yes.si = estimate.ATE.design.based( data.table, method="superpop", weight="individual" )
-        RCT.yes.ss = estimate.ATE.design.based( data.table, method="superpop", weight="site" )
+        RCT.yes.fi = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="individual" )
+        RCT.yes.fs = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="site" )
+        RCT.yes.si = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="individual" )
+        RCT.yes.ss = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="site" )
         rctyes = dplyr::bind_rows( RCT.yes.fi, RCT.yes.fs, RCT.yes.si, RCT.yes.ss )
         rctyes$method = with( rctyes, paste( "RCT.yes (", weight, "-", method, ")", sep="" ) )
         rctyes$weight = NULL
@@ -167,12 +191,12 @@ compare_methods<-function(Y, Z, B, siteID = NULL, data=NULL, include.block = TRU
     }
 
     if ( include.LM ) {
-        lms = linear.model.estimators( Y, Z, B )
+        lms = linear.model.estimators( Yobs, Z, B, data=data )
         summary_table = dplyr::bind_rows( summary_table, lms )
     }
 
     if ( include.MLM ) {
-        mlms = compare.MLM.methods( Y, Z, B )
+        mlms = compare.MLM.methods( Yobs, Z, B, data=data, siteID = siteID )
         summary_table = dplyr::bind_rows( summary_table, mlms )
     }
 
@@ -301,7 +325,7 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
         if ( missing( "Yobs" ) ) {
             data = data.frame( Yobs<-data[,1],
                                Z<-data[,2],
-                               sid<-data[,3] )
+                               B<-data[,3] )
             n.tx.lvls = table( data$Z )
             stopifnot( n.tx.lvls == 2 )
             stopifnot( is.numeric( data$Yobs ) )
@@ -311,24 +335,24 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
             }
             data = data.frame( Yobs = eval( substitute( Yobs ), data ),
                                Z = eval( substitute( Z ), data ),
-                               sid = eval( substitute( B ), data) )
+                               B = eval( substitute( B ), data) )
             data$siteID = siteID
 
             # if ( !missing( siteID ) ) {
             #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
             #                        Z = eval( substitute( Z ), data ),
-            #                        sid = eval( substitute( B ), data),
+            #                        B = eval( substitute( B ), data),
             #                        siteID = eval( substitute( siteID ), data ) )
             # } else {
             #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
             #                        Z = eval( substitute( Z ), data ),
-            #                        sid = eval( substitute( B ), data) )
+            #                        B = eval( substitute( B ), data) )
             # }
         }
     } else {
         data = data.frame( Yobs = Yobs,
                            Z = Z,
-                           sid = B )
+                           B = B )
         if ( !is.null( siteID ) ) {
             data$siteID = siteID
         }
@@ -349,16 +373,16 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
     }
 
     # FIRC model (separate variances)
-    FIRC = estimate.ATE.FIRC( Yobs, Z, sid, siteID=siteID, data=data, include.testing=include.testing )
+    FIRC = estimate.ATE.FIRC( Yobs, Z, B, siteID=siteID, data=data, include.testing=include.testing )
 
     # FIRC model (with pooled residual variances)
-    FIRC.pool = estimate.ATE.FIRC( Yobs, Z, sid, siteID=siteID, data=data, include.testing=include.testing, pool=TRUE )
+    FIRC.pool = estimate.ATE.FIRC( Yobs, Z, B, siteID=siteID, data=data, include.testing=include.testing, pool=TRUE )
 
     # the random-intercept, random-coefficient (RIRC) model
-    RIRC = estimate.ATE.RIRC( Yobs, Z, sid, data, include.testing=include.testing )
+    RIRC = estimate.ATE.RIRC( Yobs, Z, B, data, include.testing=include.testing )
 
     # the random-intercept, random-coefficient (RIRC) model
-    RIRC.pool = estimate.ATE.RIRC( Yobs, Z, sid, data, include.testing=include.testing, pool=TRUE)
+    RIRC.pool = estimate.ATE.RIRC( Yobs, Z, B, data, include.testing=include.testing, pool=TRUE)
 
     # collect results
     res = data.frame( tau.hat.FIRC = FIRC$tau.hat,
@@ -371,7 +395,7 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
         res$pv.RIRC = RIRC$p.variation
         res$pv.FIRC.pool = FIRC.pool$p.variation
         res$pv.RIRC.pool = RIRC.pool$p.variation
-        res$pv.Qstat = analysis.Qstatistic( data )
+        res$pv.Qstat = analysis.Qstatistic( Yobs, Z, B, data = data )$p.value.Q
     }
 
 

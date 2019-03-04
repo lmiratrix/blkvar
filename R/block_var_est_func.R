@@ -38,16 +38,15 @@ calc.summary.stats = function( Yobs, Z, B, data = NULL, siteID = NULL, add.neyma
             data = as.data.frame( data )
         }
         if ( !is.null( siteID ) && (length( siteID ) == 1 ) ) {
-            siteID = data[, siteID ]
+            siteID = data[[ siteID ]]
         }
 
         if ( missing( "Z" ) ) {
             stopifnot( all( c( "Yobs", "Z", "B" ) %in% names(data) ) )
         } else {
-            data = rename_( data,
-                            Yobs = as.character( substitute( Yobs ) ),
-                            Z = as.character( substitute( Z ) ),
-                            B = as.character( substitute( B ) ) )
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data ) )
         }
     }
     dat = data
@@ -232,7 +231,12 @@ plug_in_big<-function(data.small, data.big){
 #' @param throw.warnings TRUE means throw warnings if the hybrid estimators are breaking down due to violation of assumptions.
 #' @export
 fitdata.sumtable = function( data.table,
-                             method=c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"), throw.warnings=TRUE ) {
+                             method=c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"),
+                             throw.warnings=TRUE ) {
+
+    stopifnot( is.data.frame( data.table ) )
+    stopifnot( all( c("Ybar0","Ybar1","n", "var1","var0", "n1","n0", "se_ney" ) %in% names( data.table ) ) )
+
     method = match.arg( method )
     K<-nrow(data.table)
     data.table$nk<-data.table$n1+data.table$n0
@@ -303,6 +307,8 @@ fitdata.sumtable = function( data.table,
     return(return_val)
 }
 
+
+
 #' Block variance estimation function.
 #'
 #' This function takes observed data and returns a treatment effect estimate,
@@ -315,15 +321,30 @@ fitdata.sumtable = function( data.table,
 #' @param method is method of variance estimation, defauly "hybrid_m"
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-fitdata<-function(Y, Z, B, data=NULL,
+fitdata<-function(Yobs, Z, B, data=NULL,
                   method=c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small"),
                   throw.warnings=TRUE ) {
-  if(!is.null(data)){
-    Y<-data[,1]
-    Z<-data[,2]
-    B<-data[,3]
-  }
-  n<-length(Y)
+    if(!is.null(data)){
+        if ( missing( "Yobs" ) ) {
+            Yobs<-data[,1]
+            Z<-data[,2]
+            B<-data[,3]
+        } else {
+            Yobs = eval( substitute( Yobs ), data )
+            Z = eval( substitute( Z ), data )
+            B = eval( substitute( B ), data)
+        }
+    } else {
+        if ( is.data.frame(Yobs) ) {
+            stopifnot( is.null( data ) )
+            B = Yobs$B
+            Z = Yobs$Z
+            Yobs = Yobs$Yobs
+        }
+    }
+
+
+    n<-length(Yobs)
   #Quick test that input is correct
   if(is.numeric(Z)==F){
     return("Treatment indicator should be vector of ones and zeros")
@@ -332,7 +353,7 @@ fitdata<-function(Y, Z, B, data=NULL,
     return("Treatment indicator should be vector of ones and zeros")
   }
   #Get summary info
-  data.table<-calc.summary.stats(Y,Z,B)
+  data.table<-calc.summary.stats(Yobs,Z,B, add.neyman = TRUE)
 
   fitdata.sumtable( data.table, method=method,throw.warnings=throw.warnings)
 }

@@ -4,7 +4,7 @@
 \alias{analysis.Qstatistic.X}
 \title{Weiss et al. Q-statistic test when there is an individual level covariate X}
 \usage{
-analysis.Qstatistic.X(df)
+analysis.Qstatistic.X(data)
 }
 \description{
 TO DO: Is the above description correct?
