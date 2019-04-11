@@ -7,12 +7,16 @@
 
 
 
-# Taken from Catherine's 'weiss.reject' method
-# Dataframe has variables of
-# - B (site id)
-# - Yobs (outcome)
-# - Z (binary treatment 0/1)
-estimate.Q.confint <- function(Yobs, Z, B, data=NULL ){
+#' Calculate confidence interval for cross site variation using Q-statistic test inversion.
+#'
+#' Code taken from prior work of Catherine Armstrong.
+#'
+#' @param data Dataframe with outcome, treatment, and blocking factor.
+#' @param B (site id)
+#' @param Yobs (outcome)
+#' @param Z (binary treatment 0/1)
+#' @export
+estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.95 ){
     if(!is.null(data)){
         if ( missing( "Yobs" ) ) {
             data = data.frame( Yobs<-data[,1],
@@ -49,7 +53,7 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL ){
     q <- sum((bj - bbar)^2/vj)
     pval <- pchisq(q,df=(length(bj)-1),lower.tail=FALSE)
 
-    reject <- (pval < 0.05)
+    reject <- (pval < 1-alpha)
 
     ## get confidence interval
 
@@ -58,15 +62,12 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL ){
     tau_test <- seq(0,5,.01) ##come back and make it increment by 0.01
 
     ## test two-sided version
-    lowbound <- qchisq(0.025,s-1)
-    low90 <- qchisq(0.05,df=(s-1))
-    highbound <- qchisq(0.975,df=(s-1))
-    high90 <- qchisq(0.95,df=(s-1))
+    lowbound <- qchisq(alpha/2,s-1)
+    highbound <- qchisq(1 - alpha/2,df=(s-1))
 
     ## intialize values
     q_invert <- c()
     CI_95 <- c()
-    CI_90 <- c()
     for (i in 1:length(tau_test)){
         #calculate new denominator that takes into account tau^2
         denom <- vj + tau_test[i]^2
@@ -74,20 +75,10 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL ){
         q_invert[i] <- sum((bj - bbar)^2/denom)
         #other way: compare q.stat to lower and upperbounds (Weiss et al, JREE p. 55)
         CI_95[i] <- (q_invert[i]>=lowbound & q_invert[i]<=highbound)
-        CI_90[i] <- (q_invert[i]>=low90 & q_invert[i]<=high90)
     }
 
     #extract bounds
     #special condition to explore when tau_test[CI_90 == 1]
-    if ( length(tau_test[CI_90 == 1]) == 0 ) {
-        CI90_low <- NA
-        CI90_high <- NA
-        q90_low <- min(q_invert)
-        q90_high <- max(q_invert)
-    } else {
-        CI90_high <- max(tau_test[CI_90 == 1])
-        CI90_low <- min(tau_test[CI_90 == 1])
-    }
 
     if ( length(tau_test[CI_95 == 1]) == 0 ) {
         CI_low <- NA
@@ -101,8 +92,7 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL ){
     return(list(reject=reject,
                 p.value = pval,
                 Q = q,
-                CI_low=CI_low,CI_high=CI_high,
-                CI90_low=CI90_low,CI90_high=CI90_high))
+                CI_low=CI_low,CI_high=CI_high) )
 }
 
 

@@ -86,20 +86,27 @@ analysis.combination = function( df ) {
 #' @rdname estimate.ATE.RIRC
 #'
 #' @export
-estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE, pool = FALSE ) {
+estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE, pool = FALSE ) {
 
     stopifnot( !( include.testing && REML ) )
 
-    # get our variables
-    if ( is.null( data ) ) {
-        data = data.frame( Yobs = Yobs, Z = Z, sid= factor(sid) )
-        #Yobs = eval( substitute( Yobs ), data )
-        #Z = eval( substitute( Z ), data )
-        #sid = eval( substitute( sid ), data )
+    if( !is.null(data) ){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
+        } else {
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+        }
     } else {
-        sid.name = as.character( quote( sid ) )
-        data[ sid.name ] = factor( eval( substitute( sid ), data ) )
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
     }
+    stopifnot( length( unique( data$Z ) ) == 2 )
+    stopifnot( is.numeric( data$Yobs ) )
 
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
@@ -107,14 +114,14 @@ estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
     if ( pool ) {
         re.mod <- nlme::lme(Yobs ~ 1 + Z,
                             data = data,
-                            random = ~ 1 + Z | sid,
+                            random = ~ 1 + Z | B,
                             na.action=na.exclude,
                             method = method,
                             control=nlme::lmeControl(opt="optim",returnObject=TRUE))
     } else {
         re.mod <- nlme::lme(Yobs ~ 1 + Z,
                         data = data,
-                        random = ~ 1 + Z | sid,
+                        random = ~ 1 + Z | B,
                         weights = nlme::varIdent(form = ~ 1 | Z),
                         na.action=na.exclude,
                         method = method,
@@ -127,19 +134,19 @@ estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
         if ( pool ) {
             re.mod.null <- nlme::lme(Yobs ~ 1 + Z,
                                      data = data,
-                                     random = ~ 1 | sid, na.action=na.exclude,
+                                     random = ~ 1 | B, na.action=na.exclude,
                                      method = method,
                                      control=nlme::lmeControl(opt="optim",returnObject=TRUE))
 
         } else {
             re.mod.null <- nlme::lme(Yobs ~ 1 + Z,
                                  data = data,
-                                 random = ~ 1 | sid,
+                                 random = ~ 1 | B,
                                  weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                                  method = method,
                                  control=nlme::lmeControl(opt="optim",returnObject=TRUE))
         }
-        #M0.null = lm( Yobs ~ 0 + sid + Z, data=data )
+        #M0.null = lm( Yobs ~ 0 + B + Z, data=data )
         td = as.numeric( deviance( re.mod.null ) - deviance( re.mod ) )
         p.variation = 0.5 * pchisq(td, 2, lower.tail = FALSE ) + 0.5 * pchisq(td, 1, lower.tail = FALSE )
     } else {
@@ -177,25 +184,32 @@ estimate.ATE.RIRC <- function( Yobs, Z, sid, data=NULL, REML = FALSE, include.te
 #' @rdname estimate.ATE.RIRC
 #'
 #' @export
-estimate.ATE.RICC <- function( Yobs, Z, sid, data=NULL, REML = FALSE ) {
+estimate.ATE.RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE ) {
 
-    # get our variables
-    if ( is.null( data ) ) {
-        data = data.frame( Yobs = Yobs, Z = Z, sid= factor(sid) )
-        #Yobs = eval( substitute( Yobs ), data )
-        #Z = eval( substitute( Z ), data )
-        #sid = eval( substitute( sid ), data )
+    if( !is.null(data) ){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
+        } else {
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+        }
     } else {
-        sid.name = as.character( quote( sid ) )
-        data[ sid.name ] = factor( eval( substitute( sid ), data ) )
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
     }
+    stopifnot( length( unique( data$Z ) ) == 2 )
+    stopifnot( is.numeric( data$Yobs ) )
 
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
 
     re.mod <- nlme::lme(Yobs ~ 1 + Z,
                         data = data,
-                        random = ~ 1 | sid,
+                        random = ~ 1 | B,
                         weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                         method = method,
                         control=nlme::lmeControl(opt="optim",returnObject=TRUE))
@@ -228,12 +242,12 @@ if ( FALSE ) {
     describe.data( dat, Y0 = "Y0", Y1="Y1" )
 
 
-    estimate.ATE.RIRC( Yobs, Z, sid, data=dat )
+    estimate.ATE.RIRC( Yobs, Z, B, data=dat )
 
     dat = catherine.gen.dat( 0.2, 0, 30, 50 )
     describe.data( dat, Y0 = "Y0", Y1="Y1" )
 
-    estimate.ATE.RIRC( Yobs, Z, sid, data=dat )
+    estimate.ATE.RIRC( Yobs, Z, B, data=dat )
 }
 
 
@@ -246,12 +260,42 @@ if ( FALSE ) {
 #'
 #' @importFrom lme4 lmer VarCorr
 #' @export
-estimate.ATE.RIRC.pool = function( Yobs, Z, sid, data=NULL, REML = FALSE, include.testing=TRUE ) {
+estimate.ATE.RIRC.pool = function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE ) {
 
-    M0.full = lme4::lmer( Yobs ~ 1 + Z + (1+Z|sid), data=data, REML = REML )
+    if( !is.null(data) ){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
+        } else {
+            if ( !is.null( siteID ) ) {
+                siteID = data[[siteID]]
+                stopifnot( !is.null( siteID ) )
+            }
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+            if ( is.null( siteID ) ) {
+                data$siteID = data$B
+            } else {
+                data$siteID = siteID
+            }
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
+        }
+    }
+    stopifnot( length( unique( data$Z ) ) == 2 )
+    stopifnot( is.numeric( data$Yobs ) )
+
+    M0.full = lme4::lmer( Yobs ~ 1 + Z + (1+Z|B), data=data, REML = REML )
 
     if ( include.testing ) {
-        M0.null = lme4::lmer( Yobs ~ 1 + Z + (1|sid), data=data, REML = REML )
+        M0.null = lme4::lmer( Yobs ~ 1 + Z + (1|B), data=data, REML = REML )
 
         # I _think_ this is what is suggested to handle the boundary by Snijders and Bosker
         td = deviance( M0.null ) - deviance( M0.full )
@@ -266,7 +310,7 @@ estimate.ATE.RIRC.pool = function( Yobs, Z, sid, data=NULL, REML = FALSE, includ
     a = a$coefficients[2,]
 
     # Cross site variation
-    tau.hat = sqrt( VarCorr( M0.full )$sid[2,2] )
+    tau.hat = sqrt( VarCorr( M0.full )$B[2,2] )
     tau.hat
 
     res = list(ATE = a[[1]], SE.ATE = a[[2]],
@@ -290,8 +334,8 @@ if ( FALSE ) {
     source( "R/multisite_data_generators.R")
     dat = catherine.gen.dat( 0.2, 0.2, 30, 50 )
     head( dat )
-    #analysis.idio.RIRC.pool( Yobs, Z, sid, data=dat )
-    #fit.RIRC.pool( Yobs, Z, sid, data=dat )
+    #analysis.idio.RIRC.pool( Yobs, Z, B, data=dat )
+    #fit.RIRC.pool( Yobs, Z, B, data=dat )
 
     estimate.ATE.RIRC( Yobs, Z, sid, data=dat )
     estimate.ATE.RIRC.pool( Yobs, Z, sid, data=dat )

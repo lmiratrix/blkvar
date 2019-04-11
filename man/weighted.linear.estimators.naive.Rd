@@ -10,3 +10,6 @@ weighted.linear.estimators.naive(Yobs, Z, B, data = NULL)
 WARNING: This is the wrong kind of regression.  The weights are correct, but
 the use is wrong.
 }
+\details{
+NOTE: This method has not been updated for site
+}

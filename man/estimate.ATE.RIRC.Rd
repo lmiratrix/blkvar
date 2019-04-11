@@ -5,15 +5,15 @@
 \alias{estimate.ATE.RICC}
 \title{Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC) Models}
 \usage{
-estimate.ATE.RIRC(Yobs, Z, sid, data = NULL, REML = FALSE,
+estimate.ATE.RIRC(Yobs, Z, B, data = NULL, REML = FALSE,
   include.testing = TRUE, pool = FALSE)
 
-estimate.ATE.RICC(Yobs, Z, sid, data = NULL, REML = FALSE)
+estimate.ATE.RICC(Yobs, Z, B, data = NULL, REML = FALSE)
 }
 \arguments{
-\item{sid}{Name of the block indicator.}
+\item{B}{Name of the block indicator.}
 
-\item{pool}{TRUE means tx and co have same residual variance. FALSE gives seperate estimates for each (recommended, default).}
+\item{pool}{TRUE means tx and co have same reBual variance. FALSE gives seperate estimates for each (recommended, default).}
 }
 \description{
 This model has a single treatment coefficient, and a random intercept for the

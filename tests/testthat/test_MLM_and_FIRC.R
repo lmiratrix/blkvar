@@ -14,16 +14,21 @@ test_that("FIRC functions work", {
                    rho2.0X = 0.3, rho2.1X = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
-    pv = analysis.FIRC( sdf )
     pv2 = estimate.ATE.FIRC(Yobs, Z, sid, data=sdf, include.testing = TRUE )
 
-    expect_equal( pv, pv2$p.variation )
 
-    pv.aov = analysis.FIRC( sdf, anova=TRUE )
-    expect_equal( pv, pv.aov )
+    pv.aov = estimate.ATE.FIRC( Yobs, Z, sid, data=sdf, include.testing = TRUE, anova=TRUE )
+    expect_equal( pv2$p.variation, pv.aov$p.variation )
+
+
+    # Check arb variable names works.
+    sdf2 = rename( sdf, YY = Yobs, ZZ = Z, S.I.D = sid )
+
+    pv2.B = estimate.ATE.FIRC(YY, ZZ, S.I.D, data=sdf2, include.testing = TRUE )
+
+    expect_equal( pv2.B, pv2 )
 
 } )
-
 
 
 
@@ -57,4 +62,13 @@ test_that("RICC functions work", {
     pv
     expect_true( is.na( pv$deviance ) )
     expect_true( pv$ATE > 0 )
+
+
+    # Check arb variable names works.
+    sdf2 = rename( sdf, YY = Yobs, ZZ = Z, S.I.D = sid )
+    pv2 = estimate.ATE.RICC( YY, ZZ, S.I.D, data=sdf2 )
+    pv2
+
+    expect_equal( pv, pv2 )
+
 } )

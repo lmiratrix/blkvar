@@ -5,7 +5,7 @@
 \title{Estimate a series of linear models using different weighting schemes and
 standard errors.}
 \usage{
-linear.model.estimators(Yobs, Z, B, data = NULL)
+linear.model.estimators(Yobs, Z, B, siteID = NULL, data = NULL)
 }
 \value{
 Data frame of the various results.

@@ -4,7 +4,7 @@
 \alias{estimate.ATE.RIRC.pool}
 \title{Fit Random-intercept, random-slope model}
 \usage{
-estimate.ATE.RIRC.pool(Yobs, Z, sid, data = NULL, REML = FALSE,
+estimate.ATE.RIRC.pool(Yobs, Z, B, data = NULL, REML = FALSE,
   include.testing = TRUE)
 }
 \description{

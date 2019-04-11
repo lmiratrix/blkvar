@@ -5,19 +5,19 @@
 \title{Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
 treatment variation.}
 \usage{
-estimate.ATE.FIRC(Yobs, Z, sid, siteID = NULL, data = NULL,
+estimate.ATE.FIRC(Yobs, Z, B, siteID = NULL, data = NULL,
   REML = FALSE, include.testing = TRUE, anova = FALSE,
   pool = FALSE)
 }
 \arguments{
-\item{sid}{Name of the block indicator.}
+\item{B}{Name of the block indicator.}
 
-\item{siteID}{ID of site (blocks are considered nested in site).  If omitted, then blocks are considered sites (the default).}
+\item{siteID}{ID of site (blocks are conBered nested in site).  If omitted, then blocks are conBered sites (the default).}
 
 \item{anova}{Use the anova() method to do the test for significance between
 the models.  FALSE means do the modified chi-squared test.}
 
-\item{pool}{TRUE means tx and co have same residual variance. FALSE gives seperate estimates for each (recommended, default).}
+\item{pool}{TRUE means tx and co have same reBual variance. FALSE gives seperate estimates for each (recommended, default).}
 }
 \description{
 Acknowledgement: Unpooled version taken and adapted from Catherine's weiss.tau() method.

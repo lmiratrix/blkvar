@@ -17,36 +17,51 @@ grab.SE = function( MOD, coef="Z" ) {
 }
 
 
-fixed.effect.estimators = function( Yobs, Z, B, data=NULL ) {
+fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
+    # This code block takes the parameters of
+    # Yobs, Z, B, siteID = NULL, data=NULL, ...
+    # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
     if(!is.null(data)){
         if ( missing( "Yobs" ) ) {
-            Yobs<-data[,1]
-            Z<-data[,2]
-            B<-data[,3]
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
+            n.tx.lvls = length( unique( data$Z ) )
+            stopifnot( n.tx.lvls == 2 )
+            stopifnot( is.numeric( data$Yobs ) )
         } else {
-            Yobs = eval( substitute( Yobs ), data )
-            Z = eval( substitute( Z ), data )
-            B = eval( substitute( B ), data)
+            if ( !is.null( siteID ) ) {
+                siteID = data[[siteID]]
+            }
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+            data$siteID = siteID
         }
     } else {
-        if ( is.data.frame(Yobs) ) {
-            stopifnot( is.null( data ) )
-            B = Yobs$B
-            Z = Yobs$Z
-            Yobs = Yobs$Yobs
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
         }
     }
 
+    # make sites RA blocks if there are no sites.
+    if ( is.null( data$siteID ) ) {
+        data$siteID = data$B
+    }
+
     # simple linear model
-    M0 = lm( Yobs ~ 0 + Z + B )
+    M0 = lm( Yobs ~ 0 + Z + B, data=data )
     SE.lm = summary( M0 )$coeff["Z",2]
 
     # Huber-White SEs
     vcov_sand = sandwich::vcovHC(M0, type = "HC1")
     SE.lm.sand <-sqrt( vcov_sand[1,1] )
 
-    # Cluster robust SEs
-    vcov_clust = sandwich::vcovCL( M0, B )
+    # Cluster robust SEs (clustering at site level)
+    vcov_clust = sandwich::vcovCL( M0, siteID )
     SE.lm.clust = sqrt( vcov_clust[1,1] )
 
     FEmodels = data.frame( method=c("fixed effects", "fixed effects (sand SE)", "fixed effects (cluster SE)" ),
@@ -63,6 +78,7 @@ fixed.effect.estimators = function( Yobs, Z, B, data=NULL ) {
 #' WARNING: This is the wrong kind of regression.  The weights are correct, but
 #' the use is wrong.
 #'
+#' NOTE: This method has not been updated for site
 weighted.linear.estimators.naive = function( Yobs, Z, B, data=NULL ) {
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
@@ -120,6 +136,8 @@ weighted.linear.estimators.naive = function( Yobs, Z, B, data=NULL ) {
 #' Survey-weighted adjusted linear regression
 #'
 #' Use survey weight regression to reweight blocks to target unbiased ATE estimators.
+#'
+#' NOTE: This method does not allow for aggregation by site with RA blocks within site.
 #'
 #' @param dat Dataframe to analyze, with Y, Z, and B columns.
 #' @return Dataframe of results for different estimators.
@@ -194,42 +212,75 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL ) {
 #' estimates are then weighted average of the block (site) specific ATE
 #' estimates.
 #'
+#' If siteID passed, it will weight the RA blocks within site and then average
+#' these site estimates.
+#'
 #' SEs come from the overall variance-covariance matrix.
 #'
-#' @return Dataframe of the different versions of this estimator (person and site weighted)
-interacted.linear.estimators = function( Yobs, Z, B, data=NULL ) {
-    if ( is.data.frame(Yobs) ) {
-        stopifnot( is.null( data ) )
-        B = Yobs$B
-        Z = Yobs$Z
-        Yobs = Yobs$Yobs
-    }
+#' @return Dataframe of the different versions of this estimator (person and
+#'   site weighted)
+interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
 
-     if(!is.null(data)){
-         if ( missing( "Z" ) ) {
-             Yobs = data$Yobs
-             Z = data$Z
-             B = data$B
+    # This code block takes the parameters of
+    # Yobs, Z, B, siteID = NULL, data=NULL, ...
+    # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
+    if(!is.null(data)){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
+            n.tx.lvls = length( unique( data$Z ) )
+            stopifnot( n.tx.lvls == 2 )
+            stopifnot( is.numeric( data$Yobs ) )
         } else {
-            Yobs = eval( substitute( Y ), data )
-            Z = eval( substitute( Z ), data )
-            B = eval( substitute( B ), data)
+            if ( !is.null( siteID ) ) {
+                siteID = data[[siteID]]
+            }
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+            data$siteID = siteID
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
         }
     }
 
     require( multiwayvcov )
 
-    J = length( unique( B ) )
-    nj = table( B )
-    n = length( Yobs )
+    J = length( unique( data$B ) )
+    nj = table( data$B )
+    n = nrow( data )
 
-    M0.int = lm( Yobs ~ 0 + Z * B - Z )
+    data$B = as.factor( data$B )
+    M0.int = lm( Yobs ~ 0 + Z * B - Z, data=data )
     VC = vcov( M0.int )
 
     tau.hats = coef(M0.int)[J + 1:J]
 
-    wts = c( rep( 0, J ), rep( 1/J, J ) )
-    tau.site = mean( tau.hats )
+    # site weighting
+    if ( !is.null( data$siteID ) ) {
+        # aggregate!
+        wts = data %>% group_by( B, siteID ) %>%
+            summarise( n = n() ) %>%
+            group_by( siteID ) %>%
+            mutate( wts = n / sum( n ) )
+        stopifnot( nrow( wts ) == J )
+        # TODO: How check that factor order is correct?  I think it will be due to it being a factor.
+        # But this makes me nervous.
+        # This doesn't work since lm changes names of coef.
+        nms = gsub( "Z:B", "", names(tau.hats ) )
+        stopifnot( all( nms == wts$B ) )
+        wts = c( rep( 0, J ), wts$wts / sum(wts$wts) )
+    } else {
+        wts = c( rep( 0, J ), rep( 1/J, J ) )
+    }
+
+    tau.site = weighted.mean( tau.hats, wts[(J+1):(2*J)] )
     SE.site = sqrt( t(wts) %*% VC %*% wts )
 
     wts.indiv = c( rep( 0, J ), nj/n )
@@ -251,7 +302,7 @@ interacted.linear.estimators = function( Yobs, Z, B, data=NULL ) {
 #' @importFrom stats coef
 #' @return Data frame of the various results.
 #' @export
-linear.model.estimators = function( Yobs, Z, B, data=NULL ) {
+linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
     }
@@ -272,11 +323,11 @@ linear.model.estimators = function( Yobs, Z, B, data=NULL ) {
     dat = data
     dat$B<-as.factor(dat$B)
 
-    FEmodels = fixed.effect.estimators( dat )
+    FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat )
 
-    weightModels = weighted.linear.estimators( dat )
+    weightModels = weighted.linear.estimators( Yobs, Z, B, data=dat )
 
-    interactModels = interacted.linear.estimators( dat )
+    interactModels = interacted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat )
 
     # combine and return results
     bind_rows( FEmodels, weightModels, interactModels )

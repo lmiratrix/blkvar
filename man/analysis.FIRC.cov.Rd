@@ -7,7 +7,7 @@
 analysis.FIRC.cov(df, REML = FALSE, anova = FALSE)
 }
 \arguments{
-\item{df}{Dataframe to fit.  Needs Z, X, sid, and Yobs columns.}
+\item{df}{Dataframe to fit.  Needs Z, X, B, and Yobs columns.}
 }
 \description{
 This method fits a FIRC model but also includes a site-level covariate, X,

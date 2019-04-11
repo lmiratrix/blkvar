@@ -11,8 +11,8 @@ estimate.ATE.design.based(sum_tab, siteID = NULL, method = c("finite",
 \item{sum_tab}{Table of summary statistics by block, from, e.g.,
 `block.data()`}
 
-\item{siteID}{Vector of site IDs if the randomization blocks should be
-aggregated by site (for site weighting only).}
+\item{siteID}{Vector of site IDs if there are randomization blocks nested in
+site that should be aggregated (will change results for site weighting only).}
 
 \item{method}{finite, superpop, or superpop2 to give SEs that either capture
 uncertainty due to targeting a superpopulation quantity or not.}
@@ -31,7 +31,7 @@ This can handle a superpopulation model, non-clustered but blocked.
 Taken from page 83 of Shochet RCT-YES paper (eq 6.25).
 
 The `superpop` variant is a modification of the original 'superpop.original',
-pulling the weights from inside the squared term to outside. This method
+pulling the weights from inside the squared term to outside. This method was
 suggested in personal correspondance with Schochet.  If the weights are not
 all 1, this can make a difference.
 }

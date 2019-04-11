@@ -15,3 +15,6 @@ Dataframe of results for different estimators.
 \description{
 Use survey weight regression to reweight blocks to target unbiased ATE estimators.
 }
+\details{
+NOTE: This method does not allow for aggregation by site with RA blocks within site.
+}

@@ -4,10 +4,11 @@
 \alias{interacted.linear.estimators}
 \title{Interacted linear regression models}
 \usage{
-interacted.linear.estimators(Yobs, Z, B, data = NULL)
+interacted.linear.estimators(Yobs, Z, B, siteID = NULL, data = NULL)
 }
 \value{
-Dataframe of the different versions of this estimator (person and site weighted)
+Dataframe of the different versions of this estimator (person and
+  site weighted)
 }
 \description{
 These linear models have block by treatment interaction terms.  The final ATE
@@ -15,5 +16,8 @@ estimates are then weighted average of the block (site) specific ATE
 estimates.
 }
 \details{
+If siteID passed, it will weight the RA blocks within site and then average
+these site estimates.
+
 SEs come from the overall variance-covariance matrix.
 }

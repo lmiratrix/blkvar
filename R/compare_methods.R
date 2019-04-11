@@ -4,10 +4,43 @@
 
 
 # Calculate estimates for the Multilevel modeling methods
-compare.MLM.methods = function( Y, Z, B, data = NULL, siteID = NULL ) {
-    RICC = estimate.ATE.RICC( Y, Z, B, data=data, REML = TRUE )
-    FIRC = estimate.ATE.FIRC( Y, Z, B, data=data, siteID = siteID, REML = TRUE, include.testing = FALSE )
-    RIRC = estimate.ATE.RIRC( Y, Z, B, data=data, REML = TRUE, include.testing = FALSE )
+compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL ) {
+
+    if( !is.null(data) ){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
+        } else {
+            if ( !is.null( siteID ) ) {
+                siteIDv = data[[siteID]]
+                stopifnot( !is.null( siteIDv ) )
+            }
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data) )
+            if ( is.null( siteID ) ) {
+                data$siteID = data$B
+            } else {
+                data$siteID = siteIDv
+                siteID = "siteID"
+            }
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B )
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
+            siteID = "siteID"
+        }
+    }
+    stopifnot( length( unique( data$Z ) ) == 2 )
+    stopifnot( is.numeric( data$Yobs ) )
+
+    RICC = estimate.ATE.RICC( Yobs, Z, B, data=data, REML = TRUE )
+    FIRC = estimate.ATE.FIRC( Yobs, Z, B, data=data, siteID = siteID, REML = TRUE, include.testing = FALSE )
+    RIRC = estimate.ATE.RIRC( Yobs, Z, B, data=data, REML = TRUE, include.testing = FALSE )
     mlms = data.frame( method=c("RICC", "FIRC", "RIRC"),
                        tau = c( RICC$ATE, FIRC$ATE, RIRC$ATE ),
                        SE = c( RICC$SE.ATE, FIRC$SE.ATE, RIRC$SE.ATE ),
@@ -97,6 +130,9 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
                           include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE,
                           include.method.characteristics = FALSE ){
 
+    # This code block takes the parameters of
+    # Yobs, Z, B, siteID = NULL, data=NULL, ...
+    # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
     if(!is.null(data)){
         if ( missing( "Yobs" ) ) {
             data = data.frame( Yobs = data[[1]],
@@ -113,17 +149,6 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
                                Z = eval( substitute( Z ), data ),
                                B = eval( substitute( B ), data) )
             data$siteID = siteID
-
-            # if ( !missing( siteID ) ) {
-            #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-            #                        Z = eval( substitute( Z ), data ),
-            #                        B = eval( substitute( B ), data),
-            #                        siteID = eval( substitute( siteID ), data ) )
-            # } else {
-            #     data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-            #                        Z = eval( substitute( Z ), data ),
-            #                        B = eval( substitute( B ), data) )
-            # }
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -191,7 +216,7 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     }
 
     if ( include.LM ) {
-        lms = linear.model.estimators( Yobs, Z, B, data=data )
+        lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID )
         summary_table = dplyr::bind_rows( summary_table, lms )
     }
 
@@ -200,6 +225,7 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
         summary_table = dplyr::bind_rows( summary_table, mlms )
     }
 
+    # Add info on the methods (e.g., what estimand they are targeting)
     if ( include.method.characteristics ) {
         mc = method.characteristics()
         summary_table = merge( summary_table, mc, by="method", all.x=TRUE, all.y=FALSE )

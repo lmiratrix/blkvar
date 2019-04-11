@@ -8,14 +8,14 @@
 #' Taken from page 83 of Shochet RCT-YES paper (eq 6.25).
 #'
 #' The `superpop` variant is a modification of the original 'superpop.original',
-#' pulling the weights from inside the squared term to outside. This method
+#' pulling the weights from inside the squared term to outside. This method was
 #' suggested in personal correspondance with Schochet.  If the weights are not
 #' all 1, this can make a difference.
 #'
 #' @param sum_tab Table of summary statistics by block, from, e.g.,
 #'   `block.data()`
-#' @param siteID Vector of site IDs if the randomization blocks should be
-#'   aggregated by site (for site weighting only).
+#' @param siteID Vector of site IDs if there are randomization blocks nested in
+#'    site that should be aggregated (will change results for site weighting only).
 #' @param weight Individual weight (i.e., number of individuals in each block)
 #'   or site weight (average site estimates (which will be considered block
 #'   estimates if siteID is null)).
@@ -40,52 +40,61 @@ estimate.ATE.design.based = function( sum_tab, siteID = NULL,
 
     # Get our block weights depending on target estimand
     if ( weight == "individual" ) {
-        w = sum_tab$n
+        sum_tab$.weight = sum_tab$n
     } else {
         if ( !is.null( siteID ) ) {
             sum_tab = sum_tab %>% dplyr::group_by_( siteID ) %>%
-                dplyr::mutate( .weight = n / sum( n ) )
-            w = sum_tab$.weight
+                dplyr::mutate( .weight = n / sum( n ) ) %>% ungroup()
         } else {
-            w = rep(1, h )
+            sum_tab$.weight = rep(1, h )
         }
     }
 
     # calculate individual block treatment impact estimates
-    tau.hat.b = with( sum_tab, Ybar1 - Ybar0 )
+    sum_tab = mutate( sum_tab, tau.hat.b = Ybar1 - Ybar0 )
 
     # calculate overall ATE estimate by taking a weighted average of the
     # individual
-    tau.hat = sum( tau.hat.b * w ) / sum( w )
+    tau.hat = with( sum_tab, sum( tau.hat.b * .weight ) / sum( .weight ) )
 
-    if ( method == "superpop.original" ) {
-        wbar = mean( w )
+    # Now do the SEs.
+    if ( method == "finite" ) {
+        # finite pop (Neyman)
+        w.tot = sum( sum_tab$.weight )
 
-        # This is the formula 6.25
-        asyVar = sum( (w * tau.hat.b - wbar * tau.hat)^2 ) / ((h-1)*h * wbar^2 )
-        SE = sqrt( asyVar)
-        if ( !is.null( siteID ) ) {
-            warning( "Assuming superpopulation of sites when we have nested randomization blocks is not correctly handeled." )
-        }
-    } else if ( method == "superpop" ) {
-        # This is based on the email chain with Weiss, Pashley, etc.
-        wbar = mean( w )
-
-        asyVar = sum( w^2 * (tau.hat.b - tau.hat)^2 ) / ((h-1)*h * wbar^2 )
-        SE = sqrt( asyVar)
-        if ( !is.null( siteID ) ) {
-            warning( "Assuming superpopulation of sites when we have randomization blocks is not correctly handeled." )
-        }
-    } else { # finite pop (Neyman)
-        w.tot = sum( w )
         # calculate SEs for each block by itself
-        block.vars = with( sum_tab, (var1 / n1 + var0 / n0 ) )
+        sum_tab = mutate( sum_tab,
+                          block.vars = (var1 / n1 + var0 / n0 ) )
 
         # and then take a weighted sum of these
-        var =  sum ( w^2 * block.vars ) / w.tot^2
+        var = with( sum_tab, sum ( .weight^2 * block.vars ) / w.tot^2 )
 
         SE = sqrt( var )
+    } else {  # superpopulation!
+
+        # First aggregate to get sites, if needed
+        if ( !is.null( siteID ) ) {
+            sum_tab = sum_tab %>% group_by_( siteID ) %>%
+                summarise( tau.hat.b = sum( tau.hat.b * .weight ) / sum( .weight ),
+                           .weight = sum( .weight ) )
+            h = nrow( sum_tab )
+        }
+
+        # Calculate average weight across sites
+        wbar = mean( sum_tab$.weight )
+
+        if ( method == "superpop.original" ) {
+            # This is the formula 6.25
+            asyVar = with( sum_tab, sum( (.weight * tau.hat.b - wbar * tau.hat)^2 ) / ((h-1)*h * wbar^2 ) )
+        } else if ( method == "superpop" ) {
+            # This is based on the email chain with Weiss, Pashley, etc.
+            asyVar = with( sum_tab, sum( .weight^2 * (tau.hat.b - tau.hat)^2 ) / ((h-1)*h * wbar^2 ) )
+        }
+
+        SE = sqrt( asyVar)
+
     }
+
     data.frame( tau.hat = tau.hat, SE = SE, weight=weight, method=method,
                 stringsAsFactors = FALSE )
 }
