@@ -4,17 +4,14 @@
 \alias{weighted.linear.estimators}
 \title{Survey-weighted adjusted linear regression}
 \usage{
-weighted.linear.estimators(Yobs, Z, B, data = NULL)
+weighted.linear.estimators(Yobs, Z, B, data = NULL, siteID = NULL)
 }
 \arguments{
-\item{dat}{Dataframe to analyze, with Y, Z, and B columns.}
+\item{data}{Dataframe to analyze, with Y, Z, and B columns.}
 }
 \value{
 Dataframe of results for different estimators.
 }
 \description{
 Use survey weight regression to reweight blocks to target unbiased ATE estimators.
-}
-\details{
-NOTE: This method does not allow for aggregation by site with RA blocks within site.
 }

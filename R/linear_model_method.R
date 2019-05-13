@@ -17,7 +17,18 @@ grab.SE = function( MOD, coef="Z" ) {
 }
 
 
-fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
+# See https://www.jepusto.com/handmade-clubsandwich/
+clubsandwich.variance = function( w, tau.hat.b, tau.hat ) {
+    W = sum( w )
+    V = (1/W^2) * sum( ( w^2 * (tau.hat.b - tau.hat)^2 ) / (1 - w/W) )
+
+    df.inv = sum( w^2 / (W - w)^2 ) - (2/W) *sum( w^3 / (W-w)^2 ) + (1/W^2)*sum( w^2/(W-w) )^2
+
+    list( var.hat=V, df = 1/df.inv )
+}
+
+
+fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL ) {
     # This code block takes the parameters of
     # Yobs, Z, B, siteID = NULL, data=NULL, ...
     # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
@@ -47,6 +58,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
         }
     }
 
+
     # make sites RA blocks if there are no sites.
     if ( is.null( data$siteID ) ) {
         data$siteID = data$B
@@ -56,6 +68,9 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
     M0 = lm( Yobs ~ 0 + Z + B, data=data )
     SE.lm = summary( M0 )$coeff["Z",2]
 
+    # est ATE
+    tau.hat = coef(M0)[["Z"]]
+
     # Huber-White SEs
     vcov_sand = sandwich::vcovHC(M0, type = "HC1")
     SE.lm.sand <-sqrt( vcov_sand[1,1] )
@@ -64,9 +79,26 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
     vcov_clust = sandwich::vcovCL( M0, siteID )
     SE.lm.clust = sqrt( vcov_clust[1,1] )
 
-    FEmodels = data.frame( method=c("fixed effects", "fixed effects (sand SE)", "fixed effects (cluster SE)" ),
-                           tau = c( coef(M0)[["Z"]], coef(M0)[["Z"]], coef(M0)[["Z"]] ),
-                           SE = c( SE.lm, SE.lm.sand, SE.lm.clust ),
+    # Cluster robust SEs (clustering at site level using clubSandwich)
+    # aggregate!
+    if ( is.null( block.stats ) ) {
+        block.stats = calc.summary.stats(Yobs, Z, B, data=data, siteID=siteID, add.neyman = FALSE )
+    }
+    block.stats = mutate( block.stats, tau.hat = Ybar1 - Ybar0,
+                          prec = n * (n0/n) * (n1/n),
+                          w = 1/prec )
+    if ( !is.null( siteID ) ) {
+        # aggregate blocks into sites and calculate site weights and tau.hats
+        block.stats = block.stats %>% group_by( siteID ) %>%
+            summarise( tau.hat = sum( w * tau.hat ) / sum( w ),
+                       w = 1 / sum( prec ) )
+    }
+    cs.var = clubsandwich.variance( block.stats$w, block.stats$tau.hat, tau.hat )
+    SE.lm.clust.club = sqrt( cs.var$var.hat )
+
+    FEmodels = data.frame( method=c("FE", "FE (sand)", "FE (cluster)", "FE (club)" ),
+                           tau = rep( tau.hat, 4 ),
+                           SE = c( SE.lm, SE.lm.sand, SE.lm.clust, SE.lm.clust.club ),
                            stringsAsFactors = FALSE )
 
     FEmodels
@@ -137,13 +169,11 @@ weighted.linear.estimators.naive = function( Yobs, Z, B, data=NULL ) {
 #'
 #' Use survey weight regression to reweight blocks to target unbiased ATE estimators.
 #'
-#' NOTE: This method does not allow for aggregation by site with RA blocks within site.
-#'
-#' @param dat Dataframe to analyze, with Y, Z, and B columns.
+#' @param data Dataframe to analyze, with Y, Z, and B columns.
 #' @return Dataframe of results for different estimators.
 #' @importFrom survey svydesign svyglm
 #' @importFrom stats gaussian
-weighted.linear.estimators = function( Yobs, Z, B, data=NULL ) {
+weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL ) {
 
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
@@ -179,6 +209,16 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL ) {
                        weight.site = weight * n.bar / nj ) %>%
         dplyr::ungroup()
 
+    if ( !is.null( siteID ) ) {
+        dat$siteID = dat[[siteID]]
+
+        n.site = length( unique( dat$siteID ) )
+        n.bar = n / n.site
+
+        # adjust weights to account for blocks nested within sites
+        dat = dat %>% group_by( siteID ) %>%
+            mutate( weight.site = weight * n.bar / n() )
+    }
 
     M0w = svyglm( Yobs ~ 0 + Z + B,
                   design=svydesign(id=~1, weights=~w.orig, data=dat ),
@@ -269,25 +309,35 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
             summarise( n = n() ) %>%
             group_by( siteID ) %>%
             mutate( wts = n / sum( n ) )
+
+        # some checks to make sure we are matching RA blocks and sites to the right things
         stopifnot( nrow( wts ) == J )
-        # TODO: How check that factor order is correct?  I think it will be due to it being a factor.
-        # But this makes me nervous.
-        # This doesn't work since lm changes names of coef.
-        nms = gsub( "Z:B", "", names(tau.hats ) )
+        nms = gsub( "Z:B", "", names( tau.hats ) )
         stopifnot( all( nms == wts$B ) )
-        wts = c( rep( 0, J ), wts$wts / sum(wts$wts) )
+
+        wts = wts$wts / sum(wts$wts)
     } else {
-        wts = c( rep( 0, J ), rep( 1/J, J ) )
+        wts = rep( 1/J, J )
     }
 
-    tau.site = weighted.mean( tau.hats, wts[(J+1):(2*J)] )
-    SE.site = sqrt( t(wts) %*% VC %*% wts )
+    # the block SEs from our linear model
+    SE.hat = diag( VC )[(J+1):(2*J)]
 
-    wts.indiv = c( rep( 0, J ), nj/n )
-    tau.indiv = weighted.mean( tau.hats, nj )
-    SE.indiv = sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
+    tau.site = weighted.mean( tau.hats, wts )
 
-    interactModels = data.frame( method=c("fixed effects interact (site)", "fixed effects interact (indiv)"),
+    # Calculate SE for tau.site
+    SE.site = sqrt( sum( wts^2 * SE.hat ) )
+
+    wts.indiv = nj/n
+    tau.indiv = weighted.mean( tau.hats, wts.indiv )
+    SE.indiv = sqrt( sum( wts.indiv^2 * SE.hat ) )
+
+    # This is the cautious way we don't need since we have 0s in the off diagonal
+    # SE.site = sqrt( t(wts) %*% VC %*% wts )
+    # faster way---this should work easily.
+    #sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
+
+    interactModels = data.frame( method=c("FE interact (site)", "FE interact (indiv)"),
                                  tau = c( tau.site, tau.indiv ),
                                  SE = c( SE.site, SE.indiv ),
                                  stringsAsFactors = FALSE)
@@ -302,7 +352,7 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
 #' @importFrom stats coef
 #' @return Data frame of the various results.
 #' @export
-linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
+linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL ) {
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
     }
@@ -323,7 +373,7 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
     dat = data
     dat$B<-as.factor(dat$B)
 
-    FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat )
+    FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats )
 
     weightModels = weighted.linear.estimators( Yobs, Z, B, data=dat )
 

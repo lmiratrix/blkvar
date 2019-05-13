@@ -5,8 +5,8 @@
 \title{Block variance method comparison function}
 \usage{
 compare_methods(Yobs, Z, B, siteID = NULL, data = NULL,
-  include.block = TRUE, include.MLM = TRUE, include.RCTYes = TRUE,
-  include.LM = TRUE, include.RCTYesBlended = FALSE,
+  include.block = TRUE, include.MLM = TRUE, include.DB = TRUE,
+  include.LM = TRUE, include.DBBlended = FALSE,
   include.method.characteristics = FALSE)
 }
 \arguments{
@@ -22,12 +22,12 @@ compare_methods(Yobs, Z, B, siteID = NULL, data = NULL,
 
 \item{include.MLM}{Include MLM estimators}
 
-\item{include.RCTYes}{Include RCTYes estimators}
+\item{include.DB}{Include Design-Based estimators (taken from RCTYes documentation and prior literature).}
 
 \item{include.LM}{Include Linear Model-based estimators (including
 Huber-White SEs, etc.)}
 
-\item{include.RCTYesBlended}{Include RCTYes estimator applied to small block
+\item{include.DBBlended}{Include DB estimators applied to small block
 and classic Neyman to large blocks.}
 
 \item{include.method.characteristics}{Include details of the methods (target estimands and sampling framework assumed).}

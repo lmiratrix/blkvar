@@ -19,7 +19,7 @@ compare_methods(Yobs, Z, sid, data=df )
 
 ## ------------------------------------------------------------------------
 compare_methods(Yobs, Z, sid, data=df, include.block = FALSE, include.MLM = FALSE,
-                include.RCTYes = FALSE)
+                include.DB = FALSE)
 
 ## ------------------------------------------------------------------------
 ests <- estimate.ATE.FIRC( Yobs, Z, sid, data=df )

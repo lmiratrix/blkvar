@@ -46,7 +46,7 @@ compare_methods(Yobs, Z, sid, data=df )
 One can select which methods to use:
 ```{r}
 compare_methods(Yobs, Z, sid, data=df, include.block = FALSE, include.MLM = FALSE,
-                include.RCTYes = FALSE)
+                include.DB = FALSE)
 ```
 
 ## Estimating cross site variation

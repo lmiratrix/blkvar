@@ -46,7 +46,14 @@ test_that("Check method characteristics works", {
 
     fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = TRUE )
     expect_true( all( c( "weight","population","biased") %in% names(fulltab) ) )
+    expect_true( all( !is.na( fulltab$weight ) ) )
 
+    ptab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = FALSE )
+
+    mc = method.characteristics()
+
+    expect_equal( nrow( fulltab ), nrow( ptab ) )
+    expect_equal( nrow( ptab ), nrow( mc ) )
 })
 
 
@@ -59,12 +66,12 @@ test_that("Check for asking for different parts", {
     nrow( dat )
     head( dat )
 
-    rs =  compare_methods( Yobs, Z, sid, data=dat, include.block = FALSE, include.LM = FALSE, include.RCTYes = FALSE )
+    rs =  compare_methods( Yobs, Z, sid, data=dat, include.block = FALSE, include.LM = FALSE, include.DB = FALSE )
     rs
     # Three MLM methods
     expect_equal( nrow( rs ), 3 )
 
-    rs =  compare_methods( Yobs, Z, sid, data=dat, include.block = FALSE, include.LM = FALSE, include.RCTYes = FALSE, include.MLM = FALSE )
+    rs =  compare_methods( Yobs, Z, sid, data=dat, include.block = FALSE, include.LM = FALSE, include.DB = FALSE, include.MLM = FALSE )
     expect_equal( nrow( rs ), 0 )
 
 })

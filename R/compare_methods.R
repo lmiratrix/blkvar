@@ -87,18 +87,19 @@ method.characteristics = function() {
         "hybrid_m",       "hybrid_m", "person",    "finite",       0,
         "hybrid_p",       "hybrid_p", "person",    "finite",       0,
         "plug_in_big",    "plug_in_big", "person",    "finite",       0,
-        "RCT.yes (individual-finite)",  "DB-FP-Persons", "person",    "finite",       0,
-        "RCT.yes (site-finite)",    "DB-FP-Sites",   "site",    "finite",       0,
-        "RCT.yes (individual-superpop)",  "DB-SP-Persons", "person",  "superpop",       0,
-        "RCT.yes (site-superpop)",    "DB-SP-Sites",   "site",  "superpop",       0,
-        "fixed effects",             "FE", "person",    "finite",       1,
-        "fixed effects (sand SE)",         "FE-Het", "person",    "finite",       1,
-        "fixed effects (cluster SE)",          "FE-CR", "person",  "superpop",       1,
+        "DB (individual-finite)",  "DB-FP-Persons", "person",    "finite",       0,
+        "DB (site-finite)",    "DB-FP-Sites",   "site",    "finite",       0,
+        "DB (individual-superpop)",  "DB-SP-Persons", "person",  "superpop",       0,
+        "DB (site-superpop)",    "DB-SP-Sites",   "site",  "superpop",       0,
+        "FE",             "FE", "person",    "finite",       1,
+        "FE (sand)",         "FE-Het", "person",    "finite",       1,
+        "FE (cluster)",          "FE-CR", "person",  "superpop",       1,
+        "FE (club)",          "FE-CR", "person",  "superpop",       1,
         "IPTW weighted regression (naive)",     "FE-IPTW(n)", "person",    "finite",       0,
         "IPTW weighted regression",        "FE-IPTW", "person",    "finite",       0,
         "IPTW weighted regression (site)",  "FE-IPTW-Sites",   "site",    "finite",       0,
-        "fixed effects interact (site)",   "FE-Int-Sites",   "site",    "finite",       0,
-        "fixed effects interact (indiv)", "FE-Int-Persons", "person",    "finite",       0,
+        "FE interact (site)",   "FE-Int-Sites",   "site",    "finite",       0,
+        "FE interact (indiv)", "FE-Int-Persons", "person",    "finite",       0,
         "RICC",           "RICC", "person",    "finite",       1,
         "FIRC",           "FIRC",   "site",  "superpop",       1,
         "RIRC",           "RIRC",   "site",  "superpop",       1
@@ -116,10 +117,10 @@ method.characteristics = function() {
 #' @param siteID site ids (variable name as string if data frame passed) (if randomization blocks are nested in site).
 #' @param data frame holding Y, Z, B and (possibly a column with name specified by siteID).
 #' @param include.MLM Include MLM estimators
-#' @param include.RCTYes Include RCTYes estimators
+#' @param include.DB Include Design-Based estimators (taken from RCTYes documentation and prior literature).
 #' @param include.LM Include Linear Model-based estimators (including
 #'   Huber-White SEs, etc.)
-#' @param include.RCTYesBlended Include RCTYes estimator applied to small block
+#' @param include.DBBlended Include DB estimators applied to small block
 #'   and classic Neyman to large blocks.
 #' @param include.block Include the Pashley blocking variants.
 #' @param include.method.characteristics Include details of the methods (target estimands and sampling framework assumed).
@@ -127,7 +128,7 @@ method.characteristics = function() {
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
 compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
-                          include.RCTYes = TRUE, include.LM = TRUE, include.RCTYesBlended = FALSE,
+                          include.DB = TRUE, include.LM = TRUE, include.DBBlended = FALSE,
                           include.method.characteristics = FALSE ){
 
     # This code block takes the parameters of
@@ -169,14 +170,14 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     }
 
     #Get data into table
-    data.table<-calc.summary.stats(Yobs,Z,B, data=data, siteID=siteID, add.neyman = TRUE )
+    data.table<-calc.summary.stats(Yobs, Z, B, data=data, siteID=siteID, add.neyman = TRUE )
 
-    if ( include.block || include.RCTYesBlended ) {
+    if ( include.block || include.DBBlended ) {
         method_list = c()
         if ( include.block ) {
             methods_list<-c("hybrid_m", "hybrid_p", "plug_in_big")
         }
-        if ( include.RCTYesBlended ) {
+        if ( include.DBBlended ) {
             methods_list<-c( methods_list, "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small")
         }
 
@@ -200,23 +201,23 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
         siteID = "siteID"
     }
 
-    if ( include.RCTYes ) {
+    if ( include.DB ) {
 
         # Design based methods
-        RCT.yes.fi = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="individual" )
-        RCT.yes.fs = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="site" )
-        RCT.yes.si = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="individual" )
-        RCT.yes.ss = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="site" )
-        rctyes = dplyr::bind_rows( RCT.yes.fi, RCT.yes.fs, RCT.yes.si, RCT.yes.ss )
-        rctyes$method = with( rctyes, paste( "RCT.yes (", weight, "-", method, ")", sep="" ) )
-        rctyes$weight = NULL
-        names(rctyes)[1] = "tau"
+        DB.fi = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="individual" )
+        DB.fs = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="site" )
+        DB.si = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="individual" )
+        DB.ss = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="site" )
+        DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
+        DB$method = with( DB, paste( "DB (", weight, "-", method, ")", sep="" ) )
+        DB$weight = NULL
+        names(DB)[1] = "tau"
 
-        summary_table = dplyr::bind_rows( summary_table, rctyes )
+        summary_table = dplyr::bind_rows( summary_table, DB )
     }
 
     if ( include.LM ) {
-        lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID )
+        lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID, block.stats = data.table )
         summary_table = dplyr::bind_rows( summary_table, lms )
     }
 

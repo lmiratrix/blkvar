@@ -46,7 +46,7 @@ estimate.ATE.design.based = function( sum_tab, siteID = NULL,
             sum_tab = sum_tab %>% dplyr::group_by_( siteID ) %>%
                 dplyr::mutate( .weight = n / sum( n ) ) %>% ungroup()
         } else {
-            sum_tab$.weight = rep(1, h )
+            sum_tab$.weight = rep( 1, h )
         }
     }
 
@@ -91,7 +91,7 @@ estimate.ATE.design.based = function( sum_tab, siteID = NULL,
             asyVar = with( sum_tab, sum( .weight^2 * (tau.hat.b - tau.hat)^2 ) / ((h-1)*h * wbar^2 ) )
         }
 
-        SE = sqrt( asyVar)
+        SE = sqrt( asyVar )
 
     }
 

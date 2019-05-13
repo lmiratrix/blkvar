@@ -63,7 +63,7 @@ get.params = function( a ) {
           n.site = nrow(ss2) )
 }
 
-test_that("RCT Yes functions work with nested randomization blocks", {
+test_that("DB estimators work with nested randomization blocks", {
 
     set.seed( 1019 )
     dat = make.obs.data.linear( X=1:50, method="big" )
@@ -170,6 +170,7 @@ test_that("linear regression works with nested randomization blocks", {
     expect_true( est1b$SE[[1]] != est1$SE[[1]] )
     expect_true( est1b$SE[[2]] == est1$SE[[2]] )
 
+
     est2 = blkvar:::fixed.effect.estimators( outcome, Tx, BB, siteID = "sssite", data=a )
     est2
     est2b = blkvar:::fixed.effect.estimators( outcome, Tx, BB, data=a )
@@ -183,6 +184,51 @@ test_that("linear regression works with nested randomization blocks", {
 
 
 
+
+
+test_that("weighted linear regression works with nested randomization blocks", {
+
+    a = make.balanced.dataset()
+    head( a )
+    params = get.params(a)
+    params
+
+    a = rename( a, outcome = Yobs, Tx = Z, BB = B )
+
+    est1 = blkvar:::weighted.linear.estimators( outcome, Tx, BB, siteID = "sssite", data=a )
+    est1
+
+    est1b = blkvar:::weighted.linear.estimators( outcome, Tx, BB, data=a )
+    est1b
+
+    expect_equal( est1$tau[[1]], params$true.indiv.tau )
+    expect_equal( est1$tau[[2]], params$true.indiv.tau )
+    expect_equal( est1$tau[[3]], params$true.site.tau )
+
+    expect_equal( est1b$tau[[1]], params$true.indiv.tau )
+    expect_equal( est1b$tau[[2]], params$true.indiv.tau )
+    expect_equal( est1b$tau[[3]], params$true.block.tau )
+
+
+    # Another test--match design based?
+    set.seed( 1019 )
+    dat = make.obs.data.linear( X=1:50, method="big" )
+    dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
+    head( dat )
+    # Our dataset with blocks in sites
+    sdat = calc.summary.stats( dat, siteID="siteNo" )
+    sdat
+
+    # Finite population, person weighted
+    a = estimate.ATE.design.based( sdat, siteID="siteID", weight="site", method="finite" )
+    a
+
+    a2 = blkvar:::weighted.linear.estimators( Yobs, Z, B, siteID = "siteNo", data=dat )
+    a2
+
+    expect_equal( a$tau.hat, a2$tau[[3]] )
+
+})
 
 
 test_that("multilevel regression works with nested randomization blocks", {
@@ -233,7 +279,7 @@ test_that("all linear regression works with nested randomization blocks", {
     ff = filter( res, change != 0 | changeSE != 0 )
     ff
 
-    expect_true( nrow( ff ) == 2 )
+    expect_true( nrow( ff ) == 3 )
 
 })
 
@@ -265,7 +311,7 @@ test_that("compare_methods works with nested randomization blocks", {
     ff = filter( res, change != 0 | changeSE != 0 )
     ff
 
-    expect_true( nrow( ff ) == 6 )
+    expect_true( nrow( ff ) == 7 )
 
 })
 
