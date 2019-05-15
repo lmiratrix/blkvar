@@ -107,7 +107,7 @@ estimate.ATE.design.based = function( sum_tab, siteID = NULL,
 
 # testing
 if ( FALSE ) {
-    library( tidyverse )
+    library( dplyr )
 
     dat = make.obs.data.linear( method="big")
     #dat = make.obs.data( method="small")

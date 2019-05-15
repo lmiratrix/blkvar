@@ -25,7 +25,7 @@ scat = function( str, ... ) {
 #' @return dataframe with summary statistics by block
 #' @export
 calc.summary.stats = function( Yobs, Z, B, data = NULL, siteID = NULL, add.neyman = FALSE ) {
-    require( tidyverse )
+    require( dplyr )
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
     }

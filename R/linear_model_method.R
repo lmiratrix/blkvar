@@ -387,7 +387,7 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
 
 if ( FALSE ) {
     library( blkvar )
-    library( tidyverse )
+    library( dplyr )
     dat = make.obs.data(p = 0.2)
     head( dat )
 

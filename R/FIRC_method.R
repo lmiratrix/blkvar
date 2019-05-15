@@ -9,7 +9,7 @@
 ## al methods.
 ##
 
-library( tidyverse )
+library( dplyr )
 
 ## ---------- Both pooled and unpooled FIRC method ------------
 

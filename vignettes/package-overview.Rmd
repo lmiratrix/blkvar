@@ -15,7 +15,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 library( blkvar )
-library( tidyverse )
+library( dplyr )
+library( ggplot2 )
 ```
 
 The `blkvar` package implements a variety of methods for estimating the average treatment impact in a blocked or multisite randomized trial. It also provides methods for estimating the amount of cross-site (or cross-block) treatment variation, defined as the variance of the individual block (or site) ATEs. It finally provides a variety of methods to implement blocked or multisite simulation studies.

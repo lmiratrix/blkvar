@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luke Miratrix" />
 
-<meta name="date" content="2019-05-13" />
+<meta name="date" content="2019-05-15" />
 
 <title>Overview of the blkvar package</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Overview of the blkvar package</h1>
 <h4 class="author"><em>Luke Miratrix</em></h4>
-<h4 class="date"><em>2019-05-13</em></h4>
+<h4 class="date"><em>2019-05-15</em></h4>
 
 
 
@@ -90,74 +90,74 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
                          <span class="dt">ICC =</span> <span class="fl">0.65</span>,
                          <span class="dt">variable.n =</span> <span class="ot">TRUE</span> )
 <span class="kw">head</span>( df )
-<span class="co">#&gt;   sid         Y0          Y1 Z       Yobs</span>
-<span class="co">#&gt; 1   1  0.5520661  0.34172415 1  0.3417242</span>
-<span class="co">#&gt; 2   1 -0.3087403 -0.51908222 0 -0.3087403</span>
-<span class="co">#&gt; 3   1 -0.7587096 -0.96905150 0 -0.7587096</span>
-<span class="co">#&gt; 4   1 -0.1812426 -0.39158449 1 -0.3915845</span>
-<span class="co">#&gt; 5   1  0.2978299  0.08748801 0  0.2978299</span>
-<span class="co">#&gt; 6   1 -0.6772169 -0.88755882 1 -0.8875588</span></code></pre></div>
+<span class="co">#&gt;   sid         Y0         Y1 Z       Yobs</span>
+<span class="co">#&gt; 1   1 -1.0477738 -1.2816258 0 -1.0477738</span>
+<span class="co">#&gt; 2   1 -0.4029055 -0.6367575 1 -0.6367575</span>
+<span class="co">#&gt; 3   1 -1.3210850 -1.5549370 0 -1.3210850</span>
+<span class="co">#&gt; 4   1 -1.1015812 -1.3354332 0 -1.1015812</span>
+<span class="co">#&gt; 5   1 -0.9796838 -1.2135358 1 -1.2135358</span>
+<span class="co">#&gt; 6   1 -1.0633531 -1.2972051 1 -1.2972051</span></code></pre></div>
 <p>To estimate the ATE using (almost) all the various methods provided we have</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods</span>(Yobs, Z, sid, <span class="dt">data=</span>df )
 <span class="co">#&gt; Loading required package: multiwayvcov</span>
-<span class="co">#&gt;                              method         tau         SE</span>
-<span class="co">#&gt; 1                          hybrid_m -0.03336333 0.03221146</span>
-<span class="co">#&gt; 2                          hybrid_p -0.03336333 0.03221146</span>
-<span class="co">#&gt; 3                       plug_in_big -0.03336333 0.03221146</span>
-<span class="co">#&gt; 4            DB (individual-finite) -0.03336333 0.03221146</span>
-<span class="co">#&gt; 5                  DB (site-finite) -0.02080362 0.03464126</span>
-<span class="co">#&gt; 6          DB (individual-superpop) -0.03336333 0.05364860</span>
-<span class="co">#&gt; 7                DB (site-superpop) -0.02080362 0.05135315</span>
-<span class="co">#&gt; 8                                FE -0.03335262 0.03271738</span>
-<span class="co">#&gt; 9                         FE (sand) -0.03335262 0.03270954</span>
-<span class="co">#&gt; 10                     FE (cluster) -0.03335262 0.03270954</span>
-<span class="co">#&gt; 11                        FE (club) -0.03335262 0.05310928</span>
-<span class="co">#&gt; 12 IPTW weighted regression (naive) -0.03336333 0.03236370</span>
-<span class="co">#&gt; 13         IPTW weighted regression -0.03336333 0.03236398</span>
-<span class="co">#&gt; 14  IPTW weighted regression (site) -0.02080362 0.03456823</span>
-<span class="co">#&gt; 15               FE interact (site) -0.02080362 0.03461773</span>
-<span class="co">#&gt; 16              FE interact (indiv) -0.03336333 0.03221751</span>
-<span class="co">#&gt; 17                             RICC -0.03335424 0.03271265</span>
-<span class="co">#&gt; 18                             FIRC -0.02540978 0.05191293</span>
-<span class="co">#&gt; 19                             RIRC -0.02625941 0.05218210</span></code></pre></div>
+<span class="co">#&gt;                              method          tau         SE</span>
+<span class="co">#&gt; 1                          hybrid_m -0.003256260 0.03017243</span>
+<span class="co">#&gt; 2                          hybrid_p -0.003256260 0.03017243</span>
+<span class="co">#&gt; 3                       plug_in_big -0.003256260 0.03017243</span>
+<span class="co">#&gt; 4            DB (individual-finite) -0.003256260 0.03017243</span>
+<span class="co">#&gt; 5                  DB (site-finite) -0.018598864 0.03126079</span>
+<span class="co">#&gt; 6          DB (individual-superpop) -0.003256260 0.05191438</span>
+<span class="co">#&gt; 7                DB (site-superpop) -0.018598864 0.04847309</span>
+<span class="co">#&gt; 8                                FE -0.003264723 0.03065641</span>
+<span class="co">#&gt; 9                         FE (sand) -0.003264723 0.03065605</span>
+<span class="co">#&gt; 10                     FE (cluster) -0.003264723 0.03065605</span>
+<span class="co">#&gt; 11                        FE (club) -0.003264723 0.05487614</span>
+<span class="co">#&gt; 12 IPTW weighted regression (naive) -0.003256260 0.03035237</span>
+<span class="co">#&gt; 13         IPTW weighted regression -0.003256260 0.03035254</span>
+<span class="co">#&gt; 14  IPTW weighted regression (site) -0.018598864 0.03127671</span>
+<span class="co">#&gt; 15               FE interact (site) -0.018598864 0.03318035</span>
+<span class="co">#&gt; 16              FE interact (indiv) -0.003256260 0.03020143</span>
+<span class="co">#&gt; 17                             RICC -0.003293108 0.03065271</span>
+<span class="co">#&gt; 18                             FIRC -0.011298692 0.04907010</span>
+<span class="co">#&gt; 19                             RIRC -0.013720263 0.04928959</span></code></pre></div>
 <p>One can select which methods to use:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods</span>(Yobs, Z, sid, <span class="dt">data=</span>df, <span class="dt">include.block =</span> <span class="ot">FALSE</span>, <span class="dt">include.MLM =</span> <span class="ot">FALSE</span>,
                 <span class="dt">include.DB =</span> <span class="ot">FALSE</span>)
-<span class="co">#&gt;                             method         tau         SE</span>
-<span class="co">#&gt; 1                               FE -0.03335262 0.03271738</span>
-<span class="co">#&gt; 2                        FE (sand) -0.03335262 0.03270954</span>
-<span class="co">#&gt; 3                     FE (cluster) -0.03335262 0.03270954</span>
-<span class="co">#&gt; 4                        FE (club) -0.03335262 0.05310928</span>
-<span class="co">#&gt; 5 IPTW weighted regression (naive) -0.03336333 0.03236370</span>
-<span class="co">#&gt; 6         IPTW weighted regression -0.03336333 0.03236398</span>
-<span class="co">#&gt; 7  IPTW weighted regression (site) -0.02080362 0.03456823</span>
-<span class="co">#&gt; 8               FE interact (site) -0.02080362 0.03461773</span>
-<span class="co">#&gt; 9              FE interact (indiv) -0.03336333 0.03221751</span></code></pre></div>
+<span class="co">#&gt;                             method          tau         SE</span>
+<span class="co">#&gt; 1                               FE -0.003264723 0.03065641</span>
+<span class="co">#&gt; 2                        FE (sand) -0.003264723 0.03065605</span>
+<span class="co">#&gt; 3                     FE (cluster) -0.003264723 0.03065605</span>
+<span class="co">#&gt; 4                        FE (club) -0.003264723 0.05487614</span>
+<span class="co">#&gt; 5 IPTW weighted regression (naive) -0.003256260 0.03035237</span>
+<span class="co">#&gt; 6         IPTW weighted regression -0.003256260 0.03035254</span>
+<span class="co">#&gt; 7  IPTW weighted regression (site) -0.018598864 0.03127671</span>
+<span class="co">#&gt; 8               FE interact (site) -0.018598864 0.03318035</span>
+<span class="co">#&gt; 9              FE interact (indiv) -0.003256260 0.03020143</span></code></pre></div>
 </div>
 <div id="estimating-cross-site-variation" class="section level2">
 <h2>Estimating cross site variation</h2>
 <p>We can estimate cross site variation using some of the multilevel modeling methods. The <code>estimate.ATE.FIRC</code> method, for example, provides <code>tau.hat</code>, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests &lt;-<span class="st"> </span><span class="kw">estimate.ATE.FIRC</span>( Yobs, Z, sid, <span class="dt">data=</span>df )
 <span class="kw">t</span>( ests )
-<span class="co">#&gt;      ATE         SE.ATE    tau.hat   SE.tau     p.variation deviance</span>
-<span class="co">#&gt; [1,] -0.02731312 0.0437792 0.1577056 0.01503981 0.009327722 5.533529</span></code></pre></div>
+<span class="co">#&gt;      ATE          SE.ATE     tau.hat   SE.tau     p.variation deviance</span>
+<span class="co">#&gt; [1,] -0.009361089 0.04173869 0.1526174 0.01314332 0.00411053  6.984675</span></code></pre></div>
 <p>(We transpose with <code>t()</code> to make it a nice row instead of a list.)</p>
 <p>This can also be done as</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests &lt;-<span class="st"> </span><span class="kw">estimate.ATE.FIRC</span>( df<span class="op">$</span>Yobs, df<span class="op">$</span>Z, df<span class="op">$</span>sid )</code></pre></div>
 <p>We also have</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests.RIRC =<span class="st"> </span><span class="kw">estimate.ATE.RIRC</span>( Yobs, Z, sid, <span class="dt">data=</span>df )
 <span class="kw">t</span>( ests.RIRC )
-<span class="co">#&gt;      ATE         SE.ATE     tau.hat   SE.tau p.variation  deviance</span>
-<span class="co">#&gt; [1,] -0.02645261 0.05131554 0.2129228 NA     7.072399e-05 18.05606</span></code></pre></div>
+<span class="co">#&gt;      ATE         SE.ATE    tau.hat   SE.tau p.variation deviance</span>
+<span class="co">#&gt; [1,] -0.01358551 0.0484215 0.2009581 NA     3.00545e-05 19.75535</span></code></pre></div>
 <p>These methods also have a <code>pool</code> option which uses a MLM with a single variance parameter for all individuals, rather than separate ones for the treatment and control groups (which is still pooled across block).</p>
 <p>We can compare these estimators via</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods_variation</span>( Yobs, Z, sid, <span class="dt">data=</span>df, <span class="dt">long.results=</span><span class="ot">TRUE</span> )
 <span class="co">#&gt;      method   tau.hat           pv</span>
-<span class="co">#&gt; 1      FIRC 0.1577056 9.327722e-03</span>
-<span class="co">#&gt; 2      RIRC 0.2129228 7.072399e-05</span>
-<span class="co">#&gt; 3 FIRC.pool 0.1575484 8.796642e-03</span>
-<span class="co">#&gt; 4 RIRC.pool 0.2132417 7.017643e-05</span>
-<span class="co">#&gt; 5         Q        NA 1.276366e-05</span></code></pre></div>
+<span class="co">#&gt; 1      FIRC 0.1526174 4.110530e-03</span>
+<span class="co">#&gt; 2      RIRC 0.2009581 3.005450e-05</span>
+<span class="co">#&gt; 3 FIRC.pool 0.1526335 3.816570e-03</span>
+<span class="co">#&gt; 4 RIRC.pool 0.2007550 3.053142e-05</span>
+<span class="co">#&gt; 5         Q        NA 7.446190e-06</span></code></pre></div>
 <p>The <span class="math inline">\(p\)</span>-values are testing for these estimates being nonzero.</p>
 </div>
 

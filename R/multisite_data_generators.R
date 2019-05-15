@@ -9,7 +9,7 @@
 ##        automatically calculate model coefficients and then call gen.dat.model
 
 
-library( tidyverse )
+library( dplyr )
 library( MASS )
 library( lme4 )
 library( arm )
@@ -122,7 +122,7 @@ gen.dat.model  = function( n.bar = 10,
                              cluster.rand = FALSE,
                              return.sites=FALSE,
                              verbose = FALSE ) {
-    require( tidyverse )
+    require( dplyr )
 
     if ( verbose ) {
         scat( "gammas:\t%.2f\t%.2f (%.2f)\n\t%.2f\t%.2f (%.2f)\n",
@@ -205,7 +205,7 @@ gen.dat.model.no.cov = function( n.bar = 16,
                                  size.impact.correlate = 0,
                                  proptx.impact.correlate = 0,
                                  verbose = FALSE ) {
-    require( tidyverse )
+    require( dplyr )
     stopifnot( size.impact.correlate %in% c(-1, 0, 1 ) )
     stopifnot( proptx.impact.correlate %in% c(-1, 0, 1 ) )
 

@@ -4,7 +4,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 library( blkvar )
-library( tidyverse )
+library( dplyr )
+library( ggplot2 )
 
 ## ------------------------------------------------------------------------
 df = gen.dat.no.cov( n.bar=50, J=30,

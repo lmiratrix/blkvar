@@ -4,6 +4,7 @@
 
 library( testthat )
 library( blkvar )
+library( ggplot2 )
 context("Checking multisite DGP functions")
 
 test_that( "Multisite DGP works", {

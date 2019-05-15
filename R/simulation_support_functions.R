@@ -10,7 +10,7 @@
 #' @return dataframe with summary statistics by block
 #' @export
 calc.summary.stats.oracle = function( data, Y0="Y0", Y1="Y1", Z="Z", B="B" ) {
-    require( tidyverse )
+    require( dplyr )
 
             data = rename( data, Y0 = !!rlang::sym(Y0),
                        Y1 = !!rlang::sym(Y1),
