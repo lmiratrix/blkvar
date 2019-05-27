@@ -95,7 +95,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
     cs.var = clubsandwich.variance( block.stats$prec, block.stats$tau.hat, tau.hat )
     SE.lm.clust.club = sqrt( cs.var$var.hat )
 
-    FEmodels = data.frame( method=c("FE", "FE (sand)", "FE (cluster)", "FE (club)" ),
+    FEmodels = data.frame( method=c("FE", "FE-Het", "FE-CR", "FE-Club" ),
                            tau = rep( tau.hat, 4 ),
                            SE = c( SE.lm, SE.lm.sand, SE.lm.clust, SE.lm.clust.club ),
                            stringsAsFactors = FALSE )
@@ -153,7 +153,7 @@ weighted.linear.estimators.naive = function( Yobs, Z, B, data=NULL ) {
     tau.w.site = coef( M0w.site )[[2]]
     SE.w.site = summary( M0w.site )$coeff["Z",2]
 
-    weightModels = data.frame( method=c("IPTW weighted regression (lm, naive)", "IPTW weighted regression (lm)", "IPTW weighted regression (lm, site)"),
+    weightModels = data.frame( method=c("FE-IPTW(n)", "FE-IPTW(n)", "FE-IPTW-Sites(n)"),
                                tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
                                SE = c( SE.w, SE.w2, SE.w.site ),
                                stringsAsFactors = FALSE )
@@ -236,7 +236,7 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL ) {
     tau.w.site = coef( M0w.site )[["Z"]]
     SE.w.site = summary( M0w.site )$coeff["Z",2]
 
-    weightModels = data.frame( method=c("IPTW weighted regression (naive)", "IPTW weighted regression", "IPTW weighted regression (site)"),
+    weightModels = data.frame( method=c("FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites"),
                                tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
                                SE = c( SE.w, SE.w2, SE.w.site ),
                                stringsAsFactors = FALSE )
@@ -336,7 +336,7 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
     # faster way---this should work easily.
     #sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
 
-    interactModels = data.frame( method=c("FE interact (site)", "FE interact (indiv)"),
+    interactModels = data.frame( method=c("FE-Int-Sites", "FE-Int-Persons"),
                                  tau = c( tau.site, tau.indiv ),
                                  SE = c( SE.site, SE.indiv ),
                                  stringsAsFactors = FALSE)

@@ -210,7 +210,7 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
         DB.si = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="individual" )
         DB.ss = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="site" )
         DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
-        DB$method = with( DB, paste( "DB (", weight, "-", method, ")", sep="" ) )
+        DB$method = c( "DB-FP-Persons", "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites" ) #with( DB, paste( "DB (", weight, "-", method, ")", sep="" ) )
         DB$weight = NULL
         names(DB)[1] = "tau"
 
@@ -230,15 +230,10 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     # Add info on the methods (e.g., what estimand they are targeting)
     if ( include.method.characteristics ) {
         mc = method.characteristics()
-        mcm = mc$method
-        names(mcm) = mc$fullname
-        summary_table$method = mcm[ as.character( summary_table$method ) ]
+        #mcm = mc$method
+        #names(mcm) = mc$fullname
+        #summary_table$method = mcm[ as.character( summary_table$method ) ]
         summary_table = merge( summary_table, mc, by="method", all.x=TRUE, all.y=FALSE )
-    } else {
-        mc = method.characteristics()
-        mcm = mc$method
-        names(mcm) = mc$fullname
-        summary_table$method = mcm[ as.character( summary_table$method ) ]
     }
 
     return(summary_table)
