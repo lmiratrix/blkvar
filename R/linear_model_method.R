@@ -68,7 +68,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
     M0 = lm( Yobs ~ 0 + Z + B, data=data )
     SE.lm = summary( M0 )$coeff["Z",2]
 
-    # est ATE
+    # est ATE (precision weighted)
     tau.hat = coef(M0)[["Z"]]
 
     # Huber-White SEs
@@ -76,7 +76,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
     SE.lm.sand <-sqrt( vcov_sand[1,1] )
 
     # Cluster robust SEs (clustering at site level)
-    vcov_clust = sandwich::vcovCL( M0, siteID )
+    vcov_clust = sandwich::vcovCL( M0, data$siteID )
     SE.lm.clust = sqrt( vcov_clust[1,1] )
 
     # Cluster robust SEs (clustering at site level using clubSandwich)
@@ -85,15 +85,14 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
         block.stats = calc.summary.stats(Yobs, Z, B, data=data, siteID=siteID, add.neyman = FALSE )
     }
     block.stats = mutate( block.stats, tau.hat = Ybar1 - Ybar0,
-                          prec = n * (n0/n) * (n1/n),
-                          w = 1/prec )
+                          prec = n * (n0/n) * (n1/n) )
     if ( !is.null( siteID ) ) {
         # aggregate blocks into sites and calculate site weights and tau.hats
         block.stats = block.stats %>% group_by( siteID ) %>%
-            summarise( tau.hat = sum( w * tau.hat ) / sum( w ),
-                       w = 1 / sum( prec ) )
+            summarise( tau.hat = sum( prec * tau.hat ) / sum( prec ),
+                       prec = sum( prec ) )
     }
-    cs.var = clubsandwich.variance( block.stats$w, block.stats$tau.hat, tau.hat )
+    cs.var = clubsandwich.variance( block.stats$prec, block.stats$tau.hat, tau.hat )
     SE.lm.clust.club = sqrt( cs.var$var.hat )
 
     FEmodels = data.frame( method=c("FE", "FE (sand)", "FE (cluster)", "FE (club)" ),

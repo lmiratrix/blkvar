@@ -45,6 +45,7 @@ test_that("Check method characteristics works", {
     dat = gen.dat( n.bar = 30, J = 30 )
 
     fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = TRUE )
+    fulltab
     expect_true( all( c( "weight","population","biased") %in% names(fulltab) ) )
     expect_true( all( !is.na( fulltab$weight ) ) )
 

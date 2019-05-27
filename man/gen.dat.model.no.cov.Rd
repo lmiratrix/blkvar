@@ -9,7 +9,7 @@ gen.dat.model.no.cov(n.bar = 16, J = 30, p = 0.5, gamma.00, gamma.10,
   tau.00, tau.01, tau.11, sigma2.e, variable.n = TRUE,
   variable.p = FALSE, return.sites = FALSE, finite.model = FALSE,
   size.impact.correlate = 0, proptx.impact.correlate = 0,
-  verbose = FALSE)
+  correlate.strength = 0.75, size.ratio = 1/3, verbose = FALSE)
 }
 \arguments{
 \item{n.bar}{average site size, Default: 10}
@@ -29,6 +29,10 @@ size?}
 \item{proptx.impact.correlate}{Takes values of -1, 0, or 1: Are proportion
 of units treated negatively correlated, uncorrelated, or positively
 correlated with site size?}
+
+\item{correlate.strength}{In [0,1], and describes how correlated the ranking
+of site impacts will be with proptx and site size, if they are set to be
+correlated.}
 
 \item{verbose}{Say stuff while maing data?, Default: FALSE}
 }

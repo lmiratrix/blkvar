@@ -66,7 +66,8 @@ method.characteristics = function() {
         a = compare_methods( data = dat[ c("Yobs", "Z","B" ) ] )
         a = a[1]
         print( a, row.names = FALSE )
-        a$code = c("hybrid_m","hybrid_p","plug_in_big", "DB-FP-Persons",
+        a$fullname = a$method
+        a$method = c("hybrid_m","hybrid_p","plug_in_big", "DB-FP-Persons",
                    "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites", "FE",
                    "FE-Het", "FE-CR", "FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites",
                    "FE-Int-Sites", "FE-Int-Persons", "RICC", "FIRC", "RIRC" )
@@ -83,7 +84,7 @@ method.characteristics = function() {
 
 }
     tibble::tribble(
-        ~method,            ~code,  ~weight, ~population, ~biased,
+        ~fullname,            ~method,  ~weight, ~population, ~biased,
         "hybrid_m",       "hybrid_m", "person",    "finite",       0,
         "hybrid_p",       "hybrid_p", "person",    "finite",       0,
         "plug_in_big",    "plug_in_big", "person",    "finite",       0,
@@ -94,7 +95,7 @@ method.characteristics = function() {
         "FE",             "FE", "person",    "finite",       1,
         "FE (sand)",         "FE-Het", "person",    "finite",       1,
         "FE (cluster)",          "FE-CR", "person",  "superpop",       1,
-        "FE (club)",          "FE-CR", "person",  "superpop",       1,
+        "FE (club)",          "FE-Club", "person",  "superpop",       1,
         "IPTW weighted regression (naive)",     "FE-IPTW(n)", "person",    "finite",       0,
         "IPTW weighted regression",        "FE-IPTW", "person",    "finite",       0,
         "IPTW weighted regression (site)",  "FE-IPTW-Sites",   "site",    "finite",       0,
@@ -229,7 +230,15 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     # Add info on the methods (e.g., what estimand they are targeting)
     if ( include.method.characteristics ) {
         mc = method.characteristics()
+        mcm = mc$method
+        names(mcm) = mc$fullname
+        summary_table$method = mcm[ as.character( summary_table$method ) ]
         summary_table = merge( summary_table, mc, by="method", all.x=TRUE, all.y=FALSE )
+    } else {
+        mc = method.characteristics()
+        mcm = mc$method
+        names(mcm) = mc$fullname
+        summary_table$method = mcm[ as.character( summary_table$method ) ]
     }
 
     return(summary_table)

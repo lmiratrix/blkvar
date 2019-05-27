@@ -178,6 +178,16 @@ gen.dat.model  = function( n.bar = 10,
 
 
 
+block.distn = function( J, n.bar, size.ratio ) {
+    N = 1 + 3 * size.ratio
+    p = (N-1)/N
+    small = rbinom( J, 1, p )
+    Y = runif( J )
+    Y = n.bar * ifelse( small, Y, Y*(N-1) + 1 )
+
+    Y
+}
+
 
 #' Generate multilevel data with no covariates.  A simplification of function
 #' above.
@@ -189,6 +199,9 @@ gen.dat.model  = function( n.bar = 10,
 #' @param proptx.impact.correlate  Takes values of -1, 0, or 1: Are proportion
 #'   of units treated negatively correlated, uncorrelated, or positively
 #'   correlated with site size?
+#' @param correlate.strength In [0,1], and describes how correlated the ranking
+#'   of site impacts will be with proptx and site size, if they are set to be
+#'   correlated.
 #'
 #' @return multisite data with at least 2 tx and 2 co units in each block.
 #' @export
@@ -204,6 +217,8 @@ gen.dat.model.no.cov = function( n.bar = 16,
                                  finite.model=FALSE,
                                  size.impact.correlate = 0,
                                  proptx.impact.correlate = 0,
+                                 correlate.strength = 0.75,
+                                 size.ratio = 1/3,
                                  verbose = FALSE ) {
     require( dplyr )
     stopifnot( size.impact.correlate %in% c(-1, 0, 1 ) )
@@ -211,11 +226,14 @@ gen.dat.model.no.cov = function( n.bar = 16,
 
     # generate site sizes (all the same or different sizes)
     if ( variable.n ) {
+        stopifnot( n.bar > 4 )
         #nj = rpois( J, n.bar)
-        nj = round( n.bar * runif( J, 0.25, 1.75 ) )
-        if ( any( nj < 4 ) ) {
-            warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
-        }
+        #nj = round( n.bar * runif( J, 0.25, 1.75 ) )
+        nj = 4 + round( block.distn( J, n.bar - 4, size.ratio ) )
+        nj[ nj < 4 ] = 4
+        #if ( any( nj < 4 ) ) {
+        #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
+        #}
     } else {
         nj = rep( n.bar, J )
     }
@@ -244,7 +262,7 @@ gen.dat.model.no.cov = function( n.bar = 16,
     # If we want a relationship of impact to site size or proportion treated,
     # sort our random effects from small to large (with some noise so the ordering is not perfect).
     if ( (size.impact.correlate != 0) || (proptx.impact.correlate != 0) ) {
-        mv = mv[ order( mv[,2] + rnorm( J, sd = 0.75 * sqrt( tau.11 ) )), ]
+        mv = mv[ order( correlate.strength^2 * mv[,2] + (1-correlate.strength^2) * rnorm( J, sd = sqrt( tau.11 ) ) ), ]
     }
 
     if ( size.impact.correlate != 0 ) {
@@ -285,7 +303,7 @@ gen.dat.model.no.cov = function( n.bar = 16,
             ps = pmin( (nj-2)/nj, pmax( 2/nj, ps ) )
 
             dd$p = ps[ as.numeric( dd$sid ) ]
-        } else if ( proptx.impact.correlate ) {
+        } else if ( proptx.impact.correlate != 0 ) {
             warning( "Can't have proportion treated correlated with impact if the proportion treated does not vary." )
         }
         dd = dd %>% group_by( sid ) %>%

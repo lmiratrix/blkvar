@@ -91,7 +91,7 @@ test_that( "Site impact correlation works", {
 
 test_that( "prop treated by impact correlation works", {
     set.seed( 1019 )
-    df = gen.dat.no.cov( n.bar=20, J=200,
+    df = gen.dat.no.cov( n.bar=20, J=400,
                          tau.11.star = 0.3^2,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -104,6 +104,11 @@ test_that( "prop treated by impact correlation works", {
                    p.Z = mean( Z ),
                    Y.hat = mean( Yobs[Z==1] ) - mean( Yobs[Z==0] ),
                    Y.true = mean( Y1 ) - mean( Y0 ) )
+
+    mean( sites$n == 4 )
+    mean( sites$n )
+    summary( sites$n )
+    qplot( sites$n )
 
     head( sites )
     qplot( sites$n, sites$Y.true )
