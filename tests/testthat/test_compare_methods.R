@@ -134,6 +134,47 @@ test_that( "Comparing variation with site and block works", {
     expect_true( rsA$tau.hat.FIRC != rsA2$tau.hat.FIRC )
     expect_true( rsA$tau.hat.FIRC.pool != rsA2$tau.hat.FIRC.pool )
 
+})
+
+
+
+
+
+
+test_that( "Design based works through compare_methods", {
+    set.seed( 1019 )
+    dat = gen.dat( n.bar = 30, J = 4 )
+    nrow( dat )
+    head( dat )
+
+    blocks = dat %>% group_by( sid ) %>%
+        summarise( ATE.hat = mean( Yobs[Z==1] ) - mean( Yobs[Z==0] ),
+                   n=n() )
+    blocks
+
+    ATE = weighted.mean( blocks$ATE.hat, blocks$n )
+    ATE
+
+    rsA =  compare_methods( Yobs, Z, sid, data=dat, include.MLM = FALSE, include.block = FALSE )
+    rsA
+
+    rsA$tau[ rsA$method == "DB-FP-Persons" ]
+    ATE
+    expect_equal( rsA$tau[ rsA$method == "DB-FP-Persons" ], ATE )
+
+    sdat = calc.summary.stats( Yobs, Z, sid, data=dat )
+    sdat
+    sdat = mutate( sdat, ATE.hat = Ybar1-Ybar0 )
+    sdat
+    a = estimate.ATE.design.based( sdat, weight="individual", method="finite" )
+    a
+    expect_equal( a$tau.hat, ATE )
+
+    expect_true( is.data.frame(rsA) )
+
 
 
 })
+
+
+
