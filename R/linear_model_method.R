@@ -104,43 +104,11 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
 }
 
 
-#' Individual Weighted regression models using the lm and precision weighting
-#'
-#' WARNING: This is the wrong kind of regression.  The weights are correct, but
-#' the use is wrong.
-#'
-#' NOTE: This method has not been updated for site
-weighted.linear.estimators.naive = function( Yobs, Z, B, data=NULL ) {
-    if ( missing( "Z" ) && is.null( data ) ) {
-        data = Yobs
-    }
-    if ( is.null( data ) ) {
-        data = data.frame( Yobs = Yobs,
-                           Z = Z,
-                           B = B )
-    } else {
-        if ( missing( "Z" ) ) {
-            stopifnot( all( c( "Yobs", "Z", "B" ) %in% names(data) ) )
-        } else {
-            data = rename_( data,
-                            Yobs = as.character( substitute( Yobs ) ),
-                            Z = as.character( substitute( Z ) ),
-                            B = as.character( substitute( B ) ) )
-        }
-    }
-    dat = data
 
-    Z.bar = mean( dat$Z )
-    n = nrow( dat )
-    J = length( unique( dat$B ) )
-    n.bar = n / J
-    dat = dat %>% dplyr::group_by( B ) %>%
-        dplyr::mutate( p = mean( Z ),
-                       nj = n(),
-                       w.orig = ifelse( Z, 1/p, 1/(1-p) ),
-                       weight = ifelse( Z, Z.bar / p, (1-Z.bar)/(1-p) ),
-                       weight.site = weight * n.bar / nj ) %>%
-        dplyr::ungroup()
+#Commentary: some wrong ways of doing things.  The following code contains the
+#wrong way of using weights (i.e. passing directly to lm).
+
+if ( FALSE ) {
 
     M0w = lm( Yobs ~ Z + B, weights=dat$w.orig, data=dat )
     SE.w = summary( M0w )$coeff["Z",2]
@@ -153,12 +121,6 @@ weighted.linear.estimators.naive = function( Yobs, Z, B, data=NULL ) {
     tau.w.site = coef( M0w.site )[[2]]
     SE.w.site = summary( M0w.site )$coeff["Z",2]
 
-    weightModels = data.frame( method=c("FE-IPTW(n)", "FE-IPTW(n)", "FE-IPTW-Sites(n)"),
-                               tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
-                               SE = c( SE.w, SE.w2, SE.w.site ),
-                               stringsAsFactors = FALSE )
-
-    weightModels
 }
 
 
@@ -172,7 +134,7 @@ weighted.linear.estimators.naive = function( Yobs, Z, B, data=NULL ) {
 #' @return Dataframe of results for different estimators.
 #' @importFrom survey svydesign svyglm
 #' @importFrom stats gaussian
-weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL ) {
+weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL, include.naive = FALSE ) {
 
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
@@ -219,11 +181,6 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL ) {
             mutate( weight.site = weight * n.bar / n() )
     }
 
-    M0w = svyglm( Yobs ~ 0 + Z + B,
-                  design=svydesign(id=~1, weights=~w.orig, data=dat ),
-                  family = gaussian() )
-    SE.w = grab.SE( M0w )
-
     M0w2 = svyglm( Yobs ~ 0 + Z + B,
                   design=svydesign(id=~1, weights=~weight, data=dat ),
                   family = gaussian() )
@@ -236,10 +193,21 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL ) {
     tau.w.site = coef( M0w.site )[["Z"]]
     SE.w.site = summary( M0w.site )$coeff["Z",2]
 
-    weightModels = data.frame( method=c("FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites"),
-                               tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
-                               SE = c( SE.w, SE.w2, SE.w.site ),
+    weightModels = data.frame( method=c("FE-IPTW", "FE-IPTW-Sites"),
+                               tau = c( coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
+                               SE = c( SE.w2, SE.w.site ),
                                stringsAsFactors = FALSE )
+
+    if ( include.naive ) {
+        M0w = svyglm( Yobs ~ 0 + Z + B,
+                  design=svydesign(id=~1, weights=~w.orig, data=dat ),
+                  family = gaussian() )
+        SE.w = grab.SE( M0w )
+        weightModels = data.frame( method=c("FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites"),
+                                                       tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
+                                                       SE = c( SE.w, SE.w2, SE.w.site ),
+                                                       stringsAsFactors = FALSE )
+    }
 
     weightModels
 }
@@ -374,7 +342,7 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
 
     FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats )
 
-    weightModels = weighted.linear.estimators( Yobs, Z, B, data=dat )
+    weightModels = weighted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat )
 
     interactModels = interacted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat )
 

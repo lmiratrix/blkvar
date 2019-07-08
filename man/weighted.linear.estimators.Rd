@@ -4,7 +4,8 @@
 \alias{weighted.linear.estimators}
 \title{Survey-weighted adjusted linear regression}
 \usage{
-weighted.linear.estimators(Yobs, Z, B, data = NULL, siteID = NULL)
+weighted.linear.estimators(Yobs, Z, B, data = NULL, siteID = NULL,
+  include.naive = FALSE)
 }
 \arguments{
 \item{data}{Dataframe to analyze, with Y, Z, and B columns.}

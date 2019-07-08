@@ -195,11 +195,18 @@ test_that("weighted linear regression works with nested randomization blocks", {
 
     a = rename( a, outcome = Yobs, Tx = Z, BB = B )
 
-    est1 = blkvar:::weighted.linear.estimators( outcome, Tx, BB, siteID = "sssite", data=a )
+    est1 = blkvar:::weighted.linear.estimators( outcome, Tx, BB, siteID = "sssite", data=a, include.naive = TRUE )
     est1
 
-    est1b = blkvar:::weighted.linear.estimators( outcome, Tx, BB, data=a )
+    est1b = blkvar:::weighted.linear.estimators( outcome, Tx, BB, data=a, include.naive = TRUE )
     est1b
+
+    estDB = compare_methods( outcome, Tx, BB, data=a, siteID = "sssite", include.MLM = FALSE, include.LM = TRUE, include.block = FALSE )
+    estDB
+
+    expect_equal( est1$tau[[3]], estDB$tau[[2]] )
+    expect_equal( est1$tau[[3]], estDB$tau[estDB$method=="DB-FP-Sites"] )
+    expect_equal( est1$tau[[3]], estDB$tau[estDB$method=="FE-IPTW-Sites"] )
 
     expect_equal( est1$tau[[1]], params$true.indiv.tau )
     expect_equal( est1$tau[[2]], params$true.indiv.tau )
@@ -215,6 +222,7 @@ test_that("weighted linear regression works with nested randomization blocks", {
     dat = make.obs.data.linear( X=1:50, method="big" )
     dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
     head( dat )
+
     # Our dataset with blocks in sites
     sdat = calc.summary.stats( dat, siteID="siteNo" )
     sdat
@@ -223,7 +231,7 @@ test_that("weighted linear regression works with nested randomization blocks", {
     a = estimate.ATE.design.based( sdat, siteID="siteID", weight="site", method="finite" )
     a
 
-    a2 = blkvar:::weighted.linear.estimators( Yobs, Z, B, siteID = "siteNo", data=dat )
+    a2 = blkvar:::weighted.linear.estimators( Yobs, Z, B, siteID = "siteNo", data=dat, include.naive = TRUE )
     a2
 
     expect_equal( a$tau.hat, a2$tau[[3]] )
@@ -279,7 +287,7 @@ test_that("all linear regression works with nested randomization blocks", {
     ff = filter( res, change != 0 | changeSE != 0 )
     ff
 
-    expect_true( nrow( ff ) == 3 )
+    expect_true( nrow( ff ) == 4 )
 
 })
 
@@ -311,7 +319,7 @@ test_that("compare_methods works with nested randomization blocks", {
     ff = filter( res, change != 0 | changeSE != 0 )
     ff
 
-    expect_true( nrow( ff ) == 7 )
+    expect_true( nrow( ff ) == 8 )
 
 })
 

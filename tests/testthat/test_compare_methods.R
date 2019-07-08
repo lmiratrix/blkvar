@@ -52,9 +52,9 @@ test_that("Check method characteristics works", {
     ptab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = FALSE )
 
     mc = method.characteristics()
+    expect_true( all( fulltab$method %in% mc$method ) )
 
     expect_equal( nrow( fulltab ), nrow( ptab ) )
-    expect_equal( nrow( ptab ), nrow( mc ) )
 })
 
 
