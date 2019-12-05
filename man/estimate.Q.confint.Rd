@@ -4,7 +4,7 @@
 \alias{estimate.Q.confint}
 \title{Calculate confidence interval for cross site variation using Q-statistic test inversion.}
 \usage{
-estimate.Q.confint(Yobs, Z, B, data = NULL, alpha = 0.95)
+estimate.Q.confint(Yobs, Z, B, data = NULL, alpha = 0.05)
 }
 \arguments{
 \item{Yobs}{(outcome)}
@@ -14,6 +14,8 @@ estimate.Q.confint(Yobs, Z, B, data = NULL, alpha = 0.95)
 \item{B}{(site id)}
 
 \item{data}{Dataframe with outcome, treatment, and blocking factor.}
+
+\item{alpha}{The level of the test.  The CI will be a 1-2alpha confidence interval.}
 }
 \description{
 Code taken from prior work of Catherine Armstrong.

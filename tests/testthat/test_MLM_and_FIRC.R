@@ -11,7 +11,7 @@ test_that("FIRC functions work", {
     set.seed( 1019 )
 
     sdf = gen.dat( n.bar=10, J=10,
-                   rho2.0X = 0.3, rho2.1X = 0.1,
+                   rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
     pv2 = estimate.ATE.FIRC(Yobs, Z, sid, data=sdf, include.testing = TRUE )
@@ -36,7 +36,7 @@ test_that("RIRC functions work", {
     set.seed( 1019 )
 
     sdf = gen.dat( n.bar=10, J=10,
-                   rho2.0X = 0.3, rho2.1X = 0.1,
+                   rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
     pv = estimate.ATE.RIRC( Yobs, Z, sid, data=sdf )
@@ -55,13 +55,12 @@ test_that("RICC functions work", {
     set.seed( 1019 )
 
     sdf = gen.dat( n.bar=10, J=10,
-                   rho2.0X = 0.3, rho2.1X = 0.1,
+                   rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
     pv = estimate.ATE.RICC( Yobs, Z, sid, data=sdf )
     pv
     expect_true( is.na( pv$deviance ) )
-    expect_true( pv$ATE > 0 )
 
 
     # Check arb variable names works.

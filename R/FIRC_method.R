@@ -85,7 +85,7 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALS
     }
 
     if ( include.testing ) {
-        # Test for cross site variation (???)
+        # Test for cross site variation
         if ( pool ) {
             re.mod.null <- nlme::gls(Yobs ~ 0 + Z + B,
                                      data=data,
@@ -119,16 +119,16 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALS
     ATE = nlme::fixef( re.mod )[[1]]
     SE.ATE = sqrt( vcov( re.mod )[1,1] )
 
-    #extract tau
+    # extract tau (estimated cross site variation)
     vc <- nlme::VarCorr(re.mod)
     suppressWarnings(storage.mode(vc) <- "numeric")
     tau.hat <- vc["Z","StdDev"]
 
-    #extract se of tau
+    # extract se of tau
     ## not source code: https://stackoverflow.com/questions/31694812/standard-error-of-variance-component-from-the-output-of-lmer/31704646#31704646
     ## soure code: https://stats.idre.ucla.edu/r/faq/how-can-i-calculate-standard-errors-for-variance-components-from-mixed-models/
 
-    #let logged sds first
+    # let logged sds first
     var <- re.mod$apVar
 
     if ( is.character( var ) ) {
@@ -248,34 +248,92 @@ if ( FALSE ) {
 #'
 #' @param df  Dataframe to fit.  Needs Z, X, B, and Yobs columns.
 #'
-analysis.FIRC.cov <- function( df, REML = FALSE, anova=FALSE ) {
+#' @export
+analysis.FIRC.cov <- function( Yobs, Z, B, X, siteID = NULL, data=NULL, REML = FALSE, anova=FALSE ) {
+
+
+   # stopifnot( !( include.testing && REML ) )
+
+    # This code block takes the parameters of
+    # Yobs, Z, B, siteID = NULL, data=NULL, ...
+    # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
+    if(!is.null(data)){
+        if ( missing( "Yobs" ) ) {
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]],
+                               X = data[[4]] )
+            n.tx.lvls = length( unique( data$Z ) )
+            stopifnot( n.tx.lvls == 2 )
+            stopifnot( is.numeric( data$Yobs ) )
+        } else {
+            if ( !is.null( siteID ) ) {
+                siteID = data[[siteID]]
+            }
+            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
+                               Z = eval( substitute( Z ), data ),
+                               B = eval( substitute( B ), data),
+                               X = eval( substitute( X ), data) )
+            data$siteID = siteID
+        }
+    } else {
+        data = data.frame( Yobs = Yobs,
+                           Z = Z,
+                           B = B,
+                           X = X)
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
+        }
+    }
+
+    if ( is.null( data$siteID ) ) {
+        data$siteID = data$B
+    }
+
+    stopifnot( length( unique( data$Z ) ) == 2 )
+    stopifnot( is.numeric( data$Yobs ) )
+
+
+    #fit multilevel model and extract tau
+    method = ifelse( REML, "REML", "ML" )
 
   #fit multilevel model and extract pvalue
-  re.mod <- nlme::lme(Yobs ~ 0 + Z * X + B,
-                      data = df,
+  re.mod <- nlme::lme(Yobs ~ 0 + Z + Z:X + B,
+                      data = data,
                       random = ~ 0 + Z | B,
                       weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                       method="ML",
                       control=nlme::lmeControl(opt="optim",returnObject=TRUE))
 
   # Test for cross site variation
-  re.mod.null <- nlme::gls(Yobs ~ 0 + Z * X + B,
-                           data=df,
+  re.mod.null <- nlme::gls(Yobs ~ 0 + Z + Z:X + B,
+                           data = data,
                            weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                            method = "ML",
                            control=nlme::lmeControl(opt="optim", returnObject=TRUE))
 
 
+  # Generate the different tests we can have for cross site variation in this model
+
+  # Test 1: LR test (combination)
   if ( anova ) {
     stopifnot( REML == FALSE )
     myanova = anova(re.mod.null, re.mod)
-    p.value.anova = myanova[2,9]
-    return( p.value.anova / 2 )  # divide by 2 by same logic as chi-squared test.
+
+    # TODO: Fix this!
+    p.value.comb = myanova[2,9] / 2  # divide by 2 by same logic as chi-squared test.
   } else {
     td = abs(as.numeric( deviance( re.mod ) - deviance( re.mod.null )))
-    p.value = 0.5 * pchisq(td, 1, lower.tail = FALSE )
-    return( p.value )
+    p.value.comb = 0.5 * pchisq(td, 2, lower.tail = FALSE ) + 0.5 * pchisq(td, 1, lower.tail = FALSE )
   }
+
+  # Test 2: Test the systematic coefficient
+  SEs = sqrt( vcov( re.mod )["Z:X","Z:X"] )
+  tstat = nlme::fixef( re.mod )[["Z:X"]] / SEs
+  p.value.sys = 2 * pnorm( - abs( tstat ) )
+
+  data.frame( method=c("FIRC combination", "FIRC systematic.RTx" ),
+              pvalue = c( p.value.comb, p.value.sys ))
 
 }
 

@@ -11,7 +11,7 @@ test_that( "Multisite DGP works", {
 
     # exploring sites
     sdf = gen.dat( n.bar=10, J=10,
-                   rho2.0X = 0.3, rho2.1X = 0.1,
+                   rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=TRUE )
 
     expect_equal( nrow(sdf), 10 )
@@ -23,7 +23,7 @@ test_that( "Multisite DGP works", {
 
 
     dat = gen.dat( n.bar=10, J=10,
-                   rho2.0X = 0.3, rho2.1X = 0.1,
+                   rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
 
     head( dat )
@@ -229,6 +229,10 @@ test_that( "Other DGP calls work", {
 
     df = gen.dat.model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1, variable.n=FALSE)
     expect_equal( nrow(df), 3000 )
+} )
+
+test_that( "Other DGP calls work (#2)", {
+    set.seed( 101010 )
 
     df = gen.dat( n.bar=10, J=300,
                   tau.11.star = 0.3,
@@ -240,11 +244,11 @@ test_that( "Other DGP calls work", {
     M0 = lmer( Yobs ~ 1 + Z + (Z|sid), data=df )
     #display( M0 )
 
-    M1 = lmer( Yobs ~ 1 + X*Z + (Z|sid), data=df )
+    M1 = lmer( Yobs ~ 1 + W*Z + (Z|sid), data=df )
     #display( M1 )
 
 
-    sites = df %>% group_by( sid, X ) %>% summarise( Y0.bar = mean( Y0 ),
+    sites = df %>% group_by( sid, W ) %>% summarise( Y0.bar = mean( Y0 ),
                                                      Y1.bar = mean( Y1 ),
                                                      beta = mean( Y1 - Y0 ),
                                                      n = n(),
@@ -257,18 +261,21 @@ test_that( "Other DGP calls work", {
                                        mean.beta = mean( beta ),
                                        n.bar = mean( n ),
                                        p = mean( p.Tx ),
-                                       X.bar = mean( X ) )
-    expect_true( abs( rst$X.bar ) < 0.05 )
+                                       W.bar = mean( W ) )
+    tt = t.test( sites$W )
+    tt
+    expect_true( tt$p.value > 0.05 )
 
 } )
 
 
 test_that( "Cluster randomization options work", {
-    df = gen.dat( n.bar=10, J=300,
+    df = gen.dat( n.bar=10, J=20,
                   tau.11.star = 0.3,
                   verbose=FALSE,
                   cluster.rand=TRUE)
     tb = table( df$Z, df$sid)
+    tb
     expect_true( all( tb[1,] * tb[2,] == 0 ) )
     df = gen.dat( n.bar=10, J=300,
                   tau.11.star = 0.3,
@@ -278,4 +285,42 @@ test_that( "Cluster randomization options work", {
     expect_true( all( tb[1,] * tb[2,] != 0 ) )
 
 } )
+
+
+
+test_that( "Individual covariate options work", {
+    set.seed( 1020 )
+    df = gen.dat.model( n.bar = 20, J = 300,
+                        gamma.00 = 1, gamma.01 = 1, gamma.10 = 0.3, gamma.11 = 0,
+                        tau.00 = 1, tau.01 = 0, tau.11 = 0,
+                        sigma2.e = 1, sigma2.W = 1,
+                        beta.X = 0.8, sigma2.mean.X = 0.5, variable.n = FALSE, variable.p = FALSE )
+    head( df )
+
+    sd( df$Y0 )
+    sd( df$Y1 )
+
+    M0 = lmer( Yobs ~ 1 + Z + W + X + (1|sid), data=df )
+    summary( M0 )
+
+    params = c( 1, 0.3, 1, 0.8 )
+    CI = confint(M0, method="Wald")[3:6,]
+    CI
+    CI = cbind( CI, params )
+    CI
+
+    expect_true( all( CI[,1] <= params ) )
+    expect_true( all( CI[,2] >= params ) )
+
+
+    M0 = lm( Yobs ~ 1 + Z + W + X, data=df )
+    summary( M0 )
+
+    gp = df %>% group_by( sid ) %>%
+        summarise( mean.X = mean( X ) )
+    M1 = lmer( X ~ 1 + (1|sid), data=df )
+    arm::display( M1 )
+
+} )
+
 

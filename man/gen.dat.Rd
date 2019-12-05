@@ -5,7 +5,7 @@
 \title{gen.dat}
 \usage{
 gen.dat(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3,
-  rho2.0X = 0.1, rho2.1X = 0.5, ICC = 0.7, gamma.00 = 0,
+  rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7, gamma.00 = 0,
   gamma.10 = 0.2, verbose = FALSE, zero.corr = FALSE, ...)
 }
 \arguments{
@@ -18,9 +18,9 @@ gen.dat(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3,
 \item{tau.11.star}{Total amount of cross site treatment variation, both
 explained by covariate and not, Default: 0.3}
 
-\item{rho2.0X}{Explanatory power of X for control outcomes, Default: 0.1}
+\item{rho2.0W}{Explanatory power of W for control outcomes, Default: 0.1}
 
-\item{rho2.1X}{Explanatory power of X for average treatment impact, Default:
+\item{rho2.1W}{Explanatory power of W for average treatment impact, Default:
 0.5}
 
 \item{ICC}{The ICC, Default: 0.7}

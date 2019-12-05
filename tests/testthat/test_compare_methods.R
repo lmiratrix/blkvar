@@ -100,7 +100,8 @@ test_that( "Comparing variation methods works", {
     rs2 = compare_methods_variation( dat$Yobs, dat$Z, dat$sid, long.results = TRUE )
     expect_equal( rs, rs2 )
 
-    names( dat ) = c( "ID", "W", "y.0", "y.1", "Tx", "outcome" )
+    head( dat )
+    names( dat ) = c( "ID", "y.0", "y.1", "Tx", "outcome",  "W" )
     d2 = dat
     d2$y.0 = d2$y.1 = d2$W = NULL
     head( d2 )

@@ -15,8 +15,9 @@
 #' @param B (site id)
 #' @param Yobs (outcome)
 #' @param Z (binary treatment 0/1)
+#' @param alpha The level of the test.  The CI will be a 1-2alpha confidence interval.
 #' @export
-estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.95 ){
+estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.05 ){
     if(!is.null(data)){
         if ( missing( "Yobs" ) ) {
             data = data.frame( Yobs<-data[,1],
@@ -53,7 +54,7 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.95 ){
     q <- sum((bj - bbar)^2/vj)
     pval <- pchisq(q,df=(length(bj)-1),lower.tail=FALSE)
 
-    reject <- (pval < 1-alpha)
+    reject <- (pval < alpha)
 
     ## get confidence interval
 
@@ -62,8 +63,8 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.95 ){
     tau_test <- seq(0,5,.01) ##come back and make it increment by 0.01
 
     ## test two-sided version
-    lowbound <- qchisq(alpha/2,s-1)
-    highbound <- qchisq(1 - alpha/2,df=(s-1))
+    lowbound <- qchisq(alpha,s-1)
+    highbound <- qchisq(1 - alpha,df=(s-1))
 
     ## intialize values
     q_invert <- c()

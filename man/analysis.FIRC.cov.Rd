@@ -4,7 +4,8 @@
 \alias{analysis.FIRC.cov}
 \title{Covariate adjusted test for cross-site variation}
 \usage{
-analysis.FIRC.cov(df, REML = FALSE, anova = FALSE)
+analysis.FIRC.cov(Yobs, Z, B, X, siteID = NULL, data = NULL,
+  REML = FALSE, anova = FALSE)
 }
 \arguments{
 \item{df}{Dataframe to fit.  Needs Z, X, B, and Yobs columns.}
