@@ -167,7 +167,7 @@ test_that( "Design based works through compare_methods", {
     sdat
     sdat = mutate( sdat, ATE.hat = Ybar1-Ybar0 )
     sdat
-    a = estimate.ATE.design.based( sdat, weight="individual", method="finite" )
+    a = estimate.ATE.design.based.from.stats( sdat, weight="individual", method="finite" )
     a
     expect_equal( a$tau.hat, ATE )
 

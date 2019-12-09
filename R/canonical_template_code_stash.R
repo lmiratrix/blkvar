@@ -74,18 +74,16 @@ if ( FALSE ) {
                                Z = data[[2]],
                                B = data[[3]] )
         } else {
+            d2 = data
             if ( !is.null( siteID ) ) {
-                siteID = data[[siteID]]
-                stopifnot( !is.null( siteID ) )
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
             }
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-            if ( is.null( siteID ) ) {
-                data$siteID = data$B
-            } else {
-                data$siteID = siteID
-            }
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,

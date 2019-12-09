@@ -86,9 +86,14 @@ analysis.combination = function( df ) {
 #' @rdname estimate.ATE.RIRC
 #'
 #' @export
-estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE, pool = FALSE ) {
+estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE, pool = FALSE,
+                               control.formula = NULL ) {
 
     stopifnot( !( include.testing && REML ) )
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
 
     if( !is.null(data) ){
         if ( missing( "Yobs" ) ) {
@@ -96,9 +101,12 @@ estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.test
                                Z = data[[2]],
                                B = data[[3]] )
         } else {
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
+            d2 = data
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -111,15 +119,16 @@ estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.test
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
 
+    formula = make.base.formula( control.formula=control.formula, data=data )
     if ( pool ) {
-        re.mod <- nlme::lme(Yobs ~ 1 + Z,
+        re.mod <- nlme::lme(formula,
                             data = data,
                             random = ~ 1 + Z | B,
                             na.action=na.exclude,
                             method = method,
                             control=nlme::lmeControl(opt="optim",returnObject=TRUE))
     } else {
-        re.mod <- nlme::lme(Yobs ~ 1 + Z,
+        re.mod <- nlme::lme(formula,
                         data = data,
                         random = ~ 1 + Z | B,
                         weights = nlme::varIdent(form = ~ 1 | Z),
@@ -132,14 +141,14 @@ estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.test
 
         # Test for cross site variation (???)
         if ( pool ) {
-            re.mod.null <- nlme::lme(Yobs ~ 1 + Z,
+            re.mod.null <- nlme::lme(formula,
                                      data = data,
                                      random = ~ 1 | B, na.action=na.exclude,
                                      method = method,
                                      control=nlme::lmeControl(opt="optim",returnObject=TRUE))
 
         } else {
-            re.mod.null <- nlme::lme(Yobs ~ 1 + Z,
+            re.mod.null <- nlme::lme(formula,
                                  data = data,
                                  random = ~ 1 | B,
                                  weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
@@ -184,7 +193,12 @@ estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.test
 #' @rdname estimate.ATE.RIRC
 #'
 #' @export
-estimate.ATE.RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE ) {
+estimate.ATE.RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE,
+                               control.formula = NULL ) {
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
 
     if( !is.null(data) ){
         if ( missing( "Yobs" ) ) {
@@ -192,9 +206,12 @@ estimate.ATE.RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE ) {
                                Z = data[[2]],
                                B = data[[3]] )
         } else {
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
+            d2 = data
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -206,8 +223,9 @@ estimate.ATE.RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE ) {
 
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
+    formula = make.base.formula( control.formula=control.formula, data=data )
 
-    re.mod <- nlme::lme(Yobs ~ 1 + Z,
+    re.mod <- nlme::lme(formula,
                         data = data,
                         random = ~ 1 | B,
                         weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
@@ -260,7 +278,12 @@ if ( FALSE ) {
 #'
 #' @importFrom lme4 lmer VarCorr
 #' @export
-estimate.ATE.RIRC.pool = function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE ) {
+estimate.ATE.RIRC.pool = function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE,
+                                   control.formula = NULL ) {
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
 
     if( !is.null(data) ){
         if ( missing( "Yobs" ) ) {
@@ -272,14 +295,16 @@ estimate.ATE.RIRC.pool = function( Yobs, Z, B, data=NULL, REML = FALSE, include.
                 siteID = data[[siteID]]
                 stopifnot( !is.null( siteID ) )
             }
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-            if ( is.null( siteID ) ) {
-                data$siteID = data$B
-            } else {
-                data$siteID = siteID
+            d2 = data
+            if ( !is.null( siteID ) ) {
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
             }
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,

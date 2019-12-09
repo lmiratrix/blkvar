@@ -7,7 +7,7 @@
 compare_methods(Yobs, Z, B, siteID = NULL, data = NULL,
   include.block = TRUE, include.MLM = TRUE, include.DB = TRUE,
   include.LM = TRUE, include.DBBlended = FALSE,
-  include.method.characteristics = FALSE)
+  include.method.characteristics = FALSE, control.formula = NULL)
 }
 \arguments{
 \item{Z}{vector of assignment indicators (1==treated) (or column name in data)}

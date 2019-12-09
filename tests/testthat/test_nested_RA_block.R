@@ -74,16 +74,16 @@ test_that("DB estimators work with nested randomization blocks", {
     sdat
 
     # Finite population, person weighted
-    a = estimate.ATE.design.based( sdat, siteID="siteID", weight="individual", method="finite" )
+    a = estimate.ATE.design.based.from.stats( sdat, siteID="siteID", weight="individual", method="finite" )
 
-    a2 = estimate.ATE.design.based( sdat, weight="individual", method="finite" )
+    a2 = estimate.ATE.design.based.from.stats( sdat, weight="individual", method="finite" )
     a2
     expect_equal( a, a2 )
 
     # Finite population, site weighted
     # Should be different due to weighting the RA blocks differently.
-    b = estimate.ATE.design.based( sdat, siteID="siteID", weight="site", method="finite" )
-    b2 = estimate.ATE.design.based( sdat, weight="site", method="finite" )
+    b = estimate.ATE.design.based.from.stats( sdat, siteID="siteID", weight="site", method="finite" )
+    b2 = estimate.ATE.design.based.from.stats( sdat, weight="site", method="finite" )
     b2
     b
     expect_true( b$tau.hat != b2$tau.hat )
@@ -102,7 +102,7 @@ test_that("DB estimators work with nested randomization blocks", {
     aa
     expect_equal( aa$Ybar1, ss$ybar1 )
 
-    site.tau.hat = estimate.ATE.design.based( aa, weight="site", method="finite"  )$tau.hat
+    site.tau.hat = estimate.ATE.design.based.from.stats( aa, weight="site", method="finite"  )$tau.hat
     site.tau.hat
     expect_equal( 35, site.tau.hat )
 
@@ -112,7 +112,7 @@ test_that("DB estimators work with nested randomization blocks", {
     ss2
     true.site.tau = mean( ss2$tau )
 
-    corrtauhat = estimate.ATE.design.based( aa, siteID="siteID", weight="site", method="finite"  )$tau.hat
+    corrtauhat = estimate.ATE.design.based.from.stats( aa, siteID="siteID", weight="site", method="finite"  )$tau.hat
     corrtauhat
     expect_equal( true.site.tau,
                   corrtauhat )
@@ -120,16 +120,16 @@ test_that("DB estimators work with nested randomization blocks", {
 
 
     # Superpopulation, individual
-    est1 = estimate.ATE.design.based( aa, siteID="siteID", weight="individual", method="superpop"  )
-    est2 = estimate.ATE.design.based( aa, weight="individual", method="superpop"  )
+    est1 = estimate.ATE.design.based.from.stats( aa, siteID="siteID", weight="individual", method="superpop"  )
+    est2 = estimate.ATE.design.based.from.stats( aa, weight="individual", method="superpop"  )
     est1
     est2
     expect_true( est1$tau.hat == est2$tau.hat )
     expect_true( est1$SE != est2$SE )
 
     # Superpopulation, site
-    est1 = estimate.ATE.design.based( aa, siteID="siteID", weight="site", method="superpop"  )
-    est2 = estimate.ATE.design.based( aa, weight="site", method="superpop"  )
+    est1 = estimate.ATE.design.based.from.stats( aa, siteID="siteID", weight="site", method="superpop"  )
+    est2 = estimate.ATE.design.based.from.stats( aa, weight="site", method="superpop"  )
     est1
     est2
     expect_true( est1$tau.hat == true.site.tau )
@@ -137,7 +137,7 @@ test_that("DB estimators work with nested randomization blocks", {
     expect_true( est1$SE != est2$SE )
 
     # If we pass siteID but don't actually have nesting
-    est3 = estimate.ATE.design.based( aa, siteID="B", weight="site", method="superpop"  )
+    est3 = estimate.ATE.design.based.from.stats( aa, siteID="B", weight="site", method="superpop"  )
     expect_true( est3$tau.hat == site.tau.hat )
     expect_true( est3$SE == est2$SE )
 
@@ -228,7 +228,7 @@ test_that("weighted linear regression works with nested randomization blocks", {
     sdat
 
     # Finite population, person weighted
-    a = estimate.ATE.design.based( sdat, siteID="siteID", weight="site", method="finite" )
+    a = estimate.ATE.design.based.from.stats( sdat, siteID="siteID", weight="site", method="finite" )
     a
 
     a2 = blkvar:::weighted.linear.estimators( Yobs, Z, B, siteID = "siteNo", data=dat, include.naive = TRUE )
@@ -302,6 +302,7 @@ test_that("compare_methods works with nested randomization blocks", {
     params
 
     a = rename( a, outcome = Yobs, Tx = Z, BB = B )
+    head( a )
 
     est1 = compare_methods( outcome, Tx, BB, siteID = "sssite", data=a )
     est1
@@ -315,6 +316,50 @@ test_that("compare_methods works with nested randomization blocks", {
     res$changeSE = res$SE.site - res$SE.block
 
     res
+
+    ff = filter( res, change != 0 | changeSE != 0 )
+    ff
+
+    expect_true( nrow( ff ) == 8 )
+
+})
+
+
+test_that("compare_methods with adjustment works with nested randomization blocks", {
+
+    a = make.big.balanced.dataset( 5 )
+    head( a )
+    a$X1 = a$Y0 + rnorm( nrow(a), sd=1 )
+    a$X2 = a$Y1 + rnorm( nrow(a), sd=1 )
+    #M = lm( Yobs ~ X1 + X2, data=a )
+    #summary( M )
+    #ggplot2::qplot( X1, Yobs, data=a )
+
+    params = get.params(a)
+    params
+
+    a = rename( a, outcome = Yobs, Tx = Z, BB = B )
+    head( a )
+
+    est1b = compare_methods( outcome, Tx, BB, data=a,
+                             control.formula = ~ X1 + X2 )
+    est1b
+
+    est1 = compare_methods( outcome, Tx, BB, siteID = "sssite", data=a,
+                            control.formula = ~ X1 + X2 )
+    est1
+
+
+    res = merge( est1, est1b, by="method", suffixes=c(".site",".block" ) )
+
+    res$change = res$tau.site - res$tau.block
+    res$changeSE = res$SE.site - res$SE.block
+
+    options( digits= 3 )
+    res
+
+    ff = filter( res, change == 0 & changeSE == 0 )
+    ff
 
     ff = filter( res, change != 0 | changeSE != 0 )
     ff

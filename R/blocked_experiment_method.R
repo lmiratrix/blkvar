@@ -13,6 +13,8 @@ scat = function( str, ... ) {
 
 
 
+
+
 #' Summarise data by block.
 #'
 #' Given dataframe or list of variables, return table of stats for each
@@ -25,7 +27,6 @@ scat = function( str, ... ) {
 #' @return dataframe with summary statistics by block
 #' @export
 calc.summary.stats = function( Yobs, Z, B, data = NULL, siteID = NULL, add.neyman = FALSE ) {
-    require( dplyr )
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
     }

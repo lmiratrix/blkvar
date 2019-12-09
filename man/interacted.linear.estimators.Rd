@@ -4,7 +4,8 @@
 \alias{interacted.linear.estimators}
 \title{Interacted linear regression models}
 \usage{
-interacted.linear.estimators(Yobs, Z, B, siteID = NULL, data = NULL)
+interacted.linear.estimators(Yobs, Z, B, siteID = NULL, data = NULL,
+  control.formula = NULL)
 }
 \value{
 Dataframe of the different versions of this estimator (person and

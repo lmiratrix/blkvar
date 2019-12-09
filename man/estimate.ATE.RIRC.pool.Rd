@@ -5,7 +5,7 @@
 \title{Fit Random-intercept, random-slope model}
 \usage{
 estimate.ATE.RIRC.pool(Yobs, Z, B, data = NULL, REML = FALSE,
-  include.testing = TRUE)
+  include.testing = TRUE, control.formula = NULL)
 }
 \description{
 This is a wrapper for a simpler lmer call.

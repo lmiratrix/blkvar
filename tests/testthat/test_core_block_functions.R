@@ -20,7 +20,7 @@ test_that("Nicole block estimators provide reasonable answers", {
 
     expect_true( f1$var_est > 0 )
 
-    rctyes = estimate.ATE.design.based( sum_tab = rs, method = "finite", weight = "individual" )
+    rctyes = estimate.ATE.design.based.from.stats( sum_tab = rs, method = "finite", weight = "individual" )
     rctyes
     expect_equal( f1$tau_est, rctyes$tau.hat )
     expect_equal( f1$var_est, rctyes$SE^2 )
@@ -49,7 +49,7 @@ test_that("With small block estimators Nicole estimators provide answers", {
     expect_equal( f1, f2 )
 
 
-    rctyes = estimate.ATE.design.based( sum_tab = rs, method = "finite", weight = "individual" )
+    rctyes = estimate.ATE.design.based.from.stats( sum_tab = rs, method = "finite", weight = "individual" )
     rctyes
     expect_true( is.na( rctyes$SE ) )
 

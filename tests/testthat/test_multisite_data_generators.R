@@ -295,13 +295,13 @@ test_that( "Individual covariate options work", {
                         tau.00 = 1, tau.01 = 0, tau.11 = 0,
                         sigma2.e = 1, sigma2.W = 1,
                         beta.X = 0.8, sigma2.mean.X = 0.5, variable.n = FALSE, variable.p = FALSE )
-    head( df )
+    #head( df )
 
     sd( df$Y0 )
     sd( df$Y1 )
 
     M0 = lmer( Yobs ~ 1 + Z + W + X + (1|sid), data=df )
-    summary( M0 )
+    #summary( M0 )
 
     params = c( 1, 0.3, 1, 0.8 )
     CI = confint(M0, method="Wald")[3:6,]
@@ -314,12 +314,12 @@ test_that( "Individual covariate options work", {
 
 
     M0 = lm( Yobs ~ 1 + Z + W + X, data=df )
-    summary( M0 )
+    #summary( M0 )
 
     gp = df %>% group_by( sid ) %>%
         summarise( mean.X = mean( X ) )
     M1 = lmer( X ~ 1 + (1|sid), data=df )
-    arm::display( M1 )
+    #arm::display( M1 )
 
 } )
 

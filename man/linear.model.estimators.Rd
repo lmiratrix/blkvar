@@ -6,7 +6,7 @@
 standard errors.}
 \usage{
 linear.model.estimators(Yobs, Z, B, siteID = NULL, data = NULL,
-  block.stats = NULL)
+  block.stats = NULL, control.formula = NULL)
 }
 \value{
 Data frame of the various results.

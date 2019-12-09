@@ -4,7 +4,8 @@
 
 
 # Calculate estimates for the Multilevel modeling methods
-compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL ) {
+compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL,
+                                control.formula = NULL ) {
 
     if( !is.null(data) ){
         if ( missing( "Yobs" ) ) {
@@ -12,19 +13,16 @@ compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL ) {
                                Z = data[[2]],
                                B = data[[3]] )
         } else {
+            d2 = data
             if ( !is.null( siteID ) ) {
-                siteIDv = data[[siteID]]
-                stopifnot( !is.null( siteIDv ) )
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
             }
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-            if ( is.null( siteID ) ) {
-                data$siteID = data$B
-            } else {
-                data$siteID = siteIDv
-                siteID = "siteID"
-            }
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -37,14 +35,19 @@ compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL ) {
     }
     stopifnot( length( unique( data$Z ) ) == 2 )
     stopifnot( is.numeric( data$Yobs ) )
-
-    RICC = estimate.ATE.RICC( Yobs, Z, B, data=data, REML = TRUE )
-    FIRC = estimate.ATE.FIRC( Yobs, Z, B, data=data, siteID = siteID, REML = TRUE, include.testing = FALSE )
-    RIRC = estimate.ATE.RIRC( Yobs, Z, B, data=data, REML = TRUE, include.testing = FALSE )
+    RICC = estimate.ATE.RICC( Yobs, Z, B, data=data, REML = TRUE,
+                              control.formula = control.formula )
+    FIRC = estimate.ATE.FIRC( Yobs, Z, B, data=data, siteID = siteID, REML = TRUE, include.testing = FALSE,
+                              control.formula = control.formula )
+    RIRC = estimate.ATE.RIRC( Yobs, Z, B, data=data, REML = TRUE, include.testing = FALSE,
+                              control.formula = control.formula )
     mlms = data.frame( method=c("RICC", "FIRC", "RIRC"),
                        tau = c( RICC$ATE, FIRC$ATE, RIRC$ATE ),
                        SE = c( RICC$SE.ATE, FIRC$SE.ATE, RIRC$SE.ATE ),
                        stringsAsFactors=FALSE )
+    if ( !is.null( control.formula ) ) {
+        mlms$method = paste0( mlms$method, "-adj" )
+    }
 
     mlms
 }
@@ -130,7 +133,12 @@ method.characteristics = function() {
 #' @export
 compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
                           include.DB = TRUE, include.LM = TRUE, include.DBBlended = FALSE,
-                          include.method.characteristics = FALSE ){
+                          include.method.characteristics = FALSE,
+                          control.formula = NULL ){
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
 
     # This code block takes the parameters of
     # Yobs, Z, B, siteID = NULL, data=NULL, ...
@@ -144,13 +152,16 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
             stopifnot( n.tx.lvls == 2 )
             stopifnot( is.numeric( data$Yobs ) )
         } else {
+            d2 = data
             if ( !is.null( siteID ) ) {
-                siteID = data[[siteID]]
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
             }
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-            data$siteID = siteID
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -204,26 +215,46 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
 
     if ( include.DB ) {
 
-        # Design based methods
-        DB.fi = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="individual" )
-        DB.fs = estimate.ATE.design.based( data.table, siteID=siteID, method="finite", weight="site" )
-        DB.si = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="individual" )
-        DB.ss = estimate.ATE.design.based( data.table, siteID=siteID, method="superpop", weight="site" )
-        DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
-        DB$method = c( "DB-FP-Persons", "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites" ) #with( DB, paste( "DB (", weight, "-", method, ")", sep="" ) )
-        DB$weight = NULL
-        names(DB)[1] = "tau"
+        if ( is.null( control.formula ) ) {
+            # Design based methods
+            DB.fi = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="finite", weight="individual" )
+            DB.fs = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="finite", weight="site" )
+            DB.si = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="superpop", weight="individual" )
+            DB.ss = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="superpop", weight="site" )
+            DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
+            DB$method = c( "DB-FP-Persons", "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites" ) #with( DB, paste( "DB (", weight, "-", method, ")", sep="" ) )
+            DB$weight = NULL
+            names(DB)[1] = "tau"
 
-        summary_table = dplyr::bind_rows( summary_table, DB )
+            summary_table = dplyr::bind_rows( summary_table, DB )
+        } else {
+            # Design based methods with covariate adjustment
+            DB.fi = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="individual",
+                                               control.formula = control.formula )
+            DB.fs = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="site",
+                                               control.formula = control.formula )
+            DB.si = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="individual",
+                                               control.formula = control.formula )
+            DB.ss = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="site",
+                                               control.formula = control.formula )
+            DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
+            DB$method = c( "DB-FP-Persons-adj", "DB-FP-Sites-adj", "DB-SP-Persons-adj", "DB-SP-Sites-adj" )
+            DB$weight = NULL
+            names(DB)[1] = "tau"
+
+            summary_table = dplyr::bind_rows( summary_table, DB )
+        }
     }
 
     if ( include.LM ) {
-        lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID, block.stats = data.table )
+        lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID, block.stats = data.table,
+                                       control.formula = control.formula )
         summary_table = dplyr::bind_rows( summary_table, lms )
     }
 
     if ( include.MLM ) {
-        mlms = compare.MLM.methods( Yobs, Z, B, data=data, siteID = siteID )
+        mlms = compare.MLM.methods( Yobs, Z, B, data=data, siteID = siteID,
+                                    control.formula = control.formula )
         summary_table = dplyr::bind_rows( summary_table, mlms )
     }
 
@@ -233,6 +264,9 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
         #mcm = mc$method
         #names(mcm) = mc$fullname
         #summary_table$method = mcm[ as.character( summary_table$method ) ]
+        if ( !is.null( control.formula ) ) {
+            mc$method = paste0( mc$method, "-adj" )
+        }
         summary_table = merge( summary_table, mc, by="method", all.x=TRUE, all.y=FALSE )
     }
 

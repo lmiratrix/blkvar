@@ -8,6 +8,8 @@ analysis.FIRC.cov(Yobs, Z, B, X, siteID = NULL, data = NULL,
   REML = FALSE, anova = FALSE)
 }
 \arguments{
+\item{X}{Site-level covariate ideally predictive of treatment variation.}
+
 \item{df}{Dataframe to fit.  Needs Z, X, B, and Yobs columns.}
 }
 \description{

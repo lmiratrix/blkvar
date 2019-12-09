@@ -23,11 +23,17 @@ library( dplyr )
 #'   the models.  FALSE means do the modified chi-squared test.
 #' @param pool  TRUE means tx and co have same reBual variance. FALSE gives seperate estimates for each (recommended, default).
 #' @param B Name of the block indicator.
-#' @param siteID ID of site (blocks are conBered nested in site).  If omitted, then blocks are conBered sites (the default).
+#' @param siteID Character name of the ID variable of site (blocks are conBered nested in site).  If omitted, then blocks are considered sites (the default).
 #' @export
-estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALSE, include.testing=TRUE, anova=FALSE, pool = FALSE ) {
+estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, control.formula = NULL,
+                               data=NULL, REML = FALSE, include.testing=TRUE, anova=FALSE, pool = FALSE ) {
 
     stopifnot( !( include.testing && REML ) )
+
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
 
     # This code block takes the parameters of
     # Yobs, Z, B, siteID = NULL, data=NULL, ...
@@ -41,13 +47,17 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALS
             stopifnot( n.tx.lvls == 2 )
             stopifnot( is.numeric( data$Yobs ) )
         } else {
+            Yobs.n = as.character( substitute( Yobs ) )
+            Z.n = as.character( substitute( Z ) )
+            B.n = as.character( substitute( B ) )
+            data = rename( data,
+                            Yobs = Yobs.n,
+                            Z = Z.n,
+                            B = B.n )
             if ( !is.null( siteID ) ) {
-                siteID = data[[siteID]]
+                data$siteID = data[[siteID]]
+                stopifnot( !is.null( data$siteID ) )
             }
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-            data$siteID = siteID
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -62,6 +72,7 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALS
         data$siteID = data$B
     }
 
+
     stopifnot( length( unique( data$Z ) ) == 2 )
     stopifnot( is.numeric( data$Yobs ) )
 
@@ -69,14 +80,17 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALS
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
 
+    # Make control variable function
+    formula = make.FE.formula( "Yobs", "Z", "B", control.formula = control.formula, data = data)
+
     if ( pool ) {
-        re.mod <- nlme::lme(Yobs ~ 0 + Z + B,
+        re.mod <- nlme::lme(formula,
                             data = data,
                             random = ~ 0 + Z | siteID,
                             method = method,
                             control=nlme::lmeControl(opt="optim",returnObject=TRUE))
     } else {
-        re.mod <- nlme::lme(Yobs ~ 0 + Z + B,
+        re.mod <- nlme::lme(formula,
                         data = data,
                         random = ~ 0 + Z | siteID,
                         weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
@@ -87,13 +101,13 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALS
     if ( include.testing ) {
         # Test for cross site variation
         if ( pool ) {
-            re.mod.null <- nlme::gls(Yobs ~ 0 + Z + B,
+            re.mod.null <- nlme::gls(formula,
                                      data=data,
                                      method = method,
                                      control=nlme::lmeControl(opt="optim",returnObject=TRUE))
 
         } else {
-            re.mod.null <- nlme::gls(Yobs ~ 0 + Z + B,
+            re.mod.null <- nlme::gls(formula,
                                  data=data,
                                  weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
                                  method = method,
@@ -102,8 +116,8 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, data=NULL, REML = FALS
         #M0.null = lm( Yobs ~ 0 + B + Z, data=data )
         if ( anova ) {
             stopifnot( REML == FALSE )
-            myanova = anova(re.mod.null, re.mod)
-            p.value.anova = myanova[2,9]
+            myanova = lmtest::lrtest( re.mod.null, re.mod ) #anova(re.mod.null, re.mod)
+            p.value.anova = myanova[2,5] #myanova[2,9]
             p.variation = ( p.value.anova / 2 )  # divide by 2 by same logic as chi-squared test.
             td = NA
         } else {
@@ -169,9 +183,12 @@ if ( FALSE ) {
     head( dat )
     describe.data( dat )
 
-    #debug( estimate.ATE.FIRC )
-    estimate.ATE.FIRC( Yobs, Z, B, dat )
 
+    #debug( estimate.ATE.FIRC )
+    estimate.ATE.FIRC( Yobs, Z, sid, data=dat )
+
+    dat$X = dat$Y0 + rnorm( nrow(dat) )
+    estimate.ATE.FIRC( Yobs, Z, sid, data=dat, control.formula = ~ X )
 
     dat = catherine.gen.dat( 0.2, 0, 30, 50 )
     head( dat )
@@ -194,8 +211,9 @@ if ( FALSE ) {
 
     dat = catherine.gen.dat( 0.2, 0.0, 30, 50 )
     describe.data( dat )
+    head( dat )
 
-    estimate.ATE.FIRC( Yobs, Z, B, data=dat, pool=TRUE )
+    estimate.ATE.FIRC( Yobs, Z, sid, data=dat, pool=TRUE )
 
     dat = catherine.gen.dat( 0.2, 0.5, 30, 50 )
     describe.data( dat )
@@ -247,6 +265,7 @@ if ( FALSE ) {
 #' This fits unpooled FIRC models.
 #'
 #' @param df  Dataframe to fit.  Needs Z, X, B, and Yobs columns.
+#' @param X Site-level covariate ideally predictive of treatment variation.
 #'
 #' @export
 analysis.FIRC.cov <- function( Yobs, Z, B, X, siteID = NULL, data=NULL, REML = FALSE, anova=FALSE ) {

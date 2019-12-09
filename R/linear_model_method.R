@@ -2,7 +2,7 @@
 # Using linear regression to deal with multi-site or blocked experiments
 #
 
-
+#source( "control_formula_utilities.R")
 
 
 #' Utility to help printing out nicely formatted stuff.
@@ -28,7 +28,13 @@ clubsandwich.variance = function( w, tau.hat.b, tau.hat ) {
 }
 
 
-fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL ) {
+fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
+                                    control.formula = NULL ) {
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
+
     # This code block takes the parameters of
     # Yobs, Z, B, siteID = NULL, data=NULL, ...
     # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
@@ -41,13 +47,16 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
             stopifnot( n.tx.lvls == 2 )
             stopifnot( is.numeric( data$Yobs ) )
         } else {
+            d2 = data
             if ( !is.null( siteID ) ) {
-                siteID = data[[siteID]]
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
             }
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-            data$siteID = siteID
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -64,8 +73,11 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
         data$siteID = data$B
     }
 
+    # Make control variable function
+    formula = make.FE.formula( "Yobs", "Z", "B", control.formula, data )
+
     # simple linear model
-    M0 = lm( Yobs ~ 0 + Z + B, data=data )
+    M0 = lm( formula, data=data )
     SE.lm = summary( M0 )$coeff["Z",2]
 
     # est ATE (precision weighted)
@@ -99,6 +111,10 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
                            tau = rep( tau.hat, 4 ),
                            SE = c( SE.lm, SE.lm.sand, SE.lm.clust, SE.lm.clust.club ),
                            stringsAsFactors = FALSE )
+
+    if ( !is.null( control.formula ) ) {
+        FEmodels$method = paste0( FEmodels$method, "-adj" )
+    }
 
     FEmodels
 }
@@ -134,7 +150,17 @@ if ( FALSE ) {
 #' @return Dataframe of results for different estimators.
 #' @importFrom survey svydesign svyglm
 #' @importFrom stats gaussian
-weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL, include.naive = FALSE ) {
+weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL,
+                                       include.naive = FALSE,
+                                       control.formula = NULL ) {
+
+    #Call structure:
+    # weighted.linear.estimators( YY, Tx, sid, data=dat )
+
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
 
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
@@ -147,10 +173,20 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL, inc
         if ( missing( "Z" ) ) {
             stopifnot( all( c( "Yobs", "Z", "B" ) %in% names(data) ) )
         } else {
-            data = rename_( data,
-                            Yobs = as.character( substitute( Yobs ) ),
-                            Z = as.character( substitute( Z ) ),
-                            B = as.character( substitute( B ) ) )
+            d2 = data
+            if ( !is.null( siteID ) ) {
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
+            }
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
+            #data = rename_( data,
+            #                Yobs = as.character( substitute( Yobs ) ),
+            #                Z = as.character( substitute( Z ) ),
+            #                B = as.character( substitute( B ) ) )
         }
     }
     dat = data
@@ -181,13 +217,15 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL, inc
             mutate( weight.site = weight * n.bar / n() )
     }
 
-    M0w2 = svyglm( Yobs ~ 0 + Z + B,
+    formula = make.FE.formula( "Yobs", "Z", "B", control.formula, data )
+
+    M0w2 = svyglm( formula,
                   design=svydesign(id=~1, weights=~weight, data=dat ),
                   family = gaussian() )
     SE.w2 = grab.SE( M0w2 )
 
     # Site weighted regression models
-    M0w.site = svyglm( Yobs ~ 0 + Z + B,
+    M0w.site = svyglm( formula,
                    design=svydesign(id=~1, weights=~weight.site, data=dat ),
                    family = gaussian() )
     tau.w.site = coef( M0w.site )[["Z"]]
@@ -199,7 +237,7 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL, inc
                                stringsAsFactors = FALSE )
 
     if ( include.naive ) {
-        M0w = svyglm( Yobs ~ 0 + Z + B,
+        M0w = svyglm( formula,
                   design=svydesign(id=~1, weights=~w.orig, data=dat ),
                   family = gaussian() )
         SE.w = grab.SE( M0w )
@@ -207,6 +245,10 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL, inc
                                                        tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
                                                        SE = c( SE.w, SE.w2, SE.w.site ),
                                                        stringsAsFactors = FALSE )
+    }
+
+    if ( !is.null( control.formula ) ) {
+        weightModels$method = paste0( weightModels$method, "-adj" )
     }
 
     weightModels
@@ -226,7 +268,12 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL, inc
 #'
 #' @return Dataframe of the different versions of this estimator (person and
 #'   site weighted)
-interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) {
+interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, control.formula=NULL ) {
+
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
 
     # This code block takes the parameters of
     # Yobs, Z, B, siteID = NULL, data=NULL, ...
@@ -240,13 +287,16 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
             stopifnot( n.tx.lvls == 2 )
             stopifnot( is.numeric( data$Yobs ) )
         } else {
+            d2 = data
             if ( !is.null( siteID ) ) {
-                siteID = data[[siteID]]
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
             }
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-            data$siteID = siteID
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,
@@ -264,10 +314,14 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
     n = nrow( data )
 
     data$B = as.factor( data$B )
-    M0.int = lm( Yobs ~ 0 + Z * B - Z, data=data )
+    formula = make.FE.int.formula( "Yobs", "Z", "B", control.formula, data )
+    M0.int = lm( formula, data=data )
+    ids = grep( "Z:", names( coef(M0.int) ) )
+    stopifnot( length(ids) == J )
+
     VC = vcov( M0.int )
 
-    tau.hats = coef(M0.int)[J + 1:J]
+    tau.hats = coef(M0.int)[ids]
 
     # site weighting
     if ( !is.null( data$siteID ) ) {
@@ -288,7 +342,7 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
     }
 
     # the block SEs from our linear model
-    SE.hat = diag( VC )[(J+1):(2*J)]
+    SE.hat = diag( VC )[ids]
 
     tau.site = weighted.mean( tau.hats, wts )
 
@@ -301,6 +355,7 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
 
     # This is the cautious way we don't need since we have 0s in the off diagonal
     # SE.site = sqrt( t(wts) %*% VC %*% wts )
+
     # faster way---this should work easily.
     #sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
 
@@ -308,6 +363,10 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
                                  tau = c( tau.site, tau.indiv ),
                                  SE = c( SE.site, SE.indiv ),
                                  stringsAsFactors = FALSE)
+    if ( !is.null( control.formula ) ) {
+        interactModels$method = paste0( interactModels$method, "-adj" )
+    }
+    interactModels
 }
 
 
@@ -319,7 +378,13 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL ) 
 #' @importFrom stats coef
 #' @return Data frame of the various results.
 #' @export
-linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL ) {
+linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
+                                    control.formula = NULL ) {
+    if ( !is.null( control.formula ) ) {
+        stopifnot( !is.null( data ) )
+        stopifnot( !missing( "Yobs" ) )
+    }
+
     if ( missing( "Z" ) && is.null( data ) ) {
         data = Yobs
     }
@@ -331,20 +396,33 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
         if ( missing( "Z" ) ) {
             stopifnot( all( c( "Yobs", "Z", "B" ) %in% names(data) ) )
         } else {
-            data = rename_( data,
-                            Yobs = as.character( substitute( Yobs ) ),
-                            Z = as.character( substitute( Z ) ),
-                            B = as.character( substitute( B ) ) )
+            d2 = data
+            if ( !is.null( siteID ) ) {
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
+            }
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
+            #data = rename_( data,
+            #                Yobs = as.character( substitute( Yobs ) ),
+            #                Z = as.character( substitute( Z ) ),
+            #                B = as.character( substitute( B ) ) )
         }
     }
     dat = data
     dat$B<-as.factor(dat$B)
 
-    FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats )
+    FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats,
+                                        control.formula = control.formula )
 
-    weightModels = weighted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat )
+    weightModels = weighted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat,
+                                               control.formula = control.formula )
 
-    interactModels = interacted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat )
+    interactModels = interacted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat,
+                                                   control.formula = control.formula )
 
     # combine and return results
     bind_rows( FEmodels, weightModels, interactModels )
@@ -352,13 +430,22 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
 
 
 
+
+# For the debugging code to get the DGP files
+localsource = function( filename ) {
+    source( file.path( dirname( rstudioapi::getActiveDocumentContext()$path ), filename ) )
+}
+
+
+#### Some overall testing code #####
 if ( FALSE ) {
     library( blkvar )
     library( dplyr )
     dat = make.obs.data(p = 0.2)
     head( dat )
+    localsource("control_formula_utilities.R" )
 
-    fixed.effect.estimators( Yobs, Z, blk, data=dat )
+    fixed.effect.estimators( Yobs, Z, B, data=dat )
 
     #debug( weighted.linear.estimators.naive )
     weighted.linear.estimators.naive( Yobs, Z, blk, data=dat )
@@ -371,6 +458,43 @@ if ( FALSE ) {
 
     debug( linear.model.estimators)
     linear.model.estimators( dat$Yobs, dat$Z, dat$blk )
+}
+
+
+
+
+#### Some overall testing code comparing adustment vs not #####
+if ( FALSE ) {
+    library( blkvar )
+    library( dplyr )
+    dat = make.obs.data(p = 0.2)
+    head( dat )
+    localsource("control_formula_utilities.R" )
+
+    set.seed( 1019 )
+    dat = gen.dat( n.bar = 30, J = 30 )
+    nrow( dat )
+    head( dat )
+    dat$X1 = dat$W + rnorm( nrow(dat) )
+    dat$X2 = dat$Y0 + rnorm( nrow( dat ) )
+
+    rs = linear.model.estimators( Yobs, Z, sid, data=dat )
+    rs.adj = linear.model.estimators( Yobs, Z, sid, data=dat,
+                                      control.formula = ~X1 + X2)
+    rs
+    rs.adj
+
+
+    # problem child
+    rs = interacted.linear.estimators( Yobs, Z, sid, data=dat )
+    debug( interacted.linear.estimators )
+    rs.adj = interacted.linear.estimators( Yobs, Z, sid, data=dat,
+                                      control.formula = ~X1 + X2)
+    rs.adj$tau.adj = rs$tau
+    rs.adj = mutate( rs.adj, delta = tau - tau.adj )
+    rs.adj
+
+
 }
 
 

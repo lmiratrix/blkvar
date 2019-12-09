@@ -16,10 +16,10 @@ test_that("RCT Yes functions work", {
     sdat = calc.summary.stats( dat )
     sdat
 
-    a = estimate.ATE.design.based( sdat, weight="individual", method="finite" )
-    b = estimate.ATE.design.based( sdat, weight="site", method="finite" )
-    c = estimate.ATE.design.based( sdat, weight="individual", method="superpop" )
-    d = estimate.ATE.design.based( sdat, weight="site", method="superpop" )
+    a = estimate.ATE.design.based.from.stats( sdat, weight="individual", method="finite" )
+    b = estimate.ATE.design.based.from.stats( sdat, weight="site", method="finite" )
+    c = estimate.ATE.design.based.from.stats( sdat, weight="individual", method="superpop" )
+    d = estimate.ATE.design.based.from.stats( sdat, weight="site", method="superpop" )
 
     expect_equal( a$tau.hat, c$tau.hat )
     expect_equal( b$tau.hat, d$tau.hat )
