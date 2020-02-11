@@ -4,9 +4,19 @@
 \alias{gen.dat.no.cov}
 \title{Simplified version of gen.dat() with no W covariate.}
 \usage{
-gen.dat.no.cov(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3,
-  ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE,
-  variable.n = TRUE, control.sd.Y1 = TRUE, ...)
+gen.dat.no.cov(
+  n.bar = 10,
+  J = 30,
+  p = 0.5,
+  tau.11.star = 0.3,
+  ICC = 0.7,
+  gamma.00 = 0,
+  gamma.10 = 0.2,
+  verbose = FALSE,
+  variable.n = TRUE,
+  control.sd.Y1 = TRUE,
+  ...
+)
 }
 \arguments{
 \item{n.bar}{average site size, Default: 10}

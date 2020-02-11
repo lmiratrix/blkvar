@@ -4,8 +4,12 @@
 \alias{calc.summary.stats.formula}
 \title{Summarise data by block.}
 \usage{
-calc.summary.stats.formula(formula, data = NULL, siteID = NULL,
-  add.neyman = FALSE)
+calc.summary.stats.formula(
+  formula,
+  data = NULL,
+  siteID = NULL,
+  add.neyman = FALSE
+)
 }
 \arguments{
 \item{formula}{Formula of form Yobs ~ Z * B (ONLY)}

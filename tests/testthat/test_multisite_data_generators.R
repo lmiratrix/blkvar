@@ -300,7 +300,13 @@ test_that( "Individual covariate options work", {
     sd( df$Y0 )
     sd( df$Y1 )
 
-    M0 = lmer( Yobs ~ 1 + Z + W + X + (1|sid), data=df )
+    d1 = d2 = df
+    d1$Yobs = d1$Y0
+    d1$Z = 0
+    d2$Yobs = d2$Y1
+    d2$Z = 1
+    dd = bind_rows( d1, d2 )
+    M0 = lmer( Yobs ~ 1 + Z + W + X + (1|sid), data=dd )
     #summary( M0 )
 
     params = c( 1, 0.3, 1, 0.8 )
@@ -319,6 +325,7 @@ test_that( "Individual covariate options work", {
     gp = df %>% group_by( sid ) %>%
         summarise( mean.X = mean( X ) )
     M1 = lmer( X ~ 1 + (1|sid), data=df )
+    M1
     #arm::display( M1 )
 
 } )

@@ -5,8 +5,15 @@
 \title{Function to generate individual-level data from a list of block sizes and
 block characteristics.}
 \usage{
-generate.individuals.from.blocks(n_k, alpha = 0, beta = 0,
-  sigma_c = 1, sigma_t = 1, corr = 1, exact = FALSE)
+generate.individuals.from.blocks(
+  n_k,
+  alpha = 0,
+  beta = 0,
+  sigma_c = 1,
+  sigma_t = 1,
+  corr = 1,
+  exact = FALSE
+)
 }
 \arguments{
 \item{n_k}{Vector of block sizes}

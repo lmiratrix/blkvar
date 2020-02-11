@@ -68,7 +68,7 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, control.formula = NULL
         }
     }
 
-    if ( is.null( data$siteID ) ) {
+    if ( is.null( siteID ) ) {
         data$siteID = data$B
     }
 
@@ -116,7 +116,9 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, control.formula = NULL
         #M0.null = lm( Yobs ~ 0 + B + Z, data=data )
         if ( anova ) {
             stopifnot( REML == FALSE )
-            myanova = lmtest::lrtest( re.mod.null, re.mod ) #anova(re.mod.null, re.mod)
+            # This tosses a warning that the linear model is being swapped into a MLM
+            # "original model was of class "gls", updated model is of class "lme""
+            myanova = suppressWarnings( lmtest::lrtest( re.mod.null, re.mod ) ) #anova(re.mod.null, re.mod)
             p.value.anova = myanova[2,5] #myanova[2,9]
             p.variation = ( p.value.anova / 2 )  # divide by 2 by same logic as chi-squared test.
             td = NA

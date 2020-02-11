@@ -4,8 +4,13 @@
 \alias{make.FE.formula}
 \title{Make a canonical fixed effect formula, possibly with control variables.}
 \usage{
-make.FE.formula(Yobs = "Yobs", Z = "Z", B = "B",
-  control.formula = NULL, data = NULL)
+make.FE.formula(
+  Yobs = "Yobs",
+  Z = "Z",
+  B = "B",
+  control.formula = NULL,
+  data = NULL
+)
 }
 \arguments{
 \item{data}{}

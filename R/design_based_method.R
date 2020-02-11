@@ -137,7 +137,7 @@ estimate.ATE.design.based.from.stats = function( sum_tab, siteID = NULL,
         sum_tab$.weight = sum_tab$n
     } else {
         if ( !is.null( siteID ) ) {
-            sum_tab = sum_tab %>% dplyr::group_by_( siteID ) %>%
+            sum_tab = sum_tab %>% dplyr::group_by( !!as.name( siteID ) ) %>%
                 dplyr::mutate( .weight = n / sum( n ) ) %>% ungroup()
         } else {
             sum_tab$.weight = rep( 1, h )
@@ -168,7 +168,7 @@ estimate.ATE.design.based.from.stats = function( sum_tab, siteID = NULL,
 
         # First aggregate to get sites, if needed
         if ( !is.null( siteID ) ) {
-            sum_tab = sum_tab %>% group_by_( siteID ) %>%
+            sum_tab = sum_tab %>% group_by( !!as.name( siteID ) ) %>%
                 summarise( tau.hat.b = sum( tau.hat.b * .weight ) / sum( .weight ),
                            .weight = sum( .weight ) )
             h = nrow( sum_tab )
@@ -347,7 +347,7 @@ estimate.ATE.design.based.adjusted = function( formula,
         sum_tab$.weight = sum_tab$n
     } else {
         if ( !is.null( siteID ) ) {
-            sum_tab = sum_tab %>% dplyr::group_by_( siteID ) %>%
+            sum_tab = sum_tab %>% dplyr::group_by( !!as.name( siteID ) ) %>%
                 dplyr::mutate( .weight = n / sum( n ) ) %>% ungroup()
         } else {
             sum_tab$.weight = rep( 1, h )
@@ -408,7 +408,7 @@ estimate.ATE.design.based.adjusted = function( formula,
         } else {
             # First aggregate to get sites, if needed
             if ( !is.null( siteID ) ) {
-                sum_tab = sum_tab %>% group_by_( siteID ) %>%
+                sum_tab = sum_tab %>% group_by( !!as.name( siteID ) ) %>%
                     summarise( tau.hat.b = sum( tau.hat.b * .weight ) / sum( .weight ),
                                .weight = sum( .weight ) )
                 h = nrow( sum_tab )

@@ -60,6 +60,25 @@ test_that("Check method characteristics works", {
 
 
 
+
+test_that("Check method works on tibbles", {
+
+    set.seed( 101974 )
+    dat = tibble::as_tibble( gen.dat( n.bar = 30, J = 30 ) )
+
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = TRUE )
+    fulltab
+    expect_true( all( c( "weight","population","biased") %in% names(fulltab) ) )
+    expect_true( all( !is.na( fulltab$weight ) ) )
+
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = FALSE )
+    mc = method.characteristics()
+    expect_true( all( fulltab$method %in% mc$method ) )
+
+
+})
+
+
 test_that("Check for asking for different parts", {
 
     set.seed( 1019 )
@@ -91,7 +110,7 @@ test_that( "Comparing variation methods works", {
     rs =  compare_methods_variation( Yobs, Z, sid, data=dat, include.testing = FALSE )
     rs
 
-    expect_equal( ncol( rs ), 4 )
+    expect_equal( ncol( rs ), 5 )
 
     rs =  compare_methods_variation( Yobs, Z, sid, data=dat, long.results = TRUE )
     rs

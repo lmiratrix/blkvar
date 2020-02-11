@@ -17,37 +17,60 @@
 #' @param Z (binary treatment 0/1)
 #' @param alpha The level of the test.  The CI will be a 1-2alpha confidence interval.
 #' @export
-estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.05 ){
+analysis.Qstatistic <- function( Yobs, Z, B, siteID = NULL, data=NULL, alpha=0.05,
+                                calc.CI = FALSE ) {
+
+    # This code block takes the parameters of
+    # Yobs, Z, B, siteID = NULL, data=NULL, ...
+    # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
     if(!is.null(data)){
         if ( missing( "Yobs" ) ) {
-            data = data.frame( Yobs<-data[,1],
-                               Z<-data[,2],
-                               B<-data[,3] )
+            data = data.frame( Yobs = data[[1]],
+                               Z = data[[2]],
+                               B = data[[3]] )
             n.tx.lvls = length( unique( data$Z ) )
             stopifnot( n.tx.lvls == 2 )
             stopifnot( is.numeric( data$Yobs ) )
         } else {
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
+            d2 = data
+            if ( !is.null( siteID ) ) {
+                d2$siteID = data[[siteID]]
+                stopifnot( !is.null( d2$siteID ) )
+            }
+            d2$Yobs = eval( substitute( Yobs ), data )
+            d2$Z = eval( substitute( Z ), data )
+            d2$B = eval( substitute( B ), data )
+            data = d2
+            rm( d2 )
         }
     } else {
         data = data.frame( Yobs = Yobs,
                            Z = Z,
                            B = B )
+        if ( !is.null( siteID ) ) {
+            data$siteID = siteID
+        }
     }
+
+
+    # make sites RA blocks if there are no sites.
+    if ( is.null( siteID ) ) {
+        data$siteID = data$B
+    }
+
     n = nrow( data )
 
-
     s = length( unique( data$B ) )
+    s.site = length( unique( data$siteID ) )
 
     #calculate Q-statistic
     #run ols model with no intercept and no "treatment intercept"
-    ols <- lm(Yobs ~ 0 + Z*factor(B) - Z, data=data, na.action=na.exclude)
-    #model ^^ does not estimate sigma^2 separate for T & C --
-    #generated data have same variance across conditions, so temporarily okay
-    bj <- ols$coefficients[(s+1):(2*s)]
-    vj <- (coef(summary(ols))[(s+1):(2*s),2])^2
+    ols <- nlme::gls(Yobs ~ 0 + Z + factor(B) + factor(siteID):Z - Z,
+                             data=data,
+                             weights = nlme::varIdent(form = ~ 1 | Z), na.action=na.exclude,
+                             control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+    bj <- ols$coefficients[(s+1):(s+s.site)]
+    vj <- (coef(summary(ols))[(s+1):(s+s.site),2])^2
     wj <- 1/vj
 
     bbar <- sum(wj*bj)/(sum(wj))
@@ -55,6 +78,8 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.05 ){
     pval <- pchisq(q,df=(length(bj)-1),lower.tail=FALSE)
 
     reject <- (pval < alpha)
+
+    if ( calc.CI ) {
 
     ## get confidence interval
 
@@ -74,12 +99,20 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.05 ){
         denom <- vj + tau_test[i]^2
         #new q-stat
         q_invert[i] <- sum((bj - bbar)^2/denom)
-        #other way: compare q.stat to lower and upperbounds (Weiss et al, JREE p. 55)
+        #compare q.stat to lower and upperbounds (Weiss et al, JREE p. 55)
         CI_95[i] <- (q_invert[i]>=lowbound & q_invert[i]<=highbound)
+        # Also calculate p-values for Hodges-Lehman estimate
     }
+
 
     #extract bounds
     #special condition to explore when tau_test[CI_90 == 1]
+    pval.hi <- pchisq(q_invert,df=s-1,lower.tail=FALSE)
+    pval.low <- pchisq(q_invert,df=s-1,lower.tail=TRUE)
+    pvals = 2*pmin( pval.hi, pval.low )
+    summary( pvals )
+    mx = which.max( pvals )
+    tau.hat = tau_test[[mx]]
 
     if ( length(tau_test[CI_95 == 1]) == 0 ) {
         CI_low <- NA
@@ -89,69 +122,22 @@ estimate.Q.confint <- function(Yobs, Z, B, data=NULL, alpha=0.05 ){
         CI_low <- min(tau_test[CI_95 == 1])
     }
 
-
-    return(list(reject=reject,
-                p.value = pval,
-                Q = q,
-                CI_low=CI_low,CI_high=CI_high) )
-}
-
-
-
-
-#' Weiss et al. Q-statistic test
-#' Dataframe has variables of
-#' - B (site id)
-#' - Yobs (outcome)
-#' - Z (binary treatment 0/1)
-#' @rdname analysis.Qstatistic
-#' @export
-analysis.Qstatistic = function( Yobs, Z, B, data=NULL ){
-    if(!is.null(data)){
-        if ( missing( "Yobs" ) ) {
-            data = data.frame( Yobs<-data[,1],
-                               Z<-data[,2],
-                               B<-data[,3] )
-            n.tx.lvls = length( unique( data$Z ) )
-            stopifnot( n.tx.lvls == 2 )
-            stopifnot( is.numeric( data$Yobs ) )
-        } else {
-            data = data.frame( Yobs = eval( substitute( Yobs ), data ),
-                               Z = eval( substitute( Z ), data ),
-                               B = eval( substitute( B ), data) )
-        }
     } else {
-        data = data.frame( Yobs = Yobs,
-                           Z = Z,
-                           B = B )
+        tau.hat = NA
+        CI_low = NULL
+        CI_high = NULL
     }
-    n = nrow( data )
 
-    s = length( unique( data$B ) ) # max(as.numeric(as.character(data$B)))
-    data$B = as.factor(data$B)
-
-    # get the model matrix we need to estimate the relevant betas
-    Mtest = lm( Yobs ~ B*Z - 1 - Z, data=data)
-
-    # Tidy this up!
-    coef_table = summary(Mtest)$coef
-    hetero_vars = grep("Z",rownames(coef_table))
-
-    ### pool treatment effect estimates and compute their variance estimates
-    bj = coef_table[hetero_vars,"Estimate"]
-    vj = coef_table[hetero_vars,"Std. Error"]^2
-
-    ## estimate q and pvalue
-    wj = 1/vj
-    bbar <- sum(wj*bj)/(sum(wj))
-    q <- sum((bj - bbar)^2/vj)
-
-    pval <- pchisq(q, df=(s-1),lower.tail=FALSE)
-
-    data.frame( p.value.Q = pval,
-                Q = q, b.bar = bbar, mean.vj = mean( vj ),
-                tau.hat.raw = sd( bj ) )
+    return(list(tau.hat = tau.hat,
+                p.value = pval,
+                reject = reject,
+                Q = q,
+                CI_low = CI_low,
+                CI_high = CI_high) )
 }
+
+
+
 
 
 

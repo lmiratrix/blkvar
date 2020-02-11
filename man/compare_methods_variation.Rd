@@ -4,8 +4,15 @@
 \alias{compare_methods_variation}
 \title{Compare different estimates of cross site variation.}
 \usage{
-compare_methods_variation(Yobs, Z, B, siteID = NULL, data = NULL,
-  include.testing = TRUE, long.results = FALSE)
+compare_methods_variation(
+  Yobs,
+  Z,
+  B,
+  siteID = NULL,
+  data = NULL,
+  include.testing = TRUE,
+  long.results = FALSE
+)
 }
 \arguments{
 \item{Z}{vector of assignment indicators (1==treated) (or column name in data)}

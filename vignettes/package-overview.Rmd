@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 library( blkvar )
 library( dplyr )
 library( ggplot2 )
+library( knitr )
 ```
 
 The `blkvar` package implements a variety of methods for estimating the average treatment impact in a blocked or multisite randomized trial. It also provides methods for estimating the amount of cross-site (or cross-block) treatment variation, defined as the variance of the individual block (or site) ATEs. It finally provides a variety of methods to implement blocked or multisite simulation studies.
@@ -50,7 +51,19 @@ compare_methods(Yobs, Z, sid, data=df, include.block = FALSE, include.MLM = FALS
                 include.DB = FALSE)
 ```
 
-## Estimating cross site variation
+# Adjusting for covariates
+
+Covariate adjustment for individual level covariates is implemented for several methods (especially the linear regression based ones).
+
+```{r}
+df$X1 = df$Y0 + rnorm( nrow( df ) ) # add a fake covariate
+df$X2 = df$Y1 + rnorm( nrow( df ) ) # add another fake covariate
+
+rs = compare_methods( Yobs, Z, sid, data=df, control.formula = ~X1 + X2 )
+knitr::kable( rs )
+```
+
+# Estimating cross site variation
 
 We can estimate cross site variation using some of the multilevel modeling methods.  The `estimate.ATE.FIRC` method, for example, provides `tau.hat`, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).
 ```{r}
@@ -73,7 +86,14 @@ t( ests.RIRC )
 
 These methods also have a `pool` option which uses a MLM with a single variance parameter for all individuals, rather than separate ones for the treatment and control groups (which is still pooled across block).
 
-We can compare these estimators via
+We can test for cross site variation using a $Q$-statistic approach:
+```{r}
+t( analysis.Qstatistic( Yobs, Z, sid, data=df, alpha=0.05, calc.CI=TRUE ) )
+```
+The confidence interval comes from inverting the test statistic for various values of cross-site variation.
+
+
+We can compare all these estimators via
 ```{r}
 compare_methods_variation( Yobs, Z, sid, data=df, long.results=TRUE )
 ```

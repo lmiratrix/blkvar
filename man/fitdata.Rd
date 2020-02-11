@@ -4,9 +4,15 @@
 \alias{fitdata}
 \title{Block variance estimation function.}
 \usage{
-fitdata(Yobs, Z, B, data = NULL, method = c("hybrid_m", "hybrid_p",
-  "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all",
-  "rct_yes_mod_small"), throw.warnings = TRUE)
+fitdata(
+  Yobs,
+  Z,
+  B,
+  data = NULL,
+  method = c("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small",
+    "rct_yes_mod_all", "rct_yes_mod_small"),
+  throw.warnings = TRUE
+)
 }
 \arguments{
 \item{Z}{vector of assignment indicators (1==treated)}

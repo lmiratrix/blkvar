@@ -4,13 +4,32 @@
 \alias{gen.dat.model}
 \title{Generate multilevel data from a model}
 \usage{
-gen.dat.model(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01,
-  gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
-  beta.X = NULL, sigma2.mean.X = 0, variable.n = TRUE,
-  variable.p = FALSE, cluster.rand = FALSE, return.sites = FALSE,
-  finite.model = FALSE, size.impact.correlate = 0,
-  proptx.impact.correlate = 0, correlate.strength = 0.75,
-  size.ratio = 1/3, verbose = FALSE)
+gen.dat.model(
+  n.bar = 10,
+  J = 30,
+  p = 0.5,
+  gamma.00,
+  gamma.01,
+  gamma.10,
+  gamma.11,
+  tau.00,
+  tau.01,
+  tau.11,
+  sigma2.e,
+  sigma2.W = 1,
+  beta.X = NULL,
+  sigma2.mean.X = 0,
+  variable.n = TRUE,
+  variable.p = FALSE,
+  cluster.rand = FALSE,
+  return.sites = FALSE,
+  finite.model = FALSE,
+  size.impact.correlate = 0,
+  proptx.impact.correlate = 0,
+  correlate.strength = 0.75,
+  size.ratio = 1/3,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{n.bar}{average site size, Default: 10}

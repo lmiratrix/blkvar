@@ -4,12 +4,20 @@
 \alias{estimate.ATE.design.based.adjusted}
 \title{Adjusted design based estimator for ATE}
 \usage{
-estimate.ATE.design.based.adjusted(formula, control.formula, data,
-  siteID = NULL, method = c("finite", "superpop", "superpop.adj"),
-  weight = c("individual", "site"))
+estimate.ATE.design.based.adjusted(
+  formula,
+  control.formula,
+  data,
+  siteID = NULL,
+  method = c("finite", "superpop", "superpop.adj"),
+  weight = c("individual", "site")
+)
 }
 \arguments{
 \item{weight}{}
+}
+\value{
+
 }
 \description{
 Given two covariates, X1 and X2, calculate adjusted ATE estimates for the

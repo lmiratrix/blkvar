@@ -4,8 +4,7 @@
 \alias{calc.power}
 \title{Calculate power for cross-site variation}
 \usage{
-calc.power(J, n.bar, tau, p.tx = 0.5, ICC = 0.5, K = 0, R2.X = 0,
-  alpha = 0.05)
+calc.power(J, n.bar, tau, p.tx = 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha = 0.05)
 }
 \arguments{
 \item{J}{Number of sites}

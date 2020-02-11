@@ -5,9 +5,18 @@
 \title{Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
 treatment variation.}
 \usage{
-estimate.ATE.FIRC(Yobs, Z, B, siteID = NULL, control.formula = NULL,
-  data = NULL, REML = FALSE, include.testing = TRUE, anova = FALSE,
-  pool = FALSE)
+estimate.ATE.FIRC(
+  Yobs,
+  Z,
+  B,
+  siteID = NULL,
+  control.formula = NULL,
+  data = NULL,
+  REML = FALSE,
+  include.testing = TRUE,
+  anova = FALSE,
+  pool = FALSE
+)
 }
 \arguments{
 \item{B}{Name of the block indicator.}

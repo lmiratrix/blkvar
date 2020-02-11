@@ -69,7 +69,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
 
 
     # make sites RA blocks if there are no sites.
-    if ( is.null( data$siteID ) ) {
+    if ( is.null( siteID ) ) {
         data$siteID = data$B
     }
 
@@ -324,7 +324,7 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, c
     tau.hats = coef(M0.int)[ids]
 
     # site weighting
-    if ( !is.null( data$siteID ) ) {
+    if ( !is.null( siteID ) ) {
         # aggregate!
         wts = data %>% group_by( B, siteID ) %>%
             summarise( n = n() ) %>%

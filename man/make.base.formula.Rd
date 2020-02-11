@@ -4,8 +4,7 @@
 \alias{make.base.formula}
 \title{Make a canonical fixed effect formula, possibly with control variables.}
 \usage{
-make.base.formula(Yobs = "Yobs", Z = "Z", control.formula = NULL,
-  data = NULL)
+make.base.formula(Yobs = "Yobs", Z = "Z", control.formula = NULL, data = NULL)
 }
 \arguments{
 \item{data}{}

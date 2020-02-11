@@ -5,13 +5,21 @@
 \alias{make.obs.data}
 \title{Make simulated dataset from a list of block sizes}
 \usage{
-make.data(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5,
-  sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact = FALSE)
+make.data(
+  n_k,
+  sigma_alpha = 1,
+  sigma_tau = 0,
+  tau = 5,
+  sigma_0 = 1,
+  sigma_1 = 1,
+  corr = 0.5,
+  exact = FALSE
+)
 
 make.obs.data(n_k = c(2, 3, 4, 8), p = 0.5, ...)
 }
 \arguments{
-\item{n_k}{Vector of block sizes. Let K be length of this vector.}
+\item{n_k}{List of block sizes}
 
 \item{sigma_alpha}{Standard deviation of the separation of the block mean Y0}
 
@@ -32,8 +40,6 @@ for different blocks)}
 sizes).  This can be a vector with a probability for each block.}
 
 \item{...}{Parameters to be passed to make.data()}
-
-\item{n_k}{List of block sizes}
 }
 \value{
 Dataframe with block indicators, Y0, and Y1.

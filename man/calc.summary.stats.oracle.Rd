@@ -4,8 +4,7 @@
 \alias{calc.summary.stats.oracle}
 \title{Summarise simulation data by block (where we know both Y0 and Y1)}
 \usage{
-calc.summary.stats.oracle(data, Y0 = "Y0", Y1 = "Y1", Z = "Z",
-  B = "B")
+calc.summary.stats.oracle(data, Y0 = "Y0", Y1 = "Y1", Z = "Z", B = "B")
 }
 \arguments{
 \item{dat}{Dataframe with defined Y0, Y1, and B variables.}

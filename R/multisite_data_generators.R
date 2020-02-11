@@ -84,7 +84,7 @@ describe.data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
 
 
 
-
+#' Generate piecewise uniform distribution with a mean of n.bar
 block.distn = function( J, n.bar, size.ratio ) {
     N = 1 + 3 * size.ratio
     p = (N-1)/N

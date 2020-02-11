@@ -4,9 +4,12 @@
 \alias{estimate.ATE.design.based.from.stats}
 \title{Implementation of the formula found in RCT-YES documentation.}
 \usage{
-estimate.ATE.design.based.from.stats(sum_tab, siteID = NULL,
+estimate.ATE.design.based.from.stats(
+  sum_tab,
+  siteID = NULL,
   method = c("finite", "superpop", "superpop.original"),
-  weight = c("individual", "site"))
+  weight = c("individual", "site")
+)
 }
 \arguments{
 \item{sum_tab}{Table of summary statistics by block, from, e.g.,

@@ -29,7 +29,6 @@ make.balanced.dataset = function(  ) {
 
 }
 
-
 make.big.balanced.dataset = function(rps=5) {
     rps = plyr::ldply( 1:rps, function(l) {
         df = make.balanced.dataset()
@@ -326,27 +325,34 @@ test_that("compare_methods works with nested randomization blocks", {
 
 
 test_that("compare_methods with adjustment works with nested randomization blocks", {
-
-    a = make.big.balanced.dataset( 5 )
+    a = gen.dat( n.bar=10, J=10 )
     head( a )
     a$X1 = a$Y0 + rnorm( nrow(a), sd=1 )
     a$X2 = a$Y1 + rnorm( nrow(a), sd=1 )
-    #M = lm( Yobs ~ X1 + X2, data=a )
-    #summary( M )
-    #ggplot2::qplot( X1, Yobs, data=a )
 
-    params = get.params(a)
-    params
+    # cluster to make sites
+    a$sssite = 10 + round( as.numeric( a$sid )  / 3 )
+    a$Yobs = a$Yobs + a$sssite * 0.3
+    table( a$sssite )
 
-    a = rename( a, outcome = Yobs, Tx = Z, BB = B )
+    a = rename( a, outcome = Yobs, Tx = Z, BB = sid )
     head( a )
+
+    est0b = compare_methods( outcome, Tx, BB, data=a )
+    est0b
+
+    est0 = compare_methods( outcome, Tx, BB, siteID = "sssite", data=a )
+    est0
+
 
     est1b = compare_methods( outcome, Tx, BB, data=a,
                              control.formula = ~ X1 + X2 )
     est1b
 
-    est1 = compare_methods( outcome, Tx, BB, siteID = "sssite", data=a,
-                            control.formula = ~ X1 + X2 )
+
+    est1 = compare_methods( outcome, Tx, BB, data=a,
+                            siteID = "sssite",
+                             control.formula = ~ X1 + X2 )
     est1
 
 

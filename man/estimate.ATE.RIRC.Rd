@@ -5,11 +5,25 @@
 \alias{estimate.ATE.RICC}
 \title{Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC) Models}
 \usage{
-estimate.ATE.RIRC(Yobs, Z, B, data = NULL, REML = FALSE,
-  include.testing = TRUE, pool = FALSE, control.formula = NULL)
+estimate.ATE.RIRC(
+  Yobs,
+  Z,
+  B,
+  data = NULL,
+  REML = FALSE,
+  include.testing = TRUE,
+  pool = FALSE,
+  control.formula = NULL
+)
 
-estimate.ATE.RICC(Yobs, Z, B, data = NULL, REML = FALSE,
-  control.formula = NULL)
+estimate.ATE.RICC(
+  Yobs,
+  Z,
+  B,
+  data = NULL,
+  REML = FALSE,
+  control.formula = NULL
+)
 }
 \arguments{
 \item{B}{Name of the block indicator.}

@@ -4,9 +4,20 @@
 \alias{gen.dat}
 \title{gen.dat}
 \usage{
-gen.dat(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3,
-  rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7, gamma.00 = 0,
-  gamma.10 = 0.2, verbose = FALSE, zero.corr = FALSE, ...)
+gen.dat(
+  n.bar = 10,
+  J = 30,
+  p = 0.5,
+  tau.11.star = 0.3,
+  rho2.0W = 0.1,
+  rho2.1W = 0.5,
+  ICC = 0.7,
+  gamma.00 = 0,
+  gamma.10 = 0.2,
+  verbose = FALSE,
+  zero.corr = FALSE,
+  ...
+)
 }
 \arguments{
 \item{n.bar}{average site size, Default: 10}

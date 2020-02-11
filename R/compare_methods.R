@@ -449,18 +449,21 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
     # the random-intercept, random-coefficient (RIRC) model
     RIRC.pool = estimate.ATE.RIRC( Yobs, Z, B, data, include.testing=include.testing, pool=TRUE)
 
+    Qstat = analysis.Qstatistic( Yobs, Z, B, siteID=siteID, data = data )
+
     # collect results
     res = data.frame( tau.hat.FIRC = FIRC$tau.hat,
                       tau.hat.RIRC = RIRC$tau.hat,
                       tau.hat.FIRC.pool = FIRC.pool$tau.hat,
                       tau.hat.RIRC.pool = RIRC.pool$tau.hat )
+    res$tau.hat.Q = Qstat$tau.hat
 
     if ( include.testing ) {
         res$pv.FIRC = FIRC$p.variation
         res$pv.RIRC = RIRC$p.variation
         res$pv.FIRC.pool = FIRC.pool$p.variation
         res$pv.RIRC.pool = RIRC.pool$p.variation
-        res$pv.Qstat = analysis.Qstatistic( Yobs, Z, B, data = data )$p.value.Q
+        res$pv.Qstat = Qstat$p.value
     }
 
 
@@ -483,6 +486,7 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
 #### Testing and demo of this code ####
 
 if  (FALSE ) {
+    library( blkvar )
     dat = make.obs.data( n_k = 4:10, p = 0.2 )
     dat
     table( dat$Z, dat$B )

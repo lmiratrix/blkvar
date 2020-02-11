@@ -4,8 +4,7 @@
 \alias{calc.summary.stats}
 \title{Summarise data by block.}
 \usage{
-calc.summary.stats(Yobs, Z, B, data = NULL, siteID = NULL,
-  add.neyman = FALSE)
+calc.summary.stats(Yobs, Z, B, data = NULL, siteID = NULL, add.neyman = FALSE)
 }
 \arguments{
 \item{siteID}{If not null, name of siteID that has randomization blocks

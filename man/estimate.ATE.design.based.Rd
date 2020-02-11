@@ -4,9 +4,14 @@
 \alias{estimate.ATE.design.based}
 \title{Implementation of the formula found in RCT-YES documentation.}
 \usage{
-estimate.ATE.design.based(formula, control.formula = NULL,
-  siteID = NULL, data, method = c("finite", "superpop",
-  "superpop.original"), weight = c("individual", "site"))
+estimate.ATE.design.based(
+  formula,
+  control.formula = NULL,
+  siteID = NULL,
+  data,
+  method = c("finite", "superpop", "superpop.original"),
+  weight = c("individual", "site")
+)
 }
 \arguments{
 \item{siteID}{Vector of site IDs if there are randomization blocks nested in

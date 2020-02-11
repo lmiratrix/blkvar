@@ -2,18 +2,29 @@
 % Please edit documentation in R/qstatistic_method.R
 \name{analysis.Qstatistic}
 \alias{analysis.Qstatistic}
-\title{Weiss et al. Q-statistic test
-Dataframe has variables of
-- B (site id)
-- Yobs (outcome)
-- Z (binary treatment 0/1)}
+\title{Calculate confidence interval for cross site variation using Q-statistic test inversion.}
 \usage{
-analysis.Qstatistic(Yobs, Z, B, data = NULL)
+analysis.Qstatistic(
+  Yobs,
+  Z,
+  B,
+  siteID = NULL,
+  data = NULL,
+  alpha = 0.05,
+  calc.CI = FALSE
+)
+}
+\arguments{
+\item{Yobs}{(outcome)}
+
+\item{Z}{(binary treatment 0/1)}
+
+\item{B}{(site id)}
+
+\item{data}{Dataframe with outcome, treatment, and blocking factor.}
+
+\item{alpha}{The level of the test.  The CI will be a 1-2alpha confidence interval.}
 }
 \description{
-Weiss et al. Q-statistic test
-Dataframe has variables of
-- B (site id)
-- Yobs (outcome)
-- Z (binary treatment 0/1)
+Code taken from prior work of Catherine Armstrong.
 }
