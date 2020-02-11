@@ -22,7 +22,7 @@ library( knitr )
 
 The `blkvar` package implements a variety of methods for estimating the average treatment impact in a blocked or multisite randomized trial. It also provides methods for estimating the amount of cross-site (or cross-block) treatment variation, defined as the variance of the individual block (or site) ATEs. It finally provides a variety of methods to implement blocked or multisite simulation studies.
 
-## Estimating the ATE
+# Estimating the ATE
 
 There are several classes of methods for estimating the ATE:
 
@@ -50,6 +50,8 @@ One can select which methods to use:
 compare_methods(Yobs, Z, sid, data=df, include.block = FALSE, include.MLM = FALSE,
                 include.DB = FALSE)
 ```
+
+
 
 # Adjusting for covariates
 

@@ -377,9 +377,9 @@ block.data.sim<-function(Y, Z, B, p.mat, data=NULL){
 }
 
 
-#' Function that calculates variance of treatment effects.
+#' Calculates variance of treatment effects.
 #'
-#' Function that helps calculate bias by caculating the tue variance of treatment effects.
+#' Function that helps calculate bias by caculating the true variance of treatment effects.
 #' @param tau_vec  vector of treatment effects
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
@@ -388,7 +388,9 @@ s.tc.func<-function(tau_vec){
   return(s.tc)
 }
 
-#' Variance function multiplied by n-1.
+#' Rescaled variance
+#'
+#' This is the residual sum of squares
 #'
 #' Function that calculates scaled variance to help with bias calculation.
 #' @param Y  vector of potential outcomes

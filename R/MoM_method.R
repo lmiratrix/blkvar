@@ -1,13 +1,13 @@
-#'
-#' This file contains functions implementing the various methods for detecting
-#' and estimating treatment effect variation across sites in a multi-site trial
-#' using methods of moment (MoM) approach.
-#'
+#
+# This file contains functions implementing the various methods for detecting
+# and estimating treatment effect variation across sites in a multi-site trial
+# using methods of moment (MoM) approach.
+#
 
-#' We have:
-#'   * Unweighted MoM for both simulations (with and without covariate)
-#'   * Weighted MoM for both simulations (with and without covariate)
-#'
+# We have:
+#   * Unweighted MoM for both simulations (with and without covariate)
+#   * Weighted MoM for both simulations (with and without covariate)
+#
 
 
 #' MoM Unweighted

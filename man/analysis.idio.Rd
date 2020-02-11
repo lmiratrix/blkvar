@@ -4,9 +4,8 @@
 \alias{analysis.idio}
 \alias{analysis.systematic.RTx}
 \alias{analysis.combination}
-\title{This file contains functions implementing the various methods for detecting
-and estimating treatment effect variation across sites in a multi-site trial
-using random-slope, random-intercept approaches.}
+\title{Test for cross site variation using a liklihood ratio test vs. a model with no random slope (but random intercept).
+This is the RIRC version of such a test.}
 \usage{
 analysis.idio(df)
 
@@ -15,16 +14,7 @@ analysis.systematic.RTx(df)
 analysis.combination(df)
 }
 \description{
-We have:
-  * Ideosyncratic test
-  * Testing for systematic covariate (two versions, one with random coeff and one not)
-  * Hybrid test doing a likelihood ratio of the hybrid model vs. no-variation model
-
 This is a combination test: it uses
 a liklihood ratio test on model with both systematic and ideosyncratic
 variation
-}
-\details{
-Test for cross site variation using a liklihood ratio test vs. a model with no random slope (but random intercept).
-This is the RIRC version of such a test.
 }

@@ -2,7 +2,6 @@
 
 S3method(print,var_dat)
 export(add.obs.data)
-export(analysis.FIRC.cov)
 export(analysis.Qstatistic)
 export(analysis.combination)
 export(analysis.idio)

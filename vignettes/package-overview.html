@@ -100,8 +100,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <p>The <code>blkvar</code> package implements a variety of methods for estimating the average treatment impact in a blocked or multisite randomized trial. It also provides methods for estimating the amount of cross-site (or cross-block) treatment variation, defined as the variance of the individual block (or site) ATEs. It finally provides a variety of methods to implement blocked or multisite simulation studies.</p>
-<div id="estimating-the-ate" class="section level2">
-<h2>Estimating the ATE</h2>
+<div id="estimating-the-ate" class="section level1">
+<h1>Estimating the ATE</h1>
 <p>There are several classes of methods for estimating the ATE:</p>
 <ul>
 <li>Linear regression with block dummies</li>
@@ -115,47 +115,47 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
                          <span class="dt">ICC =</span> <span class="fl">0.65</span>,
                          <span class="dt">variable.n =</span> <span class="ot">TRUE</span> )
 <span class="kw">head</span>( df )
-<span class="co">#&gt;   sid        Y0        Y1 Z      Yobs         W</span>
-<span class="co">#&gt; 1   1 0.5067329 0.4247571 0 0.5067329 0.4111986</span>
-<span class="co">#&gt; 2   1 0.8076108 0.7256351 0 0.8076108 0.4111986</span>
-<span class="co">#&gt; 3   1 0.6275153 0.5455396 1 0.5455396 0.4111986</span>
-<span class="co">#&gt; 4   1 0.4776217 0.3956460 1 0.3956460 0.4111986</span>
-<span class="co">#&gt; 5   1 1.5862783 1.5043025 1 1.5043025 0.4111986</span>
-<span class="co">#&gt; 6   1 0.8832857 0.8013099 0 0.8832857 0.4111986</span></code></pre></div>
+<span class="co">#&gt;   sid         Y0         Y1 Z       Yobs         W</span>
+<span class="co">#&gt; 1   1 -1.1497560 -0.7995728 0 -1.1497560 0.5386619</span>
+<span class="co">#&gt; 2   1 -1.5490379 -1.1988547 0 -1.5490379 0.5386619</span>
+<span class="co">#&gt; 3   1 -0.9000647 -0.5498815 0 -0.9000647 0.5386619</span>
+<span class="co">#&gt; 4   1 -1.5114344 -1.1612512 0 -1.5114344 0.5386619</span>
+<span class="co">#&gt; 5   1 -1.3287450 -0.9785618 1 -0.9785618 0.5386619</span>
+<span class="co">#&gt; 6   1 -0.8427914 -0.4926082 1 -0.4926082 0.5386619</span></code></pre></div>
 <p>To estimate the ATE using (almost) all the various methods provided we have</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods</span>(Yobs, Z, sid, <span class="dt">data=</span>df )
 <span class="co">#&gt; Loading required package: multiwayvcov</span>
 <span class="co">#&gt;            method        tau         SE</span>
-<span class="co">#&gt; 1        hybrid_m 0.05913596 0.03123114</span>
-<span class="co">#&gt; 2        hybrid_p 0.05913596 0.03123114</span>
-<span class="co">#&gt; 3     plug_in_big 0.05913596 0.03123114</span>
-<span class="co">#&gt; 4   DB-FP-Persons 0.05913596 0.03123114</span>
-<span class="co">#&gt; 5     DB-FP-Sites 0.05032947 0.03966269</span>
-<span class="co">#&gt; 6   DB-SP-Persons 0.05913596 0.03875901</span>
-<span class="co">#&gt; 7     DB-SP-Sites 0.05032947 0.05618723</span>
-<span class="co">#&gt; 8              FE 0.05911700 0.03150823</span>
-<span class="co">#&gt; 9          FE-Het 0.05911700 0.03149124</span>
-<span class="co">#&gt; 10          FE-CR 0.05911700 0.03916555</span>
-<span class="co">#&gt; 11        FE-Club 0.05911700 0.03886950</span>
-<span class="co">#&gt; 12        FE-IPTW 0.05913596 0.03116800</span>
-<span class="co">#&gt; 13  FE-IPTW-Sites 0.05032947 0.03943725</span>
-<span class="co">#&gt; 14   FE-Int-Sites 0.05032947 0.04100098</span>
-<span class="co">#&gt; 15 FE-Int-Persons 0.05913596 0.03125426</span>
-<span class="co">#&gt; 16           RICC 0.05927584 0.03150837</span>
-<span class="co">#&gt; 17           FIRC 0.05788793 0.04267120</span>
-<span class="co">#&gt; 18           RIRC 0.06587346 0.04172760</span></code></pre></div>
+<span class="co">#&gt; 1        hybrid_m 0.08369904 0.02914260</span>
+<span class="co">#&gt; 2        hybrid_p 0.08369904 0.02914260</span>
+<span class="co">#&gt; 3     plug_in_big 0.08369904 0.02914260</span>
+<span class="co">#&gt; 4   DB-FP-Persons 0.08369904 0.02914260</span>
+<span class="co">#&gt; 5     DB-FP-Sites 0.08398353 0.03415624</span>
+<span class="co">#&gt; 6   DB-SP-Persons 0.08369904 0.05406076</span>
+<span class="co">#&gt; 7     DB-SP-Sites 0.08398353 0.05026008</span>
+<span class="co">#&gt; 8              FE 0.08369079 0.02962045</span>
+<span class="co">#&gt; 9          FE-Het 0.08369079 0.02965445</span>
+<span class="co">#&gt; 10          FE-CR 0.08369079 0.05456455</span>
+<span class="co">#&gt; 11        FE-Club 0.08369079 0.05432815</span>
+<span class="co">#&gt; 12        FE-IPTW 0.08369904 0.02938231</span>
+<span class="co">#&gt; 13  FE-IPTW-Sites 0.08398353 0.03352717</span>
+<span class="co">#&gt; 14   FE-Int-Sites 0.08398353 0.03640146</span>
+<span class="co">#&gt; 15 FE-Int-Persons 0.08369904 0.02912011</span>
+<span class="co">#&gt; 16           RICC 0.08357928 0.02963864</span>
+<span class="co">#&gt; 17           FIRC 0.07947742 0.05167046</span>
+<span class="co">#&gt; 18           RIRC 0.07815813 0.05200835</span></code></pre></div>
 <p>One can select which methods to use:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods</span>(Yobs, Z, sid, <span class="dt">data=</span>df, <span class="dt">include.block =</span> <span class="ot">FALSE</span>, <span class="dt">include.MLM =</span> <span class="ot">FALSE</span>,
                 <span class="dt">include.DB =</span> <span class="ot">FALSE</span>)
 <span class="co">#&gt;           method        tau         SE</span>
-<span class="co">#&gt; 1             FE 0.05911700 0.03150823</span>
-<span class="co">#&gt; 2         FE-Het 0.05911700 0.03149124</span>
-<span class="co">#&gt; 3          FE-CR 0.05911700 0.03916555</span>
-<span class="co">#&gt; 4        FE-Club 0.05911700 0.03886950</span>
-<span class="co">#&gt; 5        FE-IPTW 0.05913596 0.03116800</span>
-<span class="co">#&gt; 6  FE-IPTW-Sites 0.05032947 0.03943725</span>
-<span class="co">#&gt; 7   FE-Int-Sites 0.05032947 0.04100098</span>
-<span class="co">#&gt; 8 FE-Int-Persons 0.05913596 0.03125426</span></code></pre></div>
+<span class="co">#&gt; 1             FE 0.08369079 0.02962045</span>
+<span class="co">#&gt; 2         FE-Het 0.08369079 0.02965445</span>
+<span class="co">#&gt; 3          FE-CR 0.08369079 0.05456455</span>
+<span class="co">#&gt; 4        FE-Club 0.08369079 0.05432815</span>
+<span class="co">#&gt; 5        FE-IPTW 0.08369904 0.02938231</span>
+<span class="co">#&gt; 6  FE-IPTW-Sites 0.08398353 0.03352717</span>
+<span class="co">#&gt; 7   FE-Int-Sites 0.08398353 0.03640146</span>
+<span class="co">#&gt; 8 FE-Int-Persons 0.08369904 0.02912011</span></code></pre></div>
 </div>
 <div id="adjusting-for-covariates" class="section level1">
 <h1>Adjusting for covariates</h1>
@@ -176,93 +176,93 @@ knitr<span class="op">::</span><span class="kw">kable</span>( rs )</code></pre><
 <tbody>
 <tr class="odd">
 <td align="left">hybrid_m</td>
-<td align="right">0.0591360</td>
-<td align="right">0.0312311</td>
+<td align="right">0.0836990</td>
+<td align="right">0.0291426</td>
 </tr>
 <tr class="even">
 <td align="left">hybrid_p</td>
-<td align="right">0.0591360</td>
-<td align="right">0.0312311</td>
+<td align="right">0.0836990</td>
+<td align="right">0.0291426</td>
 </tr>
 <tr class="odd">
 <td align="left">plug_in_big</td>
-<td align="right">0.0591360</td>
-<td align="right">0.0312311</td>
+<td align="right">0.0836990</td>
+<td align="right">0.0291426</td>
 </tr>
 <tr class="even">
 <td align="left">DB-FP-Persons-adj</td>
-<td align="right">0.0224204</td>
-<td align="right">0.0236620</td>
+<td align="right">0.0703306</td>
+<td align="right">0.0217893</td>
 </tr>
 <tr class="odd">
 <td align="left">DB-FP-Sites-adj</td>
-<td align="right">0.0464286</td>
-<td align="right">0.0306207</td>
+<td align="right">0.0630596</td>
+<td align="right">0.0265984</td>
 </tr>
 <tr class="even">
 <td align="left">DB-SP-Persons-adj</td>
-<td align="right">0.0224204</td>
-<td align="right">0.0395345</td>
+<td align="right">0.0703306</td>
+<td align="right">0.0519582</td>
 </tr>
 <tr class="odd">
 <td align="left">DB-SP-Sites-adj</td>
-<td align="right">0.0464286</td>
-<td align="right">0.0476144</td>
+<td align="right">0.0630596</td>
+<td align="right">0.0452951</td>
 </tr>
 <tr class="even">
 <td align="left">FE-adj</td>
-<td align="right">0.0224013</td>
-<td align="right">0.0240897</td>
+<td align="right">0.0703625</td>
+<td align="right">0.0224655</td>
 </tr>
 <tr class="odd">
 <td align="left">FE-Het-adj</td>
-<td align="right">0.0224013</td>
-<td align="right">0.0240540</td>
+<td align="right">0.0703625</td>
+<td align="right">0.0224744</td>
 </tr>
 <tr class="even">
 <td align="left">FE-CR-adj</td>
-<td align="right">0.0224013</td>
-<td align="right">0.0399681</td>
+<td align="right">0.0703625</td>
+<td align="right">0.0525370</td>
 </tr>
 <tr class="odd">
 <td align="left">FE-Club-adj</td>
-<td align="right">0.0224013</td>
-<td align="right">0.0397340</td>
+<td align="right">0.0703625</td>
+<td align="right">0.0544490</td>
 </tr>
 <tr class="even">
 <td align="left">FE-IPTW-adj</td>
-<td align="right">0.0224689</td>
-<td align="right">0.0237918</td>
+<td align="right">0.0703369</td>
+<td align="right">0.0222544</td>
 </tr>
 <tr class="odd">
 <td align="left">FE-IPTW-Sites-adj</td>
-<td align="right">0.0466296</td>
-<td align="right">0.0304355</td>
+<td align="right">0.0624802</td>
+<td align="right">0.0258613</td>
 </tr>
 <tr class="even">
 <td align="left">FE-Int-Sites-adj</td>
-<td align="right">0.0464286</td>
-<td align="right">0.0310565</td>
+<td align="right">0.0630596</td>
+<td align="right">0.0272370</td>
 </tr>
 <tr class="odd">
 <td align="left">FE-Int-Persons-adj</td>
-<td align="right">0.0224204</td>
-<td align="right">0.0236747</td>
+<td align="right">0.0703306</td>
+<td align="right">0.0217870</td>
 </tr>
 <tr class="even">
 <td align="left">RICC-adj</td>
-<td align="right">0.0218878</td>
-<td align="right">0.0240973</td>
+<td align="right">0.0700725</td>
+<td align="right">0.0224696</td>
 </tr>
 <tr class="odd">
 <td align="left">FIRC-adj</td>
-<td align="right">0.0352783</td>
-<td align="right">0.0420618</td>
+<td align="right">0.0671489</td>
+<td align="right">0.0469190</td>
 </tr>
 <tr class="even">
 <td align="left">RIRC-adj</td>
-<td align="right">0.0419411</td>
-<td align="right">0.0413198</td>
+<td align="right">0.0663924</td>
+<td align="right">0.0469894</td>
 </tr>
 </tbody>
 </table>
@@ -272,30 +272,30 @@ knitr<span class="op">::</span><span class="kw">kable</span>( rs )</code></pre><
 <p>We can estimate cross site variation using some of the multilevel modeling methods. The <code>estimate.ATE.FIRC</code> method, for example, provides <code>tau.hat</code>, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests &lt;-<span class="st"> </span><span class="kw">estimate.ATE.FIRC</span>( Yobs, Z, sid, <span class="dt">data=</span>df )
 <span class="kw">t</span>( ests )
-<span class="co">#&gt;      ATE        SE.ATE     tau.hat     SE.tau       p.variation deviance    </span>
-<span class="co">#&gt; [1,] 0.05911674 0.03118309 0.002535377 0.0001408604 0.5         -0.003171212</span></code></pre></div>
+<span class="co">#&gt;      ATE        SE.ATE     tau.hat   SE.tau     p.variation  deviance</span>
+<span class="co">#&gt; [1,] 0.07984709 0.04575905 0.1837398 0.01528291 5.423694e-05 14.98318</span></code></pre></div>
 <p>(We transpose with <code>t()</code> to make it a nice row instead of a list.)</p>
 <p>This can also be done as</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests &lt;-<span class="st"> </span><span class="kw">estimate.ATE.FIRC</span>( df<span class="op">$</span>Yobs, df<span class="op">$</span>Z, df<span class="op">$</span>sid )</code></pre></div>
 <p>We also have</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ests.RIRC =<span class="st"> </span><span class="kw">estimate.ATE.RIRC</span>( Yobs, Z, sid, <span class="dt">data=</span>df )
 <span class="kw">t</span>( ests.RIRC )
-<span class="co">#&gt;      ATE        SE.ATE    tau.hat   SE.tau p.variation deviance</span>
-<span class="co">#&gt; [1,] 0.06655799 0.0404606 0.1266486 NA     0.1070218   3.678602</span></code></pre></div>
+<span class="co">#&gt;      ATE        SE.ATE     tau.hat   SE.tau p.variation  deviance</span>
+<span class="co">#&gt; [1,] 0.07811556 0.05114461 0.2198444 NA     5.246368e-07 27.80802</span></code></pre></div>
 <p>These methods also have a <code>pool</code> option which uses a MLM with a single variance parameter for all individuals, rather than separate ones for the treatment and control groups (which is still pooled across block).</p>
 <p>We can test for cross site variation using a <span class="math inline">\(Q\)</span>-statistic approach:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t</span>( <span class="kw">analysis.Qstatistic</span>( Yobs, Z, sid, <span class="dt">data=</span>df, <span class="dt">alpha=</span><span class="fl">0.05</span>, <span class="dt">calc.CI=</span><span class="ot">TRUE</span> ) )
-<span class="co">#&gt;      tau.hat p.value     reject Q        CI_low CI_high</span>
-<span class="co">#&gt; [1,] 0.19    0.004516706 TRUE   52.72818 0.1    0.29</span></code></pre></div>
+<span class="co">#&gt;      tau.hat p.value      reject Q        CI_low CI_high</span>
+<span class="co">#&gt; [1,] 0.22    1.959233e-07 TRUE   85.19843 0.16   0.3</span></code></pre></div>
 <p>The confidence interval comes from inverting the test statistic for various values of cross-site variation.</p>
 <p>We can compare all these estimators via</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_methods_variation</span>( Yobs, Z, sid, <span class="dt">data=</span>df, <span class="dt">long.results=</span><span class="ot">TRUE</span> )
-<span class="co">#&gt;      method     tau.hat        pv</span>
-<span class="co">#&gt; 1      FIRC 0.002535377        NA</span>
-<span class="co">#&gt; 2      RIRC 0.126648600 0.5000000</span>
-<span class="co">#&gt; 3 FIRC.pool 0.003951835 0.1070218</span>
-<span class="co">#&gt; 4 RIRC.pool 0.127376500 0.5000000</span>
-<span class="co">#&gt; 5         Q          NA 0.1077834</span></code></pre></div>
+<span class="co">#&gt;      method   tau.hat           pv</span>
+<span class="co">#&gt; 1      FIRC 0.1837398           NA</span>
+<span class="co">#&gt; 2      RIRC 0.2198444 5.423694e-05</span>
+<span class="co">#&gt; 3 FIRC.pool 0.1806560 5.246368e-07</span>
+<span class="co">#&gt; 4 RIRC.pool 0.2200077 9.287661e-05</span>
+<span class="co">#&gt; 5         Q        NA 4.746507e-07</span></code></pre></div>
 <p>The <span class="math inline">\(p\)</span>-values are testing for these estimates being nonzero.</p>
 </div>
 

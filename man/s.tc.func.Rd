@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulation_support_functions.R
 \name{s.tc.func}
 \alias{s.tc.func}
-\title{Function that calculates variance of treatment effects.}
+\title{Calculates variance of treatment effects.}
 \usage{
 s.tc.func(tau_vec)
 }
@@ -10,5 +10,5 @@ s.tc.func(tau_vec)
 \item{tau_vec}{vector of treatment effects}
 }
 \description{
-Function that helps calculate bias by caculating the tue variance of treatment effects.
+Function that helps calculate bias by caculating the true variance of treatment effects.
 }

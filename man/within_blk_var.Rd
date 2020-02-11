@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulation_support_functions.R
 \name{within_blk_var}
 \alias{within_blk_var}
-\title{Variance function multiplied by n-1.}
+\title{Rescaled variance}
 \usage{
 within_blk_var(Y)
 }
@@ -10,5 +10,8 @@ within_blk_var(Y)
 \item{Y}{vector of potential outcomes}
 }
 \description{
+This is the residual sum of squares
+}
+\details{
 Function that calculates scaled variance to help with bias calculation.
 }
