@@ -14,6 +14,7 @@ compare_methods(
   include.MLM = TRUE,
   include.DB = TRUE,
   include.LM = TRUE,
+  include.LM.naive = FALSE,
   include.DBBlended = FALSE,
   include.method.characteristics = FALSE,
   control.formula = NULL

@@ -242,7 +242,9 @@ weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL,
                   family = gaussian() )
         SE.w = grab.SE( M0w )
         weightModels = data.frame( method=c("FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites"),
-                                                       tau = c( coef( M0w )[["Z"]], coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
+                                                       tau = c( coef( M0w )[["Z"]],
+                                                                coef( M0w2 )[["Z"]],
+                                                                coef( M0w.site )[["Z"]]),
                                                        SE = c( SE.w, SE.w2, SE.w.site ),
                                                        stringsAsFactors = FALSE )
     }
@@ -331,7 +333,8 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, c
             group_by( siteID ) %>%
             mutate( wts = n / sum( n ) )
 
-        # some checks to make sure we are matching RA blocks and sites to the right things
+        # some checks to make sure we are matching RA blocks and sites to the
+        # right things
         stopifnot( nrow( wts ) == J )
         nms = gsub( "Z:B", "", names( tau.hats ) )
         stopifnot( all( nms == wts$B ) )
@@ -379,7 +382,8 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, c
 #' @return Data frame of the various results.
 #' @export
 linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
-                                    control.formula = NULL ) {
+                                    control.formula = NULL,
+                                    include.naive = FALSE ) {
     if ( !is.null( control.formula ) ) {
         stopifnot( !is.null( data ) )
         stopifnot( !missing( "Yobs" ) )
@@ -419,7 +423,8 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
                                         control.formula = control.formula )
 
     weightModels = weighted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat,
-                                               control.formula = control.formula )
+                                               control.formula = control.formula,
+                                               include.naive = include.naive )
 
     interactModels = interacted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat,
                                                    control.formula = control.formula )

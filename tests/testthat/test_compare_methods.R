@@ -175,7 +175,8 @@ test_that( "Design based works through compare_methods", {
     ATE = weighted.mean( blocks$ATE.hat, blocks$n )
     ATE
 
-    rsA =  compare_methods( Yobs, Z, sid, data=dat, include.MLM = FALSE, include.block = FALSE )
+    rsA =  compare_methods( Yobs, Z, sid, data=dat, include.MLM = FALSE,
+                            include.block = FALSE )
     rsA
 
     rsA$tau[ rsA$method == "DB-FP-Persons" ]
@@ -186,7 +187,8 @@ test_that( "Design based works through compare_methods", {
     sdat
     sdat = mutate( sdat, ATE.hat = Ybar1-Ybar0 )
     sdat
-    a = estimate.ATE.design.based.from.stats( sdat, weight="individual", method="finite" )
+    a = estimate.ATE.design.based.from.stats( sdat, weight="individual",
+                                              method="finite" )
     a
     expect_equal( a$tau.hat, ATE )
 

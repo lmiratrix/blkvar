@@ -12,7 +12,8 @@ linear.model.estimators(
   siteID = NULL,
   data = NULL,
   block.stats = NULL,
-  control.formula = NULL
+  control.formula = NULL,
+  include.naive = FALSE
 )
 }
 \value{
