@@ -132,7 +132,7 @@ method.characteristics = function() {
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
 compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
-                          include.DB = TRUE, include.LM = TRUE, include.DBBlended = FALSE,
+                          include.DB = TRUE, include.LM = TRUE, include.LM.naive=FALSE, include.DBBlended = FALSE,
                           include.method.characteristics = FALSE,
                           control.formula = NULL ){
     if ( !is.null( control.formula ) ) {
@@ -248,7 +248,8 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
 
     if ( include.LM ) {
         lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID, block.stats = data.table,
-                                       control.formula = control.formula )
+                                       control.formula = control.formula,
+                                       include.naive = include.LM.naive )
         summary_table = dplyr::bind_rows( summary_table, lms )
     }
 
