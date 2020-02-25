@@ -14,10 +14,18 @@ estimate.ATE.design.based.adjusted(
 )
 }
 \arguments{
-\item{weight}{}
+\item{formula}{The formula argument must be of the form outcome ~ treatment:block_id.}
+
+\item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+
+\item{data}{Dataframe with all needed variables.}
+
+\item{method}{What form of standard errors (finite, superpop, or adjusted superpop)}
+
+\item{weight}{Site or individual weighting.}
 }
 \value{
-
+Estimates of ATE along with SEs.
 }
 \description{
 Given two covariates, X1 and X2, calculate adjusted ATE estimates for the

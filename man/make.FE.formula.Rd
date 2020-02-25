@@ -13,7 +13,15 @@ make.FE.formula(
 )
 }
 \arguments{
-\item{data}{}
+\item{Yobs}{Name of outcome variable (assumed to exist in data)}
+
+\item{Z}{Name of treatment variable (assumed to exist in data)}
+
+\item{B}{Name of blocking variable (assumed to exist in data)}
+
+\item{control.formula}{What variables to control for, in the form of "~ X1 + X2".}
+
+\item{data}{Dataframe holding all variables to be used in formula.}
 }
 \value{
 Something like "Yobs ~ 0 + Z + B" or "Yobs ~ 0 + Z + B + X"
@@ -21,3 +29,4 @@ Something like "Yobs ~ 0 + Z + B" or "Yobs ~ 0 + Z + B + X"
 \description{
 Make a canonical fixed effect formula, possibly with control variables.
 }
+\keyword{internal}

@@ -239,19 +239,18 @@ scat = function( str, ... ) {
 
 #' Adjusted design based estimator for ATE
 #'
-#'Given two covariates, X1 and X2, calculate adjusted ATE estimates for the
-#'multisite trial.  This uses the formula from the Schochet RCT Yes technical
-#'document.
+#' Given two covariates, X1 and X2, calculate adjusted ATE estimates for the
+#' multisite trial.  This uses the formula from the Schochet RCT Yes technical
+#' document.
 #'
-#'@param formula
-#'@param control.formula
-#'@param data
-#'@param method
-#'@param weight
+#'@param formula  The formula argument must be of the form outcome ~ treatment:block_id.
+#'@param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
+#'@param data Dataframe with all needed variables.
+#'@param method What form of standard errors (finite, superpop, or adjusted superpop)
+#'@param weight Site or individual weighting.
 #'
-#'@return
+#'@return Estimates of ATE along with SEs.
 #'@export
-#'
 estimate.ATE.design.based.adjusted = function( formula,
                                                control.formula,
                                                data,

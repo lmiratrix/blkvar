@@ -7,13 +7,14 @@ library( formula.tools )
 
 #' Make a canonical fixed effect formula, possibly with control variables.
 #'
-#' @param Yobs
-#' @param Z
-#' @param B
-#' @param control.formula
-#' @param data
+#' @param Yobs Name of outcome variable (assumed to exist in data)
+#' @param Z Name of treatment variable (assumed to exist in data)
+#' @param B Name of blocking variable (assumed to exist in data)
+#' @param control.formula What variables to control for, in the form of "~ X1 + X2".
+#' @param data Dataframe holding all variables to be used in formula.
 #'
 #' @return Something like "Yobs ~ 1 + Z" or "Yobs ~ 1 + Z + X"
+#' @keywords internal
 make.base.formula = function( Yobs = "Yobs", Z = "Z", control.formula = NULL, data = NULL) {
 
     if ( is.null( control.formula ) ) {
@@ -46,13 +47,10 @@ make.base.formula = function( Yobs = "Yobs", Z = "Z", control.formula = NULL, da
 
 #' Make a canonical fixed effect formula, possibly with control variables.
 #'
-#' @param Yobs
-#' @param Z
-#' @param B
-#' @param control.formula
-#' @param data
+#' @inheritParams make.base.formula
 #'
 #' @return Something like "Yobs ~ 0 + Z + B" or "Yobs ~ 0 + Z + B + X"
+#' @keywords internal
 make.FE.formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = NULL, data = NULL) {
 
     if ( is.null( control.formula ) ) {
@@ -82,13 +80,10 @@ make.FE.formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = N
 
 #' Make a canonical fixed effect formula, possibly with control variables.
 #'
-#' @param Yobs
-#' @param Z
-#' @param B
-#' @param control.formula
-#' @param data
+#' @inheritParams make.base.formula
 #'
 #' @return Something like "Yobs ~ 0 + Z * B - Z" or "Yobs ~ 0 + Z * B - Z + X"
+#' @keywords internal
 make.FE.int.formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = NULL, data = NULL) {
 
     if ( is.null( control.formula ) ) {
