@@ -18,7 +18,7 @@ make.base.formula(Yobs = "Yobs", Z = "Z", control.formula = NULL, data = NULL)
 \item{B}{Name of blocking variable (assumed to exist in data)}
 }
 \value{
-Something like "Yobs ~ 1 + Z" or "Yobs ~ 1 + Z + X"
+Something like "Yobs ~ 1 + Z" or "Yobs ~ 1 + Z + X1 + X2"
 }
 \description{
 Make a canonical fixed effect formula, possibly with control variables.

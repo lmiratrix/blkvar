@@ -11,7 +11,7 @@ test_that("Check compare_methods with covariate adjustment", {
     dat$X1 = dat$W + rnorm( nrow(dat) )
     dat$X2 = dat$Y0 + rnorm( nrow( dat ) )
 
-    rs = compare_methods( Yobs, Z, sid, data=dat, control.formula = ~X1 + X2 )
+    rs = compare_methods( Yobs, Z, sid, data=dat, control.formula = ~ X1 + X2 )
 
     rs2 = compare_methods( Yobs, Z, sid, data=dat )
 

@@ -14,9 +14,10 @@ compare_methods(
   include.MLM = TRUE,
   include.DB = TRUE,
   include.LM = TRUE,
-  include.LM.naive = FALSE,
   include.DBBlended = FALSE,
   include.method.characteristics = FALSE,
+  weight.LM.method = "survey",
+  weight.LM.scale.weights = TRUE,
   control.formula = NULL
 )
 }

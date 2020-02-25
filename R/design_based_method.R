@@ -1,7 +1,5 @@
 
 
-
-
 #' Summarise data by block.
 #'
 #' Given dataframe or list of variables, return table of stats for each
@@ -81,7 +79,6 @@ estimate.ATE.design.based = function( formula,
                                       weight = c( "individual", "site" ) ) {
 
     if ( is.null( control.formula ) ) {
-
         data.table<-calc.summary.stats.formula(formula, data=data, siteID=siteID, add.neyman = TRUE )
         estimate.ATE.design.based.from.stats( data.table, siteID = siteID, method=method, weight=weight )
     } else {
@@ -235,8 +232,6 @@ scat = function( str, ... ) {
 }
 
 
-
-
 #' Adjusted design based estimator for ATE
 #'
 #' Given two covariates, X1 and X2, calculate adjusted ATE estimates for the
@@ -264,45 +259,15 @@ estimate.ATE.design.based.adjusted = function( formula,
     method = match.arg( method )
     weight = match.arg( weight )
 
-    # Figure out the covariates we are using
-    if(length(formula.tools::lhs.vars(formula)) != 1 | length(formula.tools::rhs.vars(formula)) != 2){
-        stop("The formula argument must be of the form outcome ~ treatment:block_id.")
-    }
-    if(length(formula.tools::lhs.vars(control.formula)) != 0 | length(formula.tools::rhs.vars(control.formula)) < 1){
-        stop("The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)")
-    }
+    data = make.canonical.data( formula, control.formula, siteID, data )
 
-    main.vars <- formula.tools::get.vars(formula, data=data)
-    if(any(!(main.vars %in% colnames(data)))){
-        browser()
-        stop("Some variables in formula are not present in your data.")
-    }
-    control.vars <- formula.tools::get.vars(control.formula,data=data)
-    if(any(!(control.vars %in% colnames(data)))){
-        stop("Some variables in control.formula are not present in your data.")
-    }
-
-    out.name = formula.tools::lhs.vars(formula)[[1]]
-    main.name = formula.tools::rhs.vars(formula)
+    # Get control variables
     c.names = formula.tools::rhs.vars(control.formula)
-
-    # Copy over the variables to our names
-    data$Yobs = data[[out.name]]
-    data$Z = data[[ main.name[[1]] ]]
-    data$B = data[[ main.name[[2]] ]]
-
-    if ( is.null( siteID ) ) {
-        data$siteID = data$B
-    } else {
-        data$siteID = data[[siteID]]
-    }
 
     # Count observations, etc.
     N = nrow( data )  # number of observations
     h = length( unique( data$B ) ) # number of sites/clusters
     v = length( c.names ) # number of covariates
-
-
 
     # Center the X variables around their overall grand means
     center = function(x) {

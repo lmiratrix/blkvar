@@ -13,7 +13,8 @@ linear.model.estimators(
   data = NULL,
   block.stats = NULL,
   control.formula = NULL,
-  include.naive = FALSE
+  weight.LM.method = "survey",
+  weight.LM.scale.weights = TRUE
 )
 }
 \value{

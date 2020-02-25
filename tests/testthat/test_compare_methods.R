@@ -60,6 +60,24 @@ test_that("Check method characteristics works", {
 
 
 
+test_that("weighting lm flags gets passed", {
+
+    set.seed( 102030 )
+    dat = gen.dat( n.bar = 20, J = 20 )
+
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, weight.LM.scale.weights = FALSE,
+                               include.MLM = FALSE, include.block = FALSE, include.DBBlended = FALSE, include.DB = FALSE )
+    expect_true( "FE-IPTW(n)" %in% fulltab$method )
+
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, weight.LM.scale.weights = TRUE,
+                               include.MLM = FALSE, include.block = FALSE, include.DBBlended = FALSE, include.DB = FALSE )
+    fulltab
+    expect_false( "FE-IPTW(n)" %in% fulltab$method )
+
+})
+
+
+
 
 test_that("Check method works on tibbles", {
 

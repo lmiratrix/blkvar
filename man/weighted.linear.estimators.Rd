@@ -5,13 +5,12 @@
 \title{Survey-weighted adjusted linear regression}
 \usage{
 weighted.linear.estimators(
-  Yobs,
-  Z,
-  B,
-  data = NULL,
+  formula,
+  control.formula = NULL,
   siteID = NULL,
-  include.naive = FALSE,
-  control.formula = NULL
+  data,
+  scaled.weights = TRUE,
+  weight.method = c("survey", "precision")
 )
 }
 \arguments{

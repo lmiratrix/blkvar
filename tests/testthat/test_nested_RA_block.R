@@ -194,26 +194,24 @@ test_that("weighted linear regression works with nested randomization blocks", {
 
     a = rename( a, outcome = Yobs, Tx = Z, BB = B )
 
-    est1 = blkvar:::weighted.linear.estimators( outcome, Tx, BB, siteID = "sssite", data=a, include.naive = TRUE )
+    est1 = blkvar:::weighted.linear.estimators( outcome ~ Tx * BB, siteID = "sssite", data=a, scaled.weights = TRUE )
     est1
 
-    est1b = blkvar:::weighted.linear.estimators( outcome, Tx, BB, data=a, include.naive = TRUE )
+    est1b = blkvar:::weighted.linear.estimators( outcome ~ Tx * BB, data=a, scaled.weights = FALSE )
     est1b
 
     estDB = compare_methods( outcome, Tx, BB, data=a, siteID = "sssite", include.MLM = FALSE, include.LM = TRUE, include.block = FALSE )
     estDB
 
-    expect_equal( est1$tau[[3]], estDB$tau[[2]] )
-    expect_equal( est1$tau[[3]], estDB$tau[estDB$method=="DB-FP-Sites"] )
-    expect_equal( est1$tau[[3]], estDB$tau[estDB$method=="FE-IPTW-Sites"] )
+    expect_equal( est1$tau[[2]], estDB$tau[[2]] )
+    expect_equal( est1$tau[[2]], estDB$tau[estDB$method=="DB-FP-Sites"] )
+    expect_equal( est1$tau[[2]], estDB$tau[estDB$method=="FE-IPTW-Sites"] )
 
     expect_equal( est1$tau[[1]], params$true.indiv.tau )
-    expect_equal( est1$tau[[2]], params$true.indiv.tau )
-    expect_equal( est1$tau[[3]], params$true.site.tau )
+    expect_equal( est1$tau[[2]], params$true.site.tau )
 
     expect_equal( est1b$tau[[1]], params$true.indiv.tau )
-    expect_equal( est1b$tau[[2]], params$true.indiv.tau )
-    expect_equal( est1b$tau[[3]], params$true.block.tau )
+    expect_equal( est1b$tau[[2]], params$true.block.tau )
 
 
     # Another test--match design based?
@@ -230,10 +228,10 @@ test_that("weighted linear regression works with nested randomization blocks", {
     a = estimate.ATE.design.based.from.stats( sdat, siteID="siteID", weight="site", method="finite" )
     a
 
-    a2 = blkvar:::weighted.linear.estimators( Yobs, Z, B, siteID = "siteNo", data=dat, include.naive = TRUE )
+    a2 = blkvar:::weighted.linear.estimators( Yobs ~ Z*B, siteID = "siteNo", data=dat )
     a2
 
-    expect_equal( a$tau.hat, a2$tau[[3]] )
+    expect_equal( a$tau.hat, a2$tau[[2]] )
 
 })
 

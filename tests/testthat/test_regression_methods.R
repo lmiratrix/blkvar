@@ -41,10 +41,44 @@ test_that("Weighted regression matches db", {
     b
 
     head( dat )
-    r = blkvar:::weighted.linear.estimators( Yobs, Z, B, data=dat )
+    r = blkvar:::weighted.linear.estimators( Yobs ~ Z*B, data=dat )
     r
     expect_equal( a$tau.hat, r$tau[[1]] )
     expect_equal( b$tau.hat, r$tau[[2]] )
+
+
+})
+
+
+
+
+
+
+test_that("Different Weighted regression flags work", {
+    set.seed( 1019101010 )
+    dat = make.obs.data.linear( method="small")
+    head( dat )
+
+    A = blkvar:::weighted.linear.estimators( Yobs ~ Z*B, data=dat )
+    B = blkvar:::weighted.linear.estimators( Yobs ~ Z*B, data=dat,
+                                             scaled.weights = FALSE )
+
+    C = blkvar:::weighted.linear.estimators( Yobs ~ Z*B, data=dat,
+                                             weight.method = "precision" )
+    D = blkvar:::weighted.linear.estimators( Yobs ~ Z*B, data=dat,
+                                             scaled.weights = FALSE,
+                                             weight.method = "precision" )
+
+    A
+    B
+    C
+    D
+
+    expect_equal( A$tau, B$tau )
+    expect_equal( C$tau, D$tau )
+
+    expect_equal( A$tau, C$tau )
+
 
 
 })

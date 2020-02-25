@@ -5,7 +5,7 @@
 #source( "control_formula_utilities.R")
 
 
-#' Utility to help printing out nicely formatted stuff.
+# Utility to help printing out nicely formatted stuff.
 scat = function( str, ... ) {
     cat( sprintf( str, ... ) )
 }
@@ -126,7 +126,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
 
 if ( FALSE ) {
 
-    M0w = lm( Yobs ~ Z + B, weights=dat$w.orig, data=dat )
+    M0w = lm( Yobs ~ Z + B, weights=dat$weight, data=dat )
     SE.w = summary( M0w )$coeff["Z",2]
 
     M0w2 = lm( Yobs ~ Z + B, weights=dat$weight, data=dat )
@@ -140,7 +140,9 @@ if ( FALSE ) {
 }
 
 
+precision.weighted.linear.estimators = function( ) {
 
+}
 
 #' Survey-weighted adjusted linear regression
 #'
@@ -150,103 +152,78 @@ if ( FALSE ) {
 #' @return Dataframe of results for different estimators.
 #' @importFrom survey svydesign svyglm
 #' @importFrom stats gaussian
-weighted.linear.estimators = function( Yobs, Z, B, data=NULL, siteID = NULL,
-                                       include.naive = FALSE,
-                                       control.formula = NULL ) {
+weighted.linear.estimators = function( formula,
+                                       control.formula = NULL,
+                                       siteID = NULL,
+                                       data,
+                                       scaled.weights = TRUE,
+                                       weight.method = c( "survey", "precision" ) ) {
 
-    #Call structure:
-    # weighted.linear.estimators( YY, Tx, sid, data=dat )
+    weight.method = match.arg( weight.method )
 
-    if ( !is.null( control.formula ) ) {
-        stopifnot( !is.null( data ) )
-        stopifnot( !missing( "Yobs" ) )
-    }
-
-    if ( missing( "Z" ) && is.null( data ) ) {
-        data = Yobs
-    }
-    if ( is.null( data ) ) {
-        data = data.frame( Yobs = Yobs,
-                           Z = Z,
-                           B = B )
-    } else {
-        if ( missing( "Z" ) ) {
-            stopifnot( all( c( "Yobs", "Z", "B" ) %in% names(data) ) )
-        } else {
-            d2 = data
-            if ( !is.null( siteID ) ) {
-                d2$siteID = data[[siteID]]
-                stopifnot( !is.null( d2$siteID ) )
-            }
-            d2$Yobs = eval( substitute( Yobs ), data )
-            d2$Z = eval( substitute( Z ), data )
-            d2$B = eval( substitute( B ), data )
-            data = d2
-            rm( d2 )
-            #data = rename_( data,
-            #                Yobs = as.character( substitute( Yobs ) ),
-            #                Z = as.character( substitute( Z ) ),
-            #                B = as.character( substitute( B ) ) )
-        }
-    }
-    dat = data
+    data = make.canonical.data( formula, control.formula, siteID, data )
 
     require( survey )
-    dat$B<-as.factor(dat$B)
+    data$B<-as.factor(data$B)
 
-    Z.bar = mean( dat$Z )
-    n = nrow( dat )
-    J = length( unique( dat$B ) )
+    n = nrow( data )
+    J = length( unique( data$B ) )
     n.bar = n / J
-    dat = dat %>% dplyr::group_by( B ) %>%
+
+    data = data %>% dplyr::group_by( B ) %>%
         dplyr::mutate( p = mean( Z ),
                        nj = n(),
-                       w.orig = ifelse( Z, 1/p, 1/(1-p) ),
-                       weight = ifelse( Z, Z.bar / p, (1-Z.bar)/(1-p) ),
+                       weight = ifelse( Z, 1/p, 1/(1-p) ),
                        weight.site = weight * n.bar / nj ) %>%
         dplyr::ungroup()
 
     if ( !is.null( siteID ) ) {
-        dat$siteID = dat[[siteID]]
-
-        n.site = length( unique( dat$siteID ) )
+        n.site = length( unique( data$siteID ) )
         n.bar = n / n.site
 
         # adjust weights to account for blocks nested within sites
-        dat = dat %>% group_by( siteID ) %>%
+        data = data %>% group_by( siteID ) %>%
             mutate( weight.site = weight * n.bar / n() )
+    }
+
+    if ( scaled.weights ) {
+        Z.bar = mean( data$Z )
+        data = mutate( data,
+                      weight = weight * ifelse( Z, Z.bar, (1-Z.bar) ),
+                      weight.site = weight.site * ifelse( Z, Z.bar, (1-Z.bar) ) )
     }
 
     formula = make.FE.formula( "Yobs", "Z", "B", control.formula, data )
 
-    M0w2 = svyglm( formula,
-                  design=svydesign(id=~1, weights=~weight, data=dat ),
-                  family = gaussian() )
+    if ( weight.method == "survey" ) {
+        M0w2 = svyglm( formula,
+                       design=svydesign(id=~1, weights = ~weight, data=data ),
+                       family = gaussian() )
+
+        M0w.site = svyglm( formula,
+                           design=svydesign(id=~1, weights = ~weight.site, data=data ),
+                           family = gaussian() )
+    } else {
+        M0w2 = lm( formula, data=data, weights = data$weight )
+        M0w.site = lm( formula, data=data, weights = data$weight.site )
+    }
+
+    tau = coef( M0w2 )[["Z"]]
     SE.w2 = grab.SE( M0w2 )
 
-    # Site weighted regression models
-    M0w.site = svyglm( formula,
-                   design=svydesign(id=~1, weights=~weight.site, data=dat ),
-                   family = gaussian() )
     tau.w.site = coef( M0w.site )[["Z"]]
-    SE.w.site = summary( M0w.site )$coeff["Z",2]
+    SE.w.site = grab.SE( M0w.site )
 
     weightModels = data.frame( method=c("FE-IPTW", "FE-IPTW-Sites"),
                                tau = c( coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
                                SE = c( SE.w2, SE.w.site ),
                                stringsAsFactors = FALSE )
 
-    if ( include.naive ) {
-        M0w = svyglm( formula,
-                  design=svydesign(id=~1, weights=~w.orig, data=dat ),
-                  family = gaussian() )
-        SE.w = grab.SE( M0w )
-        weightModels = data.frame( method=c("FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites"),
-                                                       tau = c( coef( M0w )[["Z"]],
-                                                                coef( M0w2 )[["Z"]],
-                                                                coef( M0w.site )[["Z"]]),
-                                                       SE = c( SE.w, SE.w2, SE.w.site ),
-                                                       stringsAsFactors = FALSE )
+    if ( !scaled.weights ) {
+        weightModels$method = paste0( weightModels$method, "(n)" )
+    }
+    if ( weight.method != "survey" ) {
+        weightModels$method = paste0( weightModels$method, "(pr)" )
     }
 
     if ( !is.null( control.formula ) ) {
@@ -383,7 +360,8 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, c
 #' @export
 linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
                                     control.formula = NULL,
-                                    include.naive = FALSE ) {
+                                    weight.LM.method = "survey",
+                                    weight.LM.scale.weights = TRUE ) {
     if ( !is.null( control.formula ) ) {
         stopifnot( !is.null( data ) )
         stopifnot( !missing( "Yobs" ) )
@@ -422,9 +400,9 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
     FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats,
                                         control.formula = control.formula )
 
-    weightModels = weighted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat,
+    weightModels = weighted.linear.estimators( Yobs ~ Z*B, siteID = siteID, data=dat,
                                                control.formula = control.formula,
-                                               include.naive = include.naive )
+                                               weight.method = weight.LM.method, scaled.weights = weight.LM.scale.weights )
 
     interactModels = interacted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat,
                                                    control.formula = control.formula )
@@ -482,6 +460,14 @@ if ( FALSE ) {
     head( dat )
     dat$X1 = dat$W + rnorm( nrow(dat) )
     dat$X2 = dat$Y0 + rnorm( nrow( dat ) )
+
+    wt = weighted.linear.estimators( Yobs ~ Z*sid, data=dat )
+    wt
+    weighted.linear.estimators( Yobs ~ Z*sid, data=dat )
+    weighted.linear.estimators( Yobs ~ Z*sid, data=dat, scaled.weights = FALSE )
+    weighted.linear.estimators( Yobs ~ Z*sid, data=dat, weight.method = "precision" )
+    weighted.linear.estimators( Yobs ~ Z*sid, data=dat, scaled.weights = FALSE,
+                                weight.method = "precision" )
 
     rs = linear.model.estimators( Yobs, Z, sid, data=dat )
     rs.adj = linear.model.estimators( Yobs, Z, sid, data=dat,

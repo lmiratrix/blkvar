@@ -71,9 +71,9 @@ method.characteristics = function() {
         print( a, row.names = FALSE )
         a$fullname = a$method
         a$method = c("hybrid_m","hybrid_p","plug_in_big", "DB-FP-Persons",
-                   "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites", "FE",
-                   "FE-Het", "FE-CR", "FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites",
-                   "FE-Int-Sites", "FE-Int-Persons", "RICC", "FIRC", "RIRC" )
+                     "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites", "FE",
+                     "FE-Het", "FE-CR", "FE-IPTW(n)", "FE-IPTW", "FE-IPTW-Sites",
+                     "FE-Int-Sites", "FE-Int-Persons", "RICC", "FIRC", "RIRC" )
         a$finite = c(1,1,1,1,1,0,0,1,1,0,1,1,1,1,1,1,0,0)
         a$site = c(0,0,0,0,1,0,1,0,0,0,0,0,1,1,0,0,1,1)
         print( a, row.names = FALSE )
@@ -85,7 +85,7 @@ method.characteristics = function() {
         a$biased = c(0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1)
         datapasta::tribble_paste( a )
 
-}
+    }
     tibble::tribble(
         ~fullname,            ~method,  ~weight, ~population, ~biased,
         "hybrid_m",       "hybrid_m", "person",    "finite",       0,
@@ -102,6 +102,7 @@ method.characteristics = function() {
         "IPTW weighted regression (naive)",     "FE-IPTW(n)", "person",    "finite",       0,
         "IPTW weighted regression",        "FE-IPTW", "person",    "finite",       0,
         "IPTW weighted regression (site)",  "FE-IPTW-Sites",   "site",    "finite",       0,
+        "IPTW weighted regression (site, naive)",  "FE-IPTW-Sites(n)",   "site",    "finite",       0,
         "FE interact (site)",   "FE-Int-Sites",   "site",    "finite",       0,
         "FE interact (indiv)", "FE-Int-Persons", "person",    "finite",       0,
         "RICC",           "RICC", "person",    "finite",       1,
@@ -132,8 +133,10 @@ method.characteristics = function() {
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
 compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
-                          include.DB = TRUE, include.LM = TRUE, include.LM.naive=FALSE, include.DBBlended = FALSE,
+                          include.DB = TRUE, include.LM = TRUE, include.DBBlended = FALSE,
                           include.method.characteristics = FALSE,
+                          weight.LM.method = "survey",
+                          weight.LM.scale.weights = TRUE,
                           control.formula = NULL ){
     if ( !is.null( control.formula ) ) {
         stopifnot( !is.null( data ) )
@@ -230,13 +233,13 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
         } else {
             # Design based methods with covariate adjustment
             DB.fi = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="individual",
-                                               control.formula = control.formula )
+                                                        control.formula = control.formula )
             DB.fs = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="site",
-                                               control.formula = control.formula )
+                                                        control.formula = control.formula )
             DB.si = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="individual",
-                                               control.formula = control.formula )
+                                                        control.formula = control.formula )
             DB.ss = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="site",
-                                               control.formula = control.formula )
+                                                        control.formula = control.formula )
             DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
             DB$method = c( "DB-FP-Persons-adj", "DB-FP-Sites-adj", "DB-SP-Persons-adj", "DB-SP-Sites-adj" )
             DB$weight = NULL
@@ -249,7 +252,8 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     if ( include.LM ) {
         lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID, block.stats = data.table,
                                        control.formula = control.formula,
-                                       include.naive = include.LM.naive )
+                                       weight.LM.method = weight.LM.method,
+                                       weight.LM.scale.weights = weight.LM.scale.weights )
         summary_table = dplyr::bind_rows( summary_table, lms )
     }
 
