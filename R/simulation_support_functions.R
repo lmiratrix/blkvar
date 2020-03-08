@@ -358,19 +358,20 @@ block.data.sim<-function(Y, Z, B, p.mat, data=NULL){
   n_matrix<-aggregate(list(n_k=B), list(B=B), FUN=length)
   n_matrix$n_k<-n_matrix$n_k/2
   n_ctk_matrix<-merge(n_matrix, p.mat, by="B")
-  n_ctk_matrix$Num_Trt<-n_ctk_matrix$n_k*n_ctk_matrix$p
-  n_ctk_matrix$Num_Ctrl<-n_ctk_matrix$n_k-n_ctk_matrix$Num_Trt
+  n_ctk_matrix$n1<-n_ctk_matrix$n_k*n_ctk_matrix$p
+  n_ctk_matrix$n0<-n_ctk_matrix$n_k-n_ctk_matrix$n1
   treated_mat<-cbind(Y[Z==1], B[Z==1])
   control_mat<-cbind(Y[Z==0], B[Z==0])
-  Y1_matrix<-aggregate(list(Y1=treated_mat[,1]), list(B=treated_mat[,2]), FUN=mean)
-  Y0_matrix<-aggregate(list(Y0=control_mat[,1]), list(B=control_mat[,2]), FUN=mean)
+  Y1_matrix<-aggregate(list(Ybar1=treated_mat[,1]), list(B=treated_mat[,2]), FUN=mean)
+  Y0_matrix<-aggregate(list(Ybar0=control_mat[,1]), list(B=control_mat[,2]), FUN=mean)
   Ybar_matrix<-merge(Y1_matrix, Y0_matrix, by="B")
   var1_matrix<-aggregate(list(var1=treated_mat[,1]), list(B=treated_mat[,2]), FUN=var)
   var0_matrix<-aggregate(list(var0=control_mat[,1]), list(B=control_mat[,2]), FUN=var)
   var_matrix<-merge(var1_matrix, var0_matrix, by="B")
   overall_mat<-merge(n_ctk_matrix, Ybar_matrix, by="B")
   overall_mat<-merge(overall_mat, var_matrix, by="B")
-  overall_mat$se_ney<-sqrt(overall_mat$var1/overall_mat$Num_Trt + overall_mat$var0/overall_mat$Num_Ctrl)
+  overall_mat$se_ney<-sqrt(overall_mat$var1/overall_mat$n1 + overall_mat$var0/overall_mat$n0)
+  
   drops <- c("n_k","p")
   overall_mat<-overall_mat[ , !(names(overall_mat) %in% drops)]
   return(overall_mat)
