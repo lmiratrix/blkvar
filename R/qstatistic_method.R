@@ -17,7 +17,7 @@
 #' @param Z (binary treatment 0/1)
 #' @param alpha The level of the test.  The CI will be a 1-2alpha confidence interval.
 #' @export
-analysis.Qstatistic <- function( Yobs, Z, B, siteID = NULL, data=NULL, alpha=0.05,
+analysis_Qstatistic <- function( Yobs, Z, B, siteID = NULL, data=NULL, alpha=0.05,
                                 calc.CI = FALSE ) {
 
     # This code block takes the parameters of
@@ -152,7 +152,7 @@ analysis.Qstatistic <- function( Yobs, Z, B, siteID = NULL, data=NULL, alpha=0.0
 #' Weiss et al. Q-statistic test when there is an individual level covariate X
 #'
 #' TO DO: Is the above description correct?
-analysis.Qstatistic.X = function( data ){
+analysis_Qstatistic_X = function( data ){
     s = length( unique( data$B ) ) # max(as.numeric(as.character(data$B)))
     data$B = as.factor(data$B)
 
@@ -191,7 +191,7 @@ analysis.Qstatistic.X = function( data ){
 
 # Testing
 if ( FALSE ) {
-    dat = catherine.gen.dat( 0.2, 0.2, 30, 50 )
+    dat = catherine_gen_dat( 0.2, 0.2, 30, 50 )
     head( dat )
 
     fit.FIRC( dat )
@@ -204,7 +204,7 @@ if ( FALSE ) {
     cTst
 
     source( "detection_methods.R")
-    qTst = analysis.Qstatistic( dat )
+    qTst = analysis_Qstatistic( dat )
     qTst
 
     cTst$p.value
@@ -221,7 +221,7 @@ if ( FALSE ) {
 
 # This is unfinished code trying to do the Q-statistic with the random effects
 # from a MLM.
-analysis.Q.MLM = function( data ) {
+analysis_Q_MLM = function( data ) {
     # Fit MLM
     M0 = lme4::lmer( Yobs ~ 1 + Z * X + (1|B), data=data )
     tstat = lme4::fixef( M0 ) / se.coef(M0)$fixef

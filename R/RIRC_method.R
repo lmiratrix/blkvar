@@ -19,7 +19,7 @@
 #' @importFrom lme4 lmer
 #' @importFrom stats deviance pchisq
 #' @export
-analysis.idio = function( df ) {
+analysis_idio = function( df ) {
     require( lme4 )
     M0 = lme4::lmer( Yobs ~ 1 + Z + (Z|sid), data=df, REML = FALSE )
     M0.null = lme4::lmer( Yobs ~ 1 + Z + (1|sid), data=df, REML= FALSE )
@@ -37,7 +37,7 @@ analysis.idio = function( df ) {
 #' Comment: Should this model allow for random tx variation or no?  (Currently it does not.)
 #'
 #' @export
-analysis.systematic = function( df ) {
+analysis_systematic = function( df ) {
     require( lme4 )
 
     M0 = lme4::lmer( Yobs ~ 1 + Z * X + (1|sid), data=df )
@@ -48,9 +48,9 @@ analysis.systematic = function( df ) {
 #' Systematic test with the random ideosyncratic variation.  This tests for
 #' systematic variation, ignoring explicitly modeled random treatment variation.
 #'
-#' @rdname analysis.idio
+#' @rdname analysis_idio
 #' @export
-analysis.systematic.RTx = function( df ) {
+analysis_systematic.RTx = function( df ) {
     require( lme4 )
 
     M0 = lme4::lmer( Yobs ~ 1 + Z * X + (Z|sid), data=df )
@@ -64,9 +64,9 @@ analysis.systematic.RTx = function( df ) {
 #' This is a combination test: it uses
 #' a liklihood ratio test on model with both systematic and ideosyncratic
 #' variation
-#' @rdname analysis.idio
+#' @rdname analysis_idio
 #' @export
-analysis.combination = function( df ) {
+analysis_combination = function( df ) {
     require( lme4 )
 
     M0 = lme4::lmer( Yobs ~ 1 + Z + X + Z:X + (Z|sid), data=df, REML = FALSE )
@@ -84,11 +84,11 @@ analysis.combination = function( df ) {
 
 #' Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC) Models
 #'
-#' @inheritParams estimate.ATE.FIRC
-#' @rdname estimate.ATE.RIRC
+#' @inheritParams estimate_ATE_FIRC
+#' @rdname estimate_ATE_RIRC
 #'
 #' @export
-estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE, pool = FALSE,
+estimate_ATE_RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE, pool = FALSE,
                                control.formula = NULL ) {
 
     stopifnot( !( include.testing && REML ) )
@@ -121,7 +121,7 @@ estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.test
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
 
-    formula = make.base.formula( control.formula=control.formula, data=data )
+    formula = make_base_formula( control.formula=control.formula, data=data )
     if ( pool ) {
         re.mod <- nlme::lme(formula,
                             data = data,
@@ -191,11 +191,11 @@ estimate.ATE.RIRC <- function( Yobs, Z, B, data=NULL, REML = FALSE, include.test
 #'
 #' There is no test for cross site variation for this method, since we assume none.
 #'
-#' @inheritParams estimate.ATE.FIRC
-#' @rdname estimate.ATE.RIRC
+#' @inheritParams estimate_ATE_FIRC
+#' @rdname estimate_ATE_RIRC
 #'
 #' @export
-estimate.ATE.RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE,
+estimate_ATE_RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE,
                                control.formula = NULL ) {
     if ( !is.null( control.formula ) ) {
         stopifnot( !is.null( data ) )
@@ -225,7 +225,7 @@ estimate.ATE.RICC <- function( Yobs, Z, B, data=NULL, REML = FALSE,
 
     #fit multilevel model and extract tau
     method = ifelse( REML, "REML", "ML" )
-    formula = make.base.formula( control.formula=control.formula, data=data )
+    formula = make_base_formula( control.formula=control.formula, data=data )
 
     re.mod <- nlme::lme(formula,
                         data = data,
@@ -257,17 +257,17 @@ if ( FALSE ) {
     localsource( "MLM_method.R" )
     localsource( "multisite_data_generators.R" )
 
-    dat = catherine.gen.dat( 0.2, 5, 30, 50 )
+    dat = catherine_gen_dat( 0.2, 5, 30, 50 )
     head( dat )
-    describe.data( dat, Y0 = "Y0", Y1="Y1" )
+    describe_data( dat, Y0 = "Y0", Y1="Y1" )
 
 
-    estimate.ATE.RIRC( Yobs, Z, B, data=dat )
+    estimate_ATE_RIRC( Yobs, Z, B, data=dat )
 
-    dat = catherine.gen.dat( 0.2, 0, 30, 50 )
-    describe.data( dat, Y0 = "Y0", Y1="Y1" )
+    dat = catherine_gen_dat( 0.2, 0, 30, 50 )
+    describe_data( dat, Y0 = "Y0", Y1="Y1" )
 
-    estimate.ATE.RIRC( Yobs, Z, B, data=dat )
+    estimate_ATE_RIRC( Yobs, Z, B, data=dat )
 }
 
 
@@ -280,7 +280,7 @@ if ( FALSE ) {
 #'
 #' @importFrom lme4 lmer VarCorr
 #' @export
-estimate.ATE.RIRC.pool = function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE,
+estimate_ATE_RIRC_pool = function( Yobs, Z, B, data=NULL, REML = FALSE, include.testing=TRUE,
                                    control.formula = NULL ) {
     if ( !is.null( control.formula ) ) {
         stopifnot( !is.null( data ) )
@@ -359,13 +359,13 @@ estimate.ATE.RIRC.pool = function( Yobs, Z, B, data=NULL, REML = FALSE, include.
 if ( FALSE ) {
     library( blkvar )
     source( "R/multisite_data_generators.R")
-    dat = catherine.gen.dat( 0.2, 0.2, 30, 50 )
+    dat = catherine_gen_dat( 0.2, 0.2, 30, 50 )
     head( dat )
-    #analysis.idio.RIRC.pool( Yobs, Z, B, data=dat )
+    #analysis_idio.RIRC.pool( Yobs, Z, B, data=dat )
     #fit.RIRC.pool( Yobs, Z, B, data=dat )
 
-    estimate.ATE.RIRC( Yobs, Z, sid, data=dat )
-    estimate.ATE.RIRC.pool( Yobs, Z, sid, data=dat )
+    estimate_ATE_RIRC( Yobs, Z, sid, data=dat )
+    estimate_ATE_RIRC_pool( Yobs, Z, sid, data=dat )
 
     #    fit.RIRC( dat$Yobs, dat$Z, dat$sid )
 }

@@ -9,7 +9,7 @@
 #'
 #' @return dataframe with summary statistics by block
 #' @export
-calc.summary.stats.oracle = function( data, Y0="Y0", Y1="Y1", Z="Z", B="B" ) {
+calc_summary_stats_oracle = function( data, Y0="Y0", Y1="Y1", Z="Z", B="B" ) {
     require( dplyr )
 
             data = rename( data, Y0 = !!rlang::sym(Y0),
@@ -42,7 +42,7 @@ calc.summary.stats.oracle = function( data, Y0="Y0", Y1="Y1", Z="Z", B="B" ) {
 #'   (optional argument)
 #' @return Vector with one element per element of `X`
 #' @export
-make.blocks = function(X,
+make_blocks = function(X,
                        method = c("small", "pair", "big", "none"),
                        num.blocks) {
     method = match.arg(method)
@@ -91,7 +91,7 @@ make.blocks = function(X,
 #' @param ATE Average Tx
 #' @param d Interaction effect term.
 #' @export
-make.data.linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65),
+make_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65),
                      a = 0,
                      b = 0,
                      ATE = 0.2,
@@ -131,7 +131,7 @@ make.data.linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 4
 #'
 #' @return augmented `dat` with Z and Yobs columns
 #' @export
-add.obs.data = function(dat,
+add_obs_data = function(dat,
                         p = 0.5,
                         Y0 = "Y0",
                         Y1 = "Y1",
@@ -169,9 +169,9 @@ add.obs.data = function(dat,
 
 
 if ( FALSE ) {
-    dat = make.data( c( 2, 5, 10 ) )
-    debug( add.obs.data )
-    add.obs.data( dat, p=0.2 )
+    dat = make_data( c( 2, 5, 10 ) )
+    debug( add_obs_data )
+    add_obs_data( dat, p=0.2 )
 }
 
 
@@ -193,7 +193,7 @@ if ( FALSE ) {
 #'   exactly.  False means pull from bivariate normal.
 #' @return Matrix of the potential outcomes and block ids.
 #' @export
-generate.individuals.from.blocks <- function( n_k, alpha = 0, beta = 0, sigma_c = 1, sigma_t = 1, corr = 1, exact=FALSE){
+generate_individuals_from_blocks <- function( n_k, alpha = 0, beta = 0, sigma_c = 1, sigma_t = 1, corr = 1, exact=FALSE){
     library(MASS)
     K = length( n_k )
     if ( length( alpha ) == 1 ) {
@@ -236,10 +236,10 @@ generate.individuals.from.blocks <- function( n_k, alpha = 0, beta = 0, sigma_c 
 }
 
 if ( FALSE ) {
-    dt = generate.individuals.from.blocks( c( 4, 8 ), c( 0, 10 ), c(1, 3), c( 10, 1 ), c( 3, 1 ), c( 0, 1 ), TRUE )
+    dt = generate_individuals_from_blocks( c( 4, 8 ), c( 0, 10 ), c(1, 3), c( 10, 1 ), c( 3, 1 ), c( 0, 1 ), TRUE )
     dt
     levels( dt$B )
-    calc.summary.stats( data=dt )
+    calc_summary_stats( data=dt )
 }
 
 
@@ -265,37 +265,37 @@ if ( FALSE ) {
 #' @return Dataframe with block indicators, Y0, and Y1.
 #'
 #' @export
-make.data = function( n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5,
+make_data = function( n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5,
                       sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact=FALSE ) {
     K = length( n_k )
     percents<-seq(from=(1-1/(K+1)), to=1/(K+1), by=-1/(K+1))
     alpha <-qnorm(percents, 0, sigma_alpha)
     beta <-qnorm(percents, tau, sigma_tau )
-    generate.individuals.from.blocks( n_k, alpha, beta=beta, sigma_c = sigma_0, sigma_t=sigma_1, corr=corr, exact=exact )
+    generate_individuals_from_blocks( n_k, alpha, beta=beta, sigma_c = sigma_0, sigma_t=sigma_1, corr=corr, exact=exact )
 }
 
 
 
 #' Make a random simulated dataset from a linear model.
 #'
-#' Generate data, make blocks, and randomize within block and generate
+#' Generate data, make_blocks, and randomize within block and generate
 #' observed potential outcomes
 #'
-#' @rdname make.data.linear
+#' @rdname make_data_linear
 #' @param method How to block
 #' @param p Proportion of units treated (as close as possible given block sizes)
 #' @return Dataframe with original potential outcomes and observed outcome based on random assigment.
 #' @export
-make.obs.data.linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65),
+make_obs_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65),
                         p = 0.5,
                          a = 0,
                          b = 0,
                          ATE = 0.2,
                          d = 0,
                          method = c("small", "pair", "big", "none")) {
-    dat = make.data.linear(X, a, b, ATE, d)
-    dat$B = make.blocks(dat$X, method = method)
-    dat = add.obs.data(dat, p = p)
+    dat = make_data_linear(X, a, b, ATE, d)
+    dat$B = make_blocks(dat$X, method = method)
+    dat = add_obs_data(dat, p = p)
     dat
 }
 
@@ -303,20 +303,20 @@ make.obs.data.linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 4
 
 #' Make a random simulated dataset from a list of block sizes
 #'
-#' Generate data, make blocks, and randomize within block and generate observed
+#' Generate data, make_blocks, and randomize within block and generate observed
 #' potential outcomes
 #'
-#' @rdname make.data
+#' @rdname make_data
 #' @param n_k List of block sizes
 #' @param p Proportion of units treated (as close as possible given block
 #'   sizes).  This can be a vector with a probability for each block.
-#' @param ... Parameters to be passed to make.data()
+#' @param ... Parameters to be passed to make_data()
 #' @return Dataframe with original potential outcomes and observed outcome based
 #'   on random assigment.
 #' @export
-make.obs.data = function( n_k = c( 2, 3, 4, 8 ), p = 0.5, ... ) {
-    dat = make.data( n_k = n_k, ... )
-    dat = add.obs.data(dat, p = p)
+make_obs_data = function( n_k = c( 2, 3, 4, 8 ), p = 0.5, ... ) {
+    dat = make_data( n_k = n_k, ... )
+    dat = add_obs_data(dat, p = p)
     dat
 }
 
@@ -334,7 +334,7 @@ make.obs.data = function( n_k = c( 2, 3, 4, 8 ), p = 0.5, ... ) {
 #' @param p.mat  matrix with first column B,second column prop treated in that block, p
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-block.data.sim<-function(Y, Z, B, p.mat, data=NULL){
+block_data_sim<-function(Y, Z, B, p.mat, data=NULL){
   if(!is.null(data)){
     Y<-data[,1]
     Z<-data[,2]
@@ -384,7 +384,7 @@ block.data.sim<-function(Y, Z, B, p.mat, data=NULL){
 #' @param tau_vec  vector of treatment effects
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-s.tc.func<-function(tau_vec){
+s_tc_func<-function(tau_vec){
   s.tc<-var(tau_vec)
   return(s.tc)
 }

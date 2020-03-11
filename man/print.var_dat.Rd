@@ -2,12 +2,12 @@
 % Please edit documentation in R/blocked_experiment_method.R
 \name{print.var_dat}
 \alias{print.var_dat}
-\title{Print method for fitdata output}
+\title{Print method for block_estimator output}
 \usage{
 \method{print}{var_dat}(x, ...)
 }
 \arguments{
-\item{x}{output from fitdata (class=var_data)}
+\item{x}{output from block_estimator (class=var_data)}
 
 \item{...}{further arguments to match print}
 }

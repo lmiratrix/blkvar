@@ -13,7 +13,7 @@
 #' MoM Unweighted
 #'
 #' @param df  The dataframe to analyze, with sid, Z, X and Yobs
-analysis.MoM.unweighted.cov = function( df ){
+analysis_MoM_unweighted_cov = function( df ){
   s = max(as.numeric(as.character(df$sid)))
   df$sid = as.factor(df$sid)
 
@@ -49,7 +49,7 @@ analysis.MoM.unweighted.cov = function( df ){
 #' MoM weighted
 #'
 #' @param df Dataframe to analyze.
-analysis.MoM.weighted.cov = function( df ){
+analysis_MoM_weighted_cov = function( df ){
   s = max(as.numeric(as.character(df$sid)))
   df$sid = as.factor(df$sid)
 
@@ -101,7 +101,7 @@ analysis.MoM.weighted.cov = function( df ){
 
 
 ## MoM Unweighted, no covariate
-analysis.MoM.unweighted = function( df ){
+analysis_MoM_unweighted = function( df ){
   s = length( unique( df$sid ) ) # max(as.numeric(as.character(df$sid)))
   df$sid = as.factor(df$sid)
 
@@ -129,7 +129,7 @@ analysis.MoM.unweighted = function( df ){
 
 
 ## MoM weighted, no covariate
-analysis.MoM.weighted = function( df ){
+analysis_MoM_weighted = function( df ){
   s = length( unique( df$sid ) ) # max(as.numeric(as.character(df$sid)))
   df$sid = as.factor(df$sid)
 

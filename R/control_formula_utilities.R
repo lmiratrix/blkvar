@@ -15,7 +15,7 @@ library( formula.tools )
 #'
 #' @return Something like "Yobs ~ 1 + Z" or "Yobs ~ 1 + Z + X1 + X2"
 #' @keywords internal
-make.base.formula = function( Yobs = "Yobs", Z = "Z", control.formula = NULL, data = NULL) {
+make_base_formula = function( Yobs = "Yobs", Z = "Z", control.formula = NULL, data = NULL) {
 
     if ( is.null( control.formula ) ) {
         new.form = sprintf( "%s ~ 1 + %s ",
@@ -47,11 +47,11 @@ make.base.formula = function( Yobs = "Yobs", Z = "Z", control.formula = NULL, da
 
 #' Make a canonical fixed effect formula, possibly with control variables.
 #'
-#' @inheritParams make.base.formula
+#' @inheritParams make_base_formula
 #'
 #' @return Something like "Yobs ~ 0 + Z + B" or "Yobs ~ 0 + Z + B + X"
 #' @keywords internal
-make.FE.formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = NULL, data = NULL) {
+make_FE_formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = NULL, data = NULL) {
 
     if ( is.null( control.formula ) ) {
         new.form = sprintf( "%s ~ 0 + %s + %s",
@@ -80,11 +80,11 @@ make.FE.formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = N
 
 #' Make a canonical fixed effect formula, possibly with control variables.
 #'
-#' @inheritParams make.base.formula
+#' @inheritParams make_base_formula
 #'
 #' @return Something like "Yobs ~ 0 + Z * B - Z" or "Yobs ~ 0 + Z * B - Z + X"
 #' @keywords internal
-make.FE.int.formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = NULL, data = NULL) {
+make_FE_int_formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula = NULL, data = NULL) {
 
     if ( is.null( control.formula ) ) {
         new.form = sprintf( "%s ~ 0 + %s * %s - %s",
@@ -123,7 +123,7 @@ make.FE.int.formula = function( Yobs = "Yobs", Z = "Z", B = "B", control.formula
 #' Then makes the outcome, treatment and block variables have canonical "Yobs", "Z", and "B" names.
 #'
 #' @return Dataset with now-canonical variable names
-make.canonical.data = function( formula, control.formula = NULL, siteID = NULL, data ) {
+make_canonical_data = function( formula, control.formula = NULL, siteID = NULL, data ) {
 
     # Figure out the covariates we are using
     if(length(formula.tools::lhs.vars(formula)) != 1 | length(formula.tools::rhs.vars(formula)) != 2){
@@ -171,12 +171,12 @@ make.canonical.data = function( formula, control.formula = NULL, siteID = NULL, 
 
 if ( FALSE ) {
 
-    make.base.formula()
-    make.base.formula( control.formula = ~ X1 + X2 + X3 )
-    make.FE.formula(  )
-    make.FE.formula( control.formula = ~ X1 + X2 + X3 )
+    make_base_formula()
+    make_base_formula( control.formula = ~ X1 + X2 + X3 )
+    make_FE_formula(  )
+    make_FE_formula( control.formula = ~ X1 + X2 + X3 )
 
-    make.FE.int.formula( )
-    make.FE.int.formula( control.formula = ~ X1 + X2 + X3 )
+    make_FE_int_formula( )
+    make_FE_int_formula( control.formula = ~ X1 + X2 + X3 )
 
 }

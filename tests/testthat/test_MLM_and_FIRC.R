@@ -10,21 +10,21 @@ context("Checking FIRC estimators")
 test_that("FIRC functions work", {
     set.seed( 1019 )
 
-    sdf = gen.dat( n.bar=10, J=10,
+    sdf = gen_dat( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
-    pv2 = estimate.ATE.FIRC(Yobs, Z, sid, data=sdf, include.testing = TRUE )
+    pv2 = estimate_ATE_FIRC(Yobs, Z, sid, data=sdf, include.testing = TRUE )
 
 
-    pv.aov = estimate.ATE.FIRC( Yobs, Z, sid, data=sdf, include.testing = TRUE, anova=TRUE )
+    pv.aov = estimate_ATE_FIRC( Yobs, Z, sid, data=sdf, include.testing = TRUE, anova=TRUE )
     expect_equal( pv2$p.variation, pv.aov$p.variation )
 
 
     # Check arb variable names works.
     sdf2 = rename( sdf, YY = Yobs, ZZ = Z, S.I.D = sid )
 
-    pv2.B = estimate.ATE.FIRC(YY, ZZ, S.I.D, data=sdf2, include.testing = TRUE )
+    pv2.B = estimate_ATE_FIRC(YY, ZZ, S.I.D, data=sdf2, include.testing = TRUE )
 
     expect_equal( pv2.B, pv2 )
 
@@ -35,15 +35,15 @@ test_that("FIRC functions work", {
 test_that("RIRC functions work", {
     set.seed( 1019 )
 
-    sdf = gen.dat( n.bar=10, J=10,
+    sdf = gen_dat( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
-    pv = estimate.ATE.RIRC( Yobs, Z, sid, data=sdf )
+    pv = estimate_ATE_RIRC( Yobs, Z, sid, data=sdf )
 
-    pv = estimate.ATE.RIRC( Yobs, Z, sid, data=sdf, REML = TRUE, include.testing = FALSE )
+    pv = estimate_ATE_RIRC( Yobs, Z, sid, data=sdf, REML = TRUE, include.testing = FALSE )
 
-    expect_error( pv = estimate.ATE.RIRC( Yobs, Z, sid, data=sdf, REML = TRUE, include.testing = TRUE ) )
+    expect_error( pv = estimate_ATE_RIRC( Yobs, Z, sid, data=sdf, REML = TRUE, include.testing = TRUE ) )
 
 
 } )
@@ -54,18 +54,18 @@ test_that("RIRC functions work", {
 test_that("RICC functions work", {
     set.seed( 1019 )
 
-    sdf = gen.dat( n.bar=10, J=10,
+    sdf = gen_dat( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
-    pv = estimate.ATE.RICC( Yobs, Z, sid, data=sdf )
+    pv = estimate_ATE_RICC( Yobs, Z, sid, data=sdf )
     pv
     expect_true( is.na( pv$deviance ) )
 
 
     # Check arb variable names works.
     sdf2 = rename( sdf, YY = Yobs, ZZ = Z, S.I.D = sid )
-    pv2 = estimate.ATE.RICC( YY, ZZ, S.I.D, data=sdf2 )
+    pv2 = estimate_ATE_RICC( YY, ZZ, S.I.D, data=sdf2 )
     pv2
 
     expect_equal( pv, pv2 )

@@ -15,7 +15,7 @@ compare_methods(
   include.DB = TRUE,
   include.LM = TRUE,
   include.DBBlended = FALSE,
-  include.method.characteristics = FALSE,
+  include.method_characteristics = FALSE,
   weight.LM.method = "survey",
   weight.LM.scale.weights = TRUE,
   control.formula = NULL
@@ -42,7 +42,7 @@ Huber-White SEs, etc.)}
 \item{include.DBBlended}{Include DB estimators applied to small block
 and classic Neyman to large blocks.}
 
-\item{include.method.characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
+\item{include.method_characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
 
 \item{Y}{vector observed outcomes (or column name in data)}
 }

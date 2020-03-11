@@ -25,7 +25,7 @@ library( dplyr )
 #' @param B Name of the block indicator.
 #' @param siteID Character name of the ID variable of site (blocks are conBered nested in site).  If omitted, then blocks are considered sites (the default).
 #' @export
-estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, control.formula = NULL,
+estimate_ATE_FIRC <- function( Yobs, Z, B, siteID = NULL, control.formula = NULL,
                                data=NULL, REML = FALSE, include.testing=TRUE, anova=FALSE, pool = FALSE ) {
 
     stopifnot( !( include.testing && REML ) )
@@ -81,7 +81,7 @@ estimate.ATE.FIRC <- function( Yobs, Z, B, siteID = NULL, control.formula = NULL
     method = ifelse( REML, "REML", "ML" )
 
     # Make control variable function
-    formula = make.FE.formula( "Yobs", "Z", "B", control.formula = control.formula, data = data)
+    formula = make_FE_formula( "Yobs", "Z", "B", control.formula = control.formula, data = data)
 
     if ( pool ) {
         re.mod <- nlme::lme(formula,
@@ -181,23 +181,23 @@ if ( FALSE ) {
 
     localsource( "multisite_data_generators.R")
 
-    dat = catherine.gen.dat( 0.2, 1.0, 30, 50 )
+    dat = catherine_gen_dat( 0.2, 1.0, 30, 50 )
     head( dat )
-    describe.data( dat )
+    describe_data( dat )
 
 
-    #debug( estimate.ATE.FIRC )
-    estimate.ATE.FIRC( Yobs, Z, sid, data=dat )
+    #debug( estimate_ATE_FIRC )
+    estimate_ATE_FIRC( Yobs, Z, sid, data=dat )
 
     dat$X = dat$Y0 + rnorm( nrow(dat) )
-    estimate.ATE.FIRC( Yobs, Z, sid, data=dat, control.formula = ~ X )
+    estimate_ATE_FIRC( Yobs, Z, sid, data=dat, control.formula = ~ X )
 
-    dat = catherine.gen.dat( 0.2, 0, 30, 50 )
+    dat = catherine_gen_dat( 0.2, 0, 30, 50 )
     head( dat )
-    describe.data( dat )
+    describe_data( dat )
 
-    #debug( estimate.ATE.FIRC )
-    estimate.ATE.FIRC( Yobs, Z, B, dat )
+    #debug( estimate_ATE_FIRC )
+    estimate_ATE_FIRC( Yobs, Z, B, dat )
 }
 
 
@@ -211,16 +211,16 @@ if ( FALSE ) {
 
     localsource( "multisite_data_generators.R")
 
-    dat = catherine.gen.dat( 0.2, 0.0, 30, 50 )
-    describe.data( dat )
+    dat = catherine_gen_dat( 0.2, 0.0, 30, 50 )
+    describe_data( dat )
     head( dat )
 
-    estimate.ATE.FIRC( Yobs, Z, sid, data=dat, pool=TRUE )
+    estimate_ATE_FIRC( Yobs, Z, sid, data=dat, pool=TRUE )
 
-    dat = catherine.gen.dat( 0.2, 0.5, 30, 50 )
-    describe.data( dat )
+    dat = catherine_gen_dat( 0.2, 0.5, 30, 50 )
+    describe_data( dat )
 
-    estimate.ATE.FIRC( Yobs, Z, B, data=dat, pool=TRUE )
+    estimate_ATE_FIRC( Yobs, Z, B, data=dat, pool=TRUE )
 
 }
 
@@ -230,10 +230,10 @@ if ( FALSE ) {
 # Testing
 if ( FALSE ) {
 
-    df = gen.dat.no.cov.n( n = 600,n.small = 6, J = 30, small.percentage = 0.7,tau.11.star = 0.2)
+    df = gen_dat_no_cov.n( n = 600,n.small = 6, J = 30, small.percentage = 0.7,tau.11.star = 0.2)
 
     # head( df )
-    # describe.data( df )
+    # describe_data( df )
 
     analysis.FIRC( Yobs, Z, B, df )
 
@@ -245,10 +245,10 @@ if ( FALSE ) {
 # This testing is based on the DGP for small sample simulations
 if ( FALSE ) {
 
-  df = gen.dat.no.cov.n( n = 600,n.small = 6, J = 30, small.percentage = 0.7,tau.11.star = 0.2)
+  df = gen_dat_no_cov.n( n = 600,n.small = 6, J = 30, small.percentage = 0.7,tau.11.star = 0.2)
 
   # head( df )
-  # describe.data( df )
+  # describe_data( df )
 
   analysis.FIRC( df )
 
@@ -269,7 +269,7 @@ if ( FALSE ) {
 #' @param df  Dataframe to fit.  Needs Z, X, B, and Yobs columns.
 #' @param X Site-level covariate ideally predictive of treatment variation.
 #'
-analysis.FIRC.cov <- function( Yobs, Z, B, X, siteID = NULL, data=NULL, REML = FALSE, anova=FALSE ) {
+analysis_FIRC_cov <- function( Yobs, Z, B, X, siteID = NULL, data=NULL, REML = FALSE, anova=FALSE ) {
 
 
    # stopifnot( !( include.testing && REML ) )

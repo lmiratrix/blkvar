@@ -4,14 +4,14 @@ context("Checking analysis functions run")
 
 test_that("Summary core function works", {
 
-    dat = make.obs.data.linear( method="big")
+    dat = make_obs_data_linear( method="big")
 
-    rs = calc.summary.stats( dat$Yobs, dat$Z, dat$B )
+    rs = calc_summary_stats( dat$Yobs, dat$Z, dat$B )
     rs
     expect_equal( nrow(rs), 4 )
     expect_equal( rs$n0, c(2,2,2,2) )
 
-    rs2 = calc.summary.stats( data =  dat )
+    rs2 = calc_summary_stats( data =  dat )
     rs2
     expect_equal( rs, rs2 )
 })
@@ -19,10 +19,10 @@ test_that("Summary core function works", {
 
 
 test_that("compare functions doesn't crash when called on big blocks", {
-    dat = make.obs.data.linear( method="big")
-    res <- calc.summary.stats(dat$Yobs, dat$Z, dat$B)
+    dat = make_obs_data_linear( method="big")
+    res <- calc_summary_stats(dat$Yobs, dat$Z, dat$B)
 
-    res <- fitdata(dat$Yobs, dat$Z, dat$B, method=c("hybrid_m") )
+    res <- block_estimator(dat$Yobs, dat$Z, dat$B, method=c("hybrid_m") )
     res
     expect_equal( class( res ), "var_dat" )
 
@@ -34,12 +34,12 @@ test_that("compare functions doesn't crash when called on big blocks", {
 
 
 test_that("compare functions doesn't crash when called on small blocks", {
-    dat = make.obs.data.linear( method="small")
+    dat = make_obs_data_linear( method="small")
     dat
 
-    res <- calc.summary.stats(dat$Yobs, dat$Z, dat$B)
+    res <- calc_summary_stats(dat$Yobs, dat$Z, dat$B)
 
-    expect_warning( res <- fitdata(dat$Yobs, dat$Z, dat$B, method=c("hybrid_m") ) )
+    expect_warning( res <- block_estimator(dat$Yobs, dat$Z, dat$B, method=c("hybrid_m") ) )
 
     res <- compare_methods( dat$Yobs, dat$Z, dat$B, include.MLM = FALSE )
     res
@@ -52,23 +52,23 @@ test_that( "further tests of output, etc", {
     Z.a<-rep(c(1,0),10)
     Y.a<-Z.a*10+B.a+rnorm(20,0,1)
 
-    A  = calc.summary.stats(Y=Y.a, Z=Z.a, B=B.a)
+    A  = calc_summary_stats(Y=Y.a, Z=Z.a, B=B.a)
     A
 
     data.a<-cbind(Y.a, Z.a, B.a)
     data.a
     head( data.a )
     class( data.a )
-    B = calc.summary.stats( Y.a, Z.a, B.a, data=as.data.frame( data.a ) )
+    B = calc_summary_stats( Y.a, Z.a, B.a, data=as.data.frame( data.a ) )
 
     expect_equal( A, B )
 
     nsmall = sum( A$n[ A$n0 == 1 | A$n1 == 1 ] )
     nsmall / sum( A$n )
 
-    expect_warning( method.hybrid.m<-fitdata(Y.a, Z.a, B.a, method="hybrid_m") )
+    expect_warning( method.hybrid.m<-block_estimator(Y.a, Z.a, B.a, method="hybrid_m") )
 
-    method.hybrid.p<-fitdata(Y.a, Z.a, B.a, method="hybrid_p")
+    method.hybrid.p<-block_estimator(Y.a, Z.a, B.a, method="hybrid_p")
     method.hybrid.p
     expect_equal( class( method.hybrid.p ), "var_dat" )
 
@@ -85,5 +85,24 @@ test_that( "further tests of output, etc", {
     expect_equal( ncol( comp ), 3 )
 #    expect_equal( nrow( comp ), 5 )
 } )
+
+
+
+
+
+test_that("B as factor works", {
+    dat = make_obs_data_linear( X=1:200 )
+    head( dat )
+    table( dat$B )
+    dat$B = as.factor( dat$B )
+    dat = filter( dat, as.numeric(B) > 5 )
+    table( dat$B )
+
+    res <- compare_methods( Yobs, Z, B, data=dat, include.MLM = FALSE )
+    res
+    expect_true( "hybrid_m" %in% res$method )
+})
+
+
 
 

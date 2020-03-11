@@ -11,14 +11,14 @@ scat = function( str, ... ) {
 }
 
 
-grab.SE = function( MOD, coef="Z" ) {
+grab_SE = function( MOD, coef="Z" ) {
     vc = vcov( MOD )
     sqrt( vc[ coef, coef ] )
 }
 
 
 # See https://www.jepusto.com/handmade-clubsandwich/
-clubsandwich.variance = function( w, tau.hat.b, tau.hat ) {
+clubsandwich_variance = function( w, tau.hat.b, tau.hat ) {
     W = sum( w )
     V = (1/W^2) * sum( ( w^2 * (tau.hat.b - tau.hat)^2 ) / (1 - w/W) )
 
@@ -28,7 +28,7 @@ clubsandwich.variance = function( w, tau.hat.b, tau.hat ) {
 }
 
 
-fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
+fixed_effect_estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
                                     control.formula = NULL ) {
     if ( !is.null( control.formula ) ) {
         stopifnot( !is.null( data ) )
@@ -74,7 +74,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
     }
 
     # Make control variable function
-    formula = make.FE.formula( "Yobs", "Z", "B", control.formula, data )
+    formula = make_FE_formula( "Yobs", "Z", "B", control.formula, data )
 
     # simple linear model
     M0 = lm( formula, data=data )
@@ -94,7 +94,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
     # Cluster robust SEs (clustering at site level using clubSandwich)
     # aggregate!
     if ( is.null( block.stats ) ) {
-        block.stats = calc.summary.stats(Yobs, Z, B, data=data, siteID=siteID, add.neyman = FALSE )
+        block.stats = calc_summary_stats(Yobs, Z, B, data=data, siteID=siteID, add.neyman = FALSE )
     }
     block.stats = mutate( block.stats, tau.hat = Ybar1 - Ybar0,
                           prec = n * (n0/n) * (n1/n) )
@@ -104,7 +104,7 @@ fixed.effect.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
             summarise( tau.hat = sum( prec * tau.hat ) / sum( prec ),
                        prec = sum( prec ) )
     }
-    cs.var = clubsandwich.variance( block.stats$prec, block.stats$tau.hat, tau.hat )
+    cs.var = clubsandwich_variance( block.stats$prec, block.stats$tau.hat, tau.hat )
     SE.lm.clust.club = sqrt( cs.var$var.hat )
 
     FEmodels = data.frame( method=c("FE", "FE-Het", "FE-CR", "FE-Club" ),
@@ -140,7 +140,7 @@ if ( FALSE ) {
 }
 
 
-precision.weighted.linear.estimators = function( ) {
+precision_weighted_linear_estimators = function( ) {
 
 }
 
@@ -152,7 +152,7 @@ precision.weighted.linear.estimators = function( ) {
 #' @return Dataframe of results for different estimators.
 #' @importFrom survey svydesign svyglm
 #' @importFrom stats gaussian
-weighted.linear.estimators = function( formula,
+weighted_linear_estimators = function( formula,
                                        control.formula = NULL,
                                        siteID = NULL,
                                        data,
@@ -161,7 +161,7 @@ weighted.linear.estimators = function( formula,
 
     weight.method = match.arg( weight.method )
 
-    data = make.canonical.data( formula, control.formula, siteID, data )
+    data = make_canonical_data( formula, control.formula, siteID, data )
 
     require( survey )
     data$B<-as.factor(data$B)
@@ -193,7 +193,7 @@ weighted.linear.estimators = function( formula,
                       weight.site = weight.site * ifelse( Z, Z.bar, (1-Z.bar) ) )
     }
 
-    formula = make.FE.formula( "Yobs", "Z", "B", control.formula, data )
+    formula = make_FE_formula( "Yobs", "Z", "B", control.formula, data )
 
     if ( weight.method == "survey" ) {
         M0w2 = svyglm( formula,
@@ -209,10 +209,10 @@ weighted.linear.estimators = function( formula,
     }
 
     tau = coef( M0w2 )[["Z"]]
-    SE.w2 = grab.SE( M0w2 )
+    SE.w2 = grab_SE( M0w2 )
 
     tau.w.site = coef( M0w.site )[["Z"]]
-    SE.w.site = grab.SE( M0w.site )
+    SE.w.site = grab_SE( M0w.site )
 
     weightModels = data.frame( method=c("FE-IPTW", "FE-IPTW-Sites"),
                                tau = c( coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
@@ -247,7 +247,7 @@ weighted.linear.estimators = function( formula,
 #'
 #' @return Dataframe of the different versions of this estimator (person and
 #'   site weighted)
-interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, control.formula=NULL ) {
+interacted_linear_estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, control.formula=NULL ) {
 
     if ( !is.null( control.formula ) ) {
         stopifnot( !is.null( data ) )
@@ -286,14 +286,14 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, c
         }
     }
 
-    require( multiwayvcov )
+    #require( multiwayvcov )
+    data$B = droplevels( as.factor( data$B ) )
 
     J = length( unique( data$B ) )
     nj = table( data$B )
     n = nrow( data )
 
-    data$B = as.factor( data$B )
-    formula = make.FE.int.formula( "Yobs", "Z", "B", control.formula, data )
+    formula = make_FE_int_formula( "Yobs", "Z", "B", control.formula, data )
     M0.int = lm( formula, data=data )
     ids = grep( "Z:", names( coef(M0.int) ) )
     stopifnot( length(ids) == J )
@@ -358,7 +358,7 @@ interacted.linear.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, c
 #' @importFrom stats coef
 #' @return Data frame of the various results.
 #' @export
-linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
+linear_model_estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.stats = NULL,
                                     control.formula = NULL,
                                     weight.LM.method = "survey",
                                     weight.LM.scale.weights = TRUE ) {
@@ -397,14 +397,14 @@ linear.model.estimators = function( Yobs, Z, B, siteID = NULL, data=NULL, block.
     dat = data
     dat$B<-as.factor(dat$B)
 
-    FEmodels = fixed.effect.estimators( Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats,
+    FEmodels = fixed_effect_estimators( Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats,
                                         control.formula = control.formula )
 
-    weightModels = weighted.linear.estimators( Yobs ~ Z*B, siteID = siteID, data=dat,
+    weightModels = weighted_linear_estimators( Yobs ~ Z*B, siteID = siteID, data=dat,
                                                control.formula = control.formula,
                                                weight.method = weight.LM.method, scaled.weights = weight.LM.scale.weights )
 
-    interactModels = interacted.linear.estimators( Yobs, Z, B, siteID = siteID, data=dat,
+    interactModels = interacted_linear_estimators( Yobs, Z, B, siteID = siteID, data=dat,
                                                    control.formula = control.formula )
 
     # combine and return results
@@ -424,23 +424,23 @@ localsource = function( filename ) {
 if ( FALSE ) {
     library( blkvar )
     library( dplyr )
-    dat = make.obs.data(p = 0.2)
+    dat = make_obs_data(p = 0.2)
     head( dat )
     localsource("control_formula_utilities.R" )
 
-    fixed.effect.estimators( Yobs, Z, B, data=dat )
+    fixed_effect_estimators( Yobs, Z, B, data=dat )
 
-    #debug( weighted.linear.estimators.naive )
-    weighted.linear.estimators.naive( Yobs, Z, blk, data=dat )
+    #debug( weighted_linear_estimators.naive )
+    weighted_linear_estimators.naive( Yobs, Z, blk, data=dat )
 
     dat2 = rename( dat, B= blk )
     head( dat2 )
-    weighted.linear.estimators.naive( dat2 )
+    weighted_linear_estimators.naive( dat2 )
 
-    weighted.linear.estimators( Yobs, Z, blk, data=dat )
+    weighted_linear_estimators( Yobs, Z, blk, data=dat )
 
-    debug( linear.model.estimators)
-    linear.model.estimators( dat$Yobs, dat$Z, dat$blk )
+    debug( linear_model_estimators)
+    linear_model_estimators( dat$Yobs, dat$Z, dat$blk )
 }
 
 
@@ -450,36 +450,36 @@ if ( FALSE ) {
 if ( FALSE ) {
     library( blkvar )
     library( dplyr )
-    dat = make.obs.data(p = 0.2)
+    dat = make_obs_data(p = 0.2)
     head( dat )
     localsource("control_formula_utilities.R" )
 
     set.seed( 1019 )
-    dat = gen.dat( n.bar = 30, J = 30 )
+    dat = gen_dat( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
     dat$X1 = dat$W + rnorm( nrow(dat) )
     dat$X2 = dat$Y0 + rnorm( nrow( dat ) )
 
-    wt = weighted.linear.estimators( Yobs ~ Z*sid, data=dat )
+    wt = weighted_linear_estimators( Yobs ~ Z*sid, data=dat )
     wt
-    weighted.linear.estimators( Yobs ~ Z*sid, data=dat )
-    weighted.linear.estimators( Yobs ~ Z*sid, data=dat, scaled.weights = FALSE )
-    weighted.linear.estimators( Yobs ~ Z*sid, data=dat, weight.method = "precision" )
-    weighted.linear.estimators( Yobs ~ Z*sid, data=dat, scaled.weights = FALSE,
+    weighted_linear_estimators( Yobs ~ Z*sid, data=dat )
+    weighted_linear_estimators( Yobs ~ Z*sid, data=dat, scaled.weights = FALSE )
+    weighted_linear_estimators( Yobs ~ Z*sid, data=dat, weight.method = "precision" )
+    weighted_linear_estimators( Yobs ~ Z*sid, data=dat, scaled.weights = FALSE,
                                 weight.method = "precision" )
 
-    rs = linear.model.estimators( Yobs, Z, sid, data=dat )
-    rs.adj = linear.model.estimators( Yobs, Z, sid, data=dat,
+    rs = linear_model_estimators( Yobs, Z, sid, data=dat )
+    rs.adj = linear_model_estimators( Yobs, Z, sid, data=dat,
                                       control.formula = ~X1 + X2)
     rs
     rs.adj
 
 
     # problem child
-    rs = interacted.linear.estimators( Yobs, Z, sid, data=dat )
-    debug( interacted.linear.estimators )
-    rs.adj = interacted.linear.estimators( Yobs, Z, sid, data=dat,
+    rs = interacted_linear_estimators( Yobs, Z, sid, data=dat )
+    debug( interacted_linear_estimators )
+    rs.adj = interacted_linear_estimators( Yobs, Z, sid, data=dat,
                                       control.formula = ~X1 + X2)
     rs.adj$tau.adj = rs$tau
     rs.adj = mutate( rs.adj, delta = tau - tau.adj )

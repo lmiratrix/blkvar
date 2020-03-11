@@ -5,7 +5,7 @@ context("Checking compare methods all work")
 test_that("Check call options of the compare_methods", {
 
     set.seed( 1019 )
-    dat = gen.dat( n.bar = 30, J = 30 )
+    dat = gen_dat( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -28,7 +28,7 @@ test_that("Check call options of the compare_methods", {
 test_that("Check for lack warnings, etc., from compare_methods", {
 
     set.seed( 1019 )
-    dat = gen.dat( n.bar = 30, J = 30 )
+    dat = gen_dat( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -39,19 +39,19 @@ test_that("Check for lack warnings, etc., from compare_methods", {
 
 
 
-test_that("Check method characteristics works", {
+test_that("Check method_characteristics works", {
 
     set.seed( 101974 )
-    dat = gen.dat( n.bar = 30, J = 30 )
+    dat = gen_dat( n.bar = 30, J = 30 )
 
-    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = TRUE )
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method_characteristics = TRUE )
     fulltab
     expect_true( all( c( "weight","population","biased") %in% names(fulltab) ) )
     expect_true( all( !is.na( fulltab$weight ) ) )
 
-    ptab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = FALSE )
+    ptab = compare_methods( Yobs, Z, sid, data=dat, include.method_characteristics = FALSE )
 
-    mc = method.characteristics()
+    mc = method_characteristics()
     expect_true( all( fulltab$method %in% mc$method ) )
 
     expect_equal( nrow( fulltab ), nrow( ptab ) )
@@ -63,7 +63,7 @@ test_that("Check method characteristics works", {
 test_that("weighting lm flags gets passed", {
 
     set.seed( 102030 )
-    dat = gen.dat( n.bar = 20, J = 20 )
+    dat = gen_dat( n.bar = 20, J = 20 )
 
     fulltab = compare_methods( Yobs, Z, sid, data=dat, weight.LM.scale.weights = FALSE,
                                include.MLM = FALSE, include.block = FALSE, include.DBBlended = FALSE, include.DB = FALSE )
@@ -82,15 +82,15 @@ test_that("weighting lm flags gets passed", {
 test_that("Check method works on tibbles", {
 
     set.seed( 101974 )
-    dat = tibble::as_tibble( gen.dat( n.bar = 30, J = 30 ) )
+    dat = tibble::as_tibble( gen_dat( n.bar = 30, J = 30 ) )
 
-    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = TRUE )
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method_characteristics = TRUE )
     fulltab
     expect_true( all( c( "weight","population","biased") %in% names(fulltab) ) )
     expect_true( all( !is.na( fulltab$weight ) ) )
 
-    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method.characteristics = FALSE )
-    mc = method.characteristics()
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, include.method_characteristics = FALSE )
+    mc = method_characteristics()
     expect_true( all( fulltab$method %in% mc$method ) )
 
 
@@ -100,7 +100,7 @@ test_that("Check method works on tibbles", {
 test_that("Check for asking for different parts", {
 
     set.seed( 1019 )
-    dat = gen.dat( n.bar = 30, J = 30 )
+    dat = gen_dat( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -117,7 +117,7 @@ test_that("Check for asking for different parts", {
 
 test_that( "Comparing variation methods works", {
     set.seed( 1019 )
-    dat = gen.dat( n.bar = 30, J = 30 )
+    dat = gen_dat( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -155,7 +155,7 @@ test_that( "Comparing variation methods works", {
 
 test_that( "Comparing variation with site and block works", {
     set.seed( 1019 )
-    dat = gen.dat( n.bar = 30, J = 30 )
+    dat = gen_dat( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
     dat$siteNo = as.factor( round( as.numeric( dat$sid ) / 4 ) )
@@ -181,7 +181,7 @@ test_that( "Comparing variation with site and block works", {
 
 test_that( "Design based works through compare_methods", {
     set.seed( 1019 )
-    dat = gen.dat( n.bar = 30, J = 4 )
+    dat = gen_dat( n.bar = 30, J = 4 )
     nrow( dat )
     head( dat )
 
@@ -201,11 +201,11 @@ test_that( "Design based works through compare_methods", {
     ATE
     expect_equal( rsA$tau[ rsA$method == "DB-FP-Persons" ], ATE )
 
-    sdat = calc.summary.stats( Yobs, Z, sid, data=dat )
+    sdat = calc_summary_stats( Yobs, Z, sid, data=dat )
     sdat
     sdat = mutate( sdat, ATE.hat = Ybar1-Ybar0 )
     sdat
-    a = estimate.ATE.design.based.from.stats( sdat, weight="individual",
+    a = estimate_ATE_design_based_from_stats( sdat, weight="individual",
                                               method="finite" )
     a
     expect_equal( a$tau.hat, ATE )

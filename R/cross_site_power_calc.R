@@ -5,7 +5,7 @@
 # Using work and results in Appendix A of Bloom and Spybrook
 
 
-calc.omega = function( n.bar, tau, p.tx, ICC, R2.X ) {
+calc_omega = function( n.bar, tau, p.tx, ICC, R2.X ) {
     tau * p.tx * (1-p.tx) * n.bar / ( (1 - ICC) * (1-R2.X ) )
 }
 
@@ -27,12 +27,12 @@ calc.omega = function( n.bar, tau, p.tx, ICC, R2.X ) {
 #'
 #' @examples
 #' # Example in the text
-#' calc.power( 80, 60, 0.02, p.tx=0.6, ICC=0.2, K = 0, R2.X=0.25 )
+#' calc_power( 80, 60, 0.02, p.tx=0.6, ICC=0.2, K = 0, R2.X=0.25 )
 #'
-#' @rdname calc.power
+#' @rdname calc_power
 #' @export
-calc.power = function( J, n.bar, tau, p.tx= 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha=0.05 ) {
-    omega = calc.omega( n.bar, tau, p.tx, ICC, R2.X )
+calc_power = function( J, n.bar, tau, p.tx= 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha=0.05 ) {
+    omega = calc_omega( n.bar, tau, p.tx, ICC, R2.X )
     df.num = J-1
     df.denom = J*(n.bar-2) - K
     F.crit = qf( 1-alpha, df.num, df.denom )
@@ -45,10 +45,10 @@ calc.power = function( J, n.bar, tau, p.tx= 0.5, ICC = 0.5, K = 0, R2.X = 0, alp
 #' @description Calculate MDESSD (minimum detectable effect size for cross site standard deviation of effects
 #' assuming a ratio test.  This uses work and results found in Appendix A of Bloom and Spybrook
 #'
-#' @inheritParams calc.power
+#' @inheritParams calc_power
 #' @return MDESSD for given scenario.
-#' @seealso calc.power
-calc.MDESSD = function( J, n.bar, p.tx= 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha=0.05 ) {
+#' @seealso calc_power
+calc_MDESSD = function( J, n.bar, p.tx= 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha=0.05 ) {
     df.num = J-1
     df.denom = J*(n.bar-2) - K
     F.crit = qf( 1-alpha, df.num, df.denom )
@@ -59,13 +59,13 @@ calc.MDESSD = function( J, n.bar, p.tx= 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha=0
 
 if ( FALSE ) {
 
-    debugonce( calc.power )
-    calc.power( 80, 60, 0.02, p.tx=0.6, ICC=0.2, K = 0, R2.X=0.25 )
+    debugonce( calc_power )
+    calc_power( 80, 60, 0.02, p.tx=0.6, ICC=0.2, K = 0, R2.X=0.25 )
 
     # Example in the text
-    calc.power( 80, 60, 0.02, p.tx=0.6, ICC=0.2, K = 0, R2.X=0.25 )
+    calc_power( 80, 60, 0.02, p.tx=0.6, ICC=0.2, K = 0, R2.X=0.25 )
 
-    calc.power( J=200, n=200, tau=0.05^2, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05 )
+    calc_power( J=200, n=200, tau=0.05^2, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05 )
     grid = expand.grid( J = c(5,10,20,50,100,200),
                         n = c(5,50,500) )
     head( grid )
@@ -74,10 +74,10 @@ if ( FALSE ) {
                   0.14, 0.09, 0.07, 0.05, 0.03, 0.03 )^2
 
 
-    grid$power = pmap_dbl( grid, calc.power, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05)
+    grid$power = pmap_dbl( grid, calc_power, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05)
     grid
 
-    calc.power( J=5, n=5, tau=1.65^2, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05 )
-    calc.power( J=5, n=5, tau=1.65^2, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05 )
+    calc_power( J=5, n=5, tau=1.65^2, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05 )
+    calc_power( J=5, n=5, tau=1.65^2, p.tx=0.5, ICC=0.15, R2.X=0.4, alpha=0.05 )
 
 }

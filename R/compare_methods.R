@@ -4,7 +4,7 @@
 
 
 # Calculate estimates for the Multilevel modeling methods
-compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL,
+compare_MLM_methods = function( Yobs, Z, B, siteID = NULL, data = NULL,
                                 control.formula = NULL ) {
 
     if( !is.null(data) ){
@@ -35,11 +35,11 @@ compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL,
     }
     stopifnot( length( unique( data$Z ) ) == 2 )
     stopifnot( is.numeric( data$Yobs ) )
-    RICC = estimate.ATE.RICC( Yobs, Z, B, data=data, REML = TRUE,
+    RICC = estimate_ATE_RICC( Yobs, Z, B, data=data, REML = TRUE,
                               control.formula = control.formula )
-    FIRC = estimate.ATE.FIRC( Yobs, Z, B, data=data, siteID = siteID, REML = TRUE, include.testing = FALSE,
+    FIRC = estimate_ATE_FIRC( Yobs, Z, B, data=data, siteID = siteID, REML = TRUE, include.testing = FALSE,
                               control.formula = control.formula )
-    RIRC = estimate.ATE.RIRC( Yobs, Z, B, data=data, REML = TRUE, include.testing = FALSE,
+    RIRC = estimate_ATE_RIRC( Yobs, Z, B, data=data, REML = TRUE, include.testing = FALSE,
                               control.formula = control.formula )
     mlms = data.frame( method=c("RICC", "FIRC", "RIRC"),
                        tau = c( RICC$ATE, FIRC$ATE, RIRC$ATE ),
@@ -62,10 +62,10 @@ compare.MLM.methods = function( Yobs, Z, B, siteID = NULL, data = NULL,
 #' @return A tibble of characteristics.
 #'
 #' @export
-method.characteristics = function() {
+method_characteristics = function() {
     # Code to make the hard-coded list of characteristics
     if ( FALSE ) {
-        dat = make.obs.data( n_k = 4:10, p = 0.2 )
+        dat = make_obs_data( n_k = 4:10, p = 0.2 )
         a = compare_methods( data = dat[ c("Yobs", "Z","B" ) ] )
         a = a[1]
         print( a, row.names = FALSE )
@@ -128,13 +128,13 @@ method.characteristics = function() {
 #' @param include.DBBlended Include DB estimators applied to small block
 #'   and classic Neyman to large blocks.
 #' @param include.block Include the Pashley blocking variants.
-#' @param include.method.characteristics Include details of the methods (target estimands and sampling framework assumed).
+#' @param include.method_characteristics Include details of the methods (target estimands and sampling framework assumed).
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
 compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = TRUE, include.MLM = TRUE,
                           include.DB = TRUE, include.LM = TRUE, include.DBBlended = FALSE,
-                          include.method.characteristics = FALSE,
+                          include.method_characteristics = FALSE,
                           weight.LM.method = "survey",
                           weight.LM.scale.weights = TRUE,
                           control.formula = NULL ){
@@ -185,7 +185,7 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     }
 
     #Get data into table
-    data.table<-calc.summary.stats(Yobs, Z, B, data=data, siteID=siteID, add.neyman = TRUE )
+    data.table<-calc_summary_stats(Yobs, Z, B, data=data, siteID=siteID, add.neyman = TRUE )
 
     if ( include.block || include.DBBlended ) {
         method_list = c()
@@ -197,7 +197,7 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
         }
 
         fits = sapply( methods_list, function( m ) {
-            dd = fitdata.sumtable( data.table=data.table, method=m, throw.warnings=FALSE )
+            dd = block_estimator_tabulated( data.table=data.table, method=m, throw.warnings=FALSE )
             c( dd$tau_est, dd$se_est )
         } )
         # Aggregate into summary table
@@ -220,10 +220,10 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
 
         if ( is.null( control.formula ) ) {
             # Design based methods
-            DB.fi = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="finite", weight="individual" )
-            DB.fs = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="finite", weight="site" )
-            DB.si = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="superpop", weight="individual" )
-            DB.ss = estimate.ATE.design.based.from.stats( data.table, siteID=siteID, method="superpop", weight="site" )
+            DB.fi = estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="finite", weight="individual" )
+            DB.fs = estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="finite", weight="site" )
+            DB.si = estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="superpop", weight="individual" )
+            DB.ss = estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="superpop", weight="site" )
             DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
             DB$method = c( "DB-FP-Persons", "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites" ) #with( DB, paste( "DB (", weight, "-", method, ")", sep="" ) )
             DB$weight = NULL
@@ -232,13 +232,13 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
             summary_table = dplyr::bind_rows( summary_table, DB )
         } else {
             # Design based methods with covariate adjustment
-            DB.fi = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="individual",
+            DB.fi = estimate_ATE_design_based_adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="individual",
                                                         control.formula = control.formula )
-            DB.fs = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="site",
+            DB.fs = estimate_ATE_design_based_adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="finite", weight="site",
                                                         control.formula = control.formula )
-            DB.si = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="individual",
+            DB.si = estimate_ATE_design_based_adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="individual",
                                                         control.formula = control.formula )
-            DB.ss = estimate.ATE.design.based.adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="site",
+            DB.ss = estimate_ATE_design_based_adjusted( Yobs ~ Z * B, data=data, siteID=siteID, method="superpop", weight="site",
                                                         control.formula = control.formula )
             DB = dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
             DB$method = c( "DB-FP-Persons-adj", "DB-FP-Sites-adj", "DB-SP-Persons-adj", "DB-SP-Sites-adj" )
@@ -250,7 +250,7 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     }
 
     if ( include.LM ) {
-        lms = linear.model.estimators( Yobs, Z, B, data=data, siteID = siteID, block.stats = data.table,
+        lms = linear_model_estimators( Yobs, Z, B, data=data, siteID = siteID, block.stats = data.table,
                                        control.formula = control.formula,
                                        weight.LM.method = weight.LM.method,
                                        weight.LM.scale.weights = weight.LM.scale.weights )
@@ -258,14 +258,14 @@ compare_methods<-function(Yobs, Z, B, siteID = NULL, data=NULL, include.block = 
     }
 
     if ( include.MLM ) {
-        mlms = compare.MLM.methods( Yobs, Z, B, data=data, siteID = siteID,
+        mlms = compare_MLM_methods( Yobs, Z, B, data=data, siteID = siteID,
                                     control.formula = control.formula )
         summary_table = dplyr::bind_rows( summary_table, mlms )
     }
 
     # Add info on the methods (e.g., what estimand they are targeting)
-    if ( include.method.characteristics ) {
-        mc = method.characteristics()
+    if ( include.method_characteristics ) {
+        mc = method_characteristics()
         #mcm = mc$method
         #names(mcm) = mc$fullname
         #summary_table$method = mcm[ as.character( summary_table$method ) ]
@@ -320,8 +320,8 @@ compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
     stop("Treatment indicator should be vector of ones and zeros")
   }
   #Get data into table
-  s.tc.bk<-aggregate(list(s.tc.bk=Y1-Y0), list(B=B[1:(n/2)]), FUN=s.tc.func)
-  data.table<-block.data.sim(Y,Z,B, p.mat)
+  s.tc.bk<-aggregate(list(s.tc.bk=Y1-Y0), list(B=B[1:(n/2)]), FUN=s_tc_func)
+  data.table<-block_data_sim(Y,Z,B, p.mat)
   K<-max(data.table$B)
   n<-sum(data.table$n1)+sum(data.table$n0)
   data.table$nk<-data.table$n1+data.table$n0
@@ -341,14 +341,14 @@ compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
     combine_table<-merge(s.tc.bk, data.table, by="B")
     mod.small<-combine_table[data.table$n1==1|data.table$n0==1,]
     var_small<-sum((mod.small$se_ney^2-mod.small$s.tc.bk/mod.small$nk)*(mod.small$nk)^2)/n^2
-    hybrid_m_est<-hybrid_m(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
-    hybrid_p_est<-hybrid_p(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
+    hybrid_m_est<-hybrid_m_small(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
+    hybrid_p_est<-hybrid_p_small(data.small)*sum(data.small$nk)^2/n^2+var_big+var_small
     plug_in_big_est<-plug_in_big(data.small, data.big)*sum(data.small$nk)^2/n^2+var_big
   }
   #Get trt effect estimates and aggregate
   tau_vec<-data.table$Ybar1-data.table$Ybar0
   tau_est<-sum(tau_vec*data.table$nk)/n
-  
+
   #Get linear model estimates (sandwich)
   M0 = lm(Y ~ Z + as.factor(B))
   tau_est_lm<-summary(M0)$coefficients[2,1]
@@ -359,12 +359,12 @@ compare_methods_oracle <-function(Y, Z, B, p.mat, data=NULL){
   weight.vec<-num.c.vec*(1-Z) + num.t.vec*(Z)
   p.overall<-sum(data.table$n1)/sum(data.table$n1+data.table$n0)
   weight.vec<-num.c.vec*(1-Z)*(1-p.overall) + num.t.vec*(Z)*p.overall
-  
+
   # Get linear model estimates (Weighted OLS)
   M1 = lm(Y ~ Z + as.factor(B), weights=weight.vec)
   tau_est_weighted_fixed<-summary(M1)$coefficients[2,1]
   var_est_weighted_fixed<-summary(M1)$coefficients[2,2]^2
-  
+
   # Aggregate into summary table
   methods_list<-c("hybrid_m", "hybrid_p", "plug_in_big", "fixed effects-no int", "weighted regression-fixed effects")
   var_estimates<-c(hybrid_m_est, hybrid_p_est, plug_in_big_est, var_est_lm, var_est_weighted_fixed)
@@ -443,18 +443,18 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
     }
 
     # FIRC model (separate variances)
-    FIRC = estimate.ATE.FIRC( Yobs, Z, B, siteID=siteID, data=data, include.testing=include.testing )
+    FIRC = estimate_ATE_FIRC( Yobs, Z, B, siteID=siteID, data=data, include.testing=include.testing )
 
     # FIRC model (with pooled residual variances)
-    FIRC.pool = estimate.ATE.FIRC( Yobs, Z, B, siteID=siteID, data=data, include.testing=include.testing, pool=TRUE )
+    FIRC.pool = estimate_ATE_FIRC( Yobs, Z, B, siteID=siteID, data=data, include.testing=include.testing, pool=TRUE )
 
     # the random-intercept, random-coefficient (RIRC) model
-    RIRC = estimate.ATE.RIRC( Yobs, Z, B, data, include.testing=include.testing )
+    RIRC = estimate_ATE_RIRC( Yobs, Z, B, data, include.testing=include.testing )
 
     # the random-intercept, random-coefficient (RIRC) model
-    RIRC.pool = estimate.ATE.RIRC( Yobs, Z, B, data, include.testing=include.testing, pool=TRUE)
+    RIRC.pool = estimate_ATE_RIRC( Yobs, Z, B, data, include.testing=include.testing, pool=TRUE)
 
-    Qstat = analysis.Qstatistic( Yobs, Z, B, siteID=siteID, data = data )
+    Qstat = analysis_Qstatistic( Yobs, Z, B, siteID=siteID, data = data )
 
     # collect results
     res = data.frame( tau.hat.FIRC = FIRC$tau.hat,
@@ -492,11 +492,8 @@ compare_methods_variation = function( Yobs, Z, B, siteID = NULL, data = NULL, in
 
 if  (FALSE ) {
     library( blkvar )
-    dat = make.obs.data( n_k = 4:10, p = 0.2 )
+    dat = make_obs_data( n_k = 4:10, p = 0.2 )
     dat
     table( dat$Z, dat$B )
     compare_methods( data = dat[ c("Yobs", "Z","B" ) ] )
-
-    debug( fitdata )
-    fitdata( dat$Yobs, dat$Z, dat$B, method="hybrid_p")
 }

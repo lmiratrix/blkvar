@@ -4,9 +4,9 @@
 ## impact variation
 ##
 ## Core functions:
-##     gen.dat.model - generate according to a model with the coefficients specified
-##     gen.dat - generate data according to some higher level parameters such as ICC, which will
-##        automatically calculate model coefficients and then call gen.dat.model
+##     gen_dat_model - generate according to a model with the coefficients specified
+##     gen_dat - generate data according to some higher level parameters such as ICC, which will
+##        automatically calculate model coefficients and then call gen_dat_model
 
 
 library( dplyr )
@@ -17,7 +17,7 @@ library( lmtest )
 
 # This is a hack so if the 'finite.model' flag is set to true, it will save the
 # randomly generated units in this variable and simply rerandomize them with
-# subsequent calls to gen.dat.
+# subsequent calls to gen_dat.
 CANONICAL = NULL
 
 
@@ -55,7 +55,7 @@ if ( FALSE ) {
 #' Utility function to describe different characteristics of the distribution of
 #' sites (given all the potential outcomes).
 #' @export
-describe.data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
+describe_data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
     #old param list: Y0, Y1, Z, sid, data = NULL
     data = rename( data, Y0 = !!rlang::sym(Y0),
                    Y1 = !!rlang::sym(Y1),
@@ -85,7 +85,7 @@ describe.data = function( data, Y0="Y0", Y1="Y1", Z="Z", sid="sid" ) {
 
 
 #' Generate piecewise uniform distribution with a mean of n.bar
-block.distn = function( J, n.bar, size.ratio ) {
+block_distn = function( J, n.bar, size.ratio ) {
     N = 1 + 3 * size.ratio
     p = (N-1)/N
     small = rbinom( J, 1, p )
@@ -137,9 +137,9 @@ block.distn = function( J, n.bar, size.ratio ) {
 #'   correlated.
 #'
 #' @return Dataframe of data!
-#' @rdname gen.dat.model
+#' @rdname gen_dat_model
 #' @export
-gen.dat.model  = function( n.bar = 10,
+gen_dat_model  = function( n.bar = 10,
                              J = 30,
                              p = 0.5,
                              gamma.00, gamma.01, gamma.10, gamma.11,
@@ -176,7 +176,7 @@ gen.dat.model  = function( n.bar = 10,
         stopifnot( n.bar > 4 )
         #nj = rpois( J, n.bar)
         #nj = round( n.bar * runif( J, 0.25, 1.75 ) )
-        nj = 4 + round( block.distn( J, n.bar - 4, size.ratio ) )
+        nj = 4 + round( block_distn( J, n.bar - 4, size.ratio ) )
         nj[ nj < 4 ] = 4
         #if ( any( nj < 4 ) ) {
         #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
@@ -331,11 +331,11 @@ gen.dat.model  = function( n.bar = 10,
 #' Useful for simulations of finite sample inference where the dataset should be
 #' held static and only randomization is necessary.
 #'
-#' @param dat Dataframe from, e.g., gen.dat()
+#' @param dat Dataframe from, e.g., gen_dat()
 #'
 #' @return Same dataframe with treatment shuffled and Yobs recalculated.
 #' @export
-rerandomize.data = function( dat ) {
+rerandomize_data = function( dat ) {
     dat = dat %>% group_by( sid ) %>%
         mutate( Z = sample( Z ) ) %>% ungroup()
     dat = mutate( dat, Yobs = ifelse( Z, Y1, Y0 ) )
@@ -343,7 +343,7 @@ rerandomize.data = function( dat ) {
 }
 
 
-#' @title gen.dat
+#' @title gen_dat
 #' @description Generate data for a multisite trial with a given collection of
 #'   features.
 #' @param n.bar average site size, Default: 10
@@ -361,11 +361,11 @@ rerandomize.data = function( dat ) {
 #' @param zero.corr TRUE means treatment impact and mean site outcome are not
 #'   correlated.  TRUE means they are negatively correlated to make the variance
 #'   of the treatment group 1, Default: FALSE
-#' @param ... Further parameters passed to gen.dat.model()
+#' @param ... Further parameters passed to gen_dat_model()
 #' @return Dataframe of data!
-#' @rdname gen.dat
+#' @rdname gen_dat
 #' @export
-gen.dat = function( n.bar = 10,
+gen_dat = function( n.bar = 10,
                     J = 30,
                     p = 0.5,
                     tau.11.star = 0.3,
@@ -396,7 +396,7 @@ gen.dat = function( n.bar = 10,
         scat( "tau.11* = %.2f\n", gamma.11^2 * sigma2.W + tau.11 )
         scat( "sigma2.e* = %.2f\n", sigma2.e )
     }
-    gen.dat.model( n.bar=n.bar, J=J, p=p,
+    gen_dat_model( n.bar=n.bar, J=J, p=p,
                    gamma.00, gamma.01, gamma.10, gamma.11,
                    tau.00, tau.01, tau.11,
                    sigma2.e,
@@ -406,15 +406,15 @@ gen.dat = function( n.bar = 10,
 
 
 #'
-#' @title  Simplified version of gen.dat() with no W covariate.
+#' @title  Simplified version of gen_dat() with no W covariate.
 #' @description Generate fake data for simulation studies
-#' @inheritParams gen.dat
+#' @inheritParams gen_dat
 #' @param control.sd.Y1 Make correlation of random intercept and random slope
 #'   such that the variance of the Y1s is 1.0, Default: TRUE
 #' @return Dataframe of individual data from a MLM DGP.
-#' @rdname gen.dat.no.cov
+#' @rdname gen_dat_no_cov
 #' @export
-gen.dat.no.cov = function( n.bar = 10,
+gen_dat_no_cov = function( n.bar = 10,
                            J = 30,
                            p = 0.5,
                            tau.11.star = 0.3,
@@ -442,7 +442,7 @@ gen.dat.no.cov = function( n.bar = 10,
         scat( "sigma2.e* = %.2f\n", sigma2.e )
     }
 
-    gen.dat.model( n.bar=n.bar, J=J, p=p,
+    gen_dat_model( n.bar=n.bar, J=J, p=p,
                           gamma.00 = gamma.00, gamma.10 = gamma.10, gamma.01 = 0, gamma.11=0,
                           tau.00=tau.00, tau.01=tau.01, tau.11=tau.11,
                           sigma2.e=sigma2.e,
@@ -458,7 +458,7 @@ gen.dat.no.cov = function( n.bar = 10,
 #     t -- tau
 #     s -- number of sites
 #     n -- number of students per site
-catherine.gen.dat <- function(a,t,s,n){
+catherine_gen_dat <- function(a,t,s,n){
     #create site ates
     raw_ate_vec <- rnorm(n=s, mean=a,sd=t)
     tau_fp <- sd(raw_ate_vec)
@@ -484,7 +484,7 @@ catherine.gen.dat <- function(a,t,s,n){
 
 if ( FALSE ) {
     # exploring sites
-    sdf = gen.dat( n.bar=10, J=10,
+    sdf = gen_dat( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=TRUE )
 
@@ -494,14 +494,14 @@ if ( FALSE ) {
     cov( sdf$u0, sdf$u1 )
 
 
-    dat = gen.dat( n.bar=10, J=10,
+    dat = gen_dat( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
 
     head( dat )
 
 
-    sdf = gen.dat.no.cov( n.bar=10, J=10,
+    sdf = gen_dat_no_cov( n.bar=10, J=10,
                           tau.11.star = 0.3, return.sites=TRUE )
     head(sdf)
     nrow( sdf )
@@ -510,9 +510,9 @@ if ( FALSE ) {
 }
 
 if ( FALSE ) {
-    df = gen.dat.model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1 )
+    df = gen_dat_model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1 )
 
-    df = gen.dat( n.bar=10, J=300,
+    df = gen_dat( n.bar=10, J=300,
                   tau.11.star = 0.3,
                   verbose=TRUE)
 
@@ -550,7 +550,7 @@ if ( FALSE ) {
     single.rho = function( rho2.1W, R = 5 ) {
         cat( "Doing rho = ", rho2.1W, "\n" )
         res = plyr::rdply( R, {
-            df = gen.dat( n.bar=10, J=20,
+            df = gen_dat( n.bar=10, J=20,
                           rho2.1W = rho2.1W,
                           tau.11.star = 0.1 )
 
@@ -593,7 +593,7 @@ if ( FALSE ) {
 if ( FALSE ) {
     CANONICAL <- NULL
 
-    df = gen.dat.no.cov( n.bar=10, J=J,
+    df = gen_dat_no_cov( n.bar=10, J=J,
                          gamma.10 = 0,
                          tau.11.star = 0.2^2,
                          ICC = 0.85,
@@ -605,7 +605,7 @@ if ( FALSE ) {
     sd( df$u0 )
     sd( df$u1 )
 
-    df2 = gen.dat.no.cov( n.bar=10, J=J,
+    df2 = gen_dat_no_cov( n.bar=10, J=J,
                           gamma.10 = 0,
                           tau.11.star = 0.2^2,
                           ICC = 0.85,

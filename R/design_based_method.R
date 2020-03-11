@@ -13,7 +13,7 @@
 #'
 #' @return dataframe with summary statistics by block
 #' @export
-calc.summary.stats.formula = function( formula, data = NULL, siteID = NULL, add.neyman = FALSE ) {
+calc_summary_stats_formula = function( formula, data = NULL, siteID = NULL, add.neyman = FALSE ) {
 
     # Figure out the covariates we are using
     if(length(formula.tools::lhs.vars(formula)) != 1 | length(formula.tools::rhs.vars(formula)) != 2){
@@ -39,7 +39,7 @@ calc.summary.stats.formula = function( formula, data = NULL, siteID = NULL, add.
         data$siteID = siteID
     }
 
-    calc.summary.stats( Yobs, Z, B, data=data, siteID = siteID, add.neyman = add.neyman )
+    calc_summary_stats( Yobs, Z, B, data=data, siteID = siteID, add.neyman = add.neyman )
 
 }
 
@@ -71,7 +71,7 @@ calc.summary.stats.formula = function( formula, data = NULL, siteID = NULL, add.
 #'   uncertainty due to targeting a superpopulation quantity or not.
 #' @return dataframe with calculated impacts and standard errors.
 #' @export
-estimate.ATE.design.based = function( formula,
+estimate_ATE_design_based = function( formula,
                                       control.formula = NULL,
                                       siteID = NULL,
                                       data,
@@ -79,10 +79,10 @@ estimate.ATE.design.based = function( formula,
                                       weight = c( "individual", "site" ) ) {
 
     if ( is.null( control.formula ) ) {
-        data.table<-calc.summary.stats.formula(formula, data=data, siteID=siteID, add.neyman = TRUE )
-        estimate.ATE.design.based.from.stats( data.table, siteID = siteID, method=method, weight=weight )
+        data.table<-calc_summary_stats_formula(formula, data=data, siteID=siteID, add.neyman = TRUE )
+        estimate_ATE_design_based_from_stats( data.table, siteID = siteID, method=method, weight=weight )
     } else {
-        estimate.ATE.design.based.adjusted( formula=formula,
+        estimate_ATE_design_based_adjusted( formula=formula,
                                             control.formula=control.formula,
                                             siteID = siteID,
                                             data=data,
@@ -114,7 +114,7 @@ estimate.ATE.design.based = function( formula,
 #'   uncertainty due to targeting a superpopulation quantity or not.
 #' @return dataframe with calculated impacts and standard errors.
 #' @export
-estimate.ATE.design.based.from.stats = function( sum_tab, siteID = NULL,
+estimate_ATE_design_based_from_stats = function( sum_tab, siteID = NULL,
                                                  method = c( "finite", "superpop", "superpop.original" ),
                                                  weight = c( "individual", "site" ) ) {
 
@@ -200,12 +200,12 @@ estimate.ATE.design.based.from.stats = function( sum_tab, siteID = NULL,
 if ( FALSE ) {
     library( dplyr )
 
-    dat = make.obs.data.linear( method="big")
-    #dat = make.obs.data( method="small")
+    dat = make_obs_data_linear( method="big")
+    #dat = make_obs_data( method="small")
     head( dat )
     #write_csv( dat, path="some_fake_data.csv" )
 
-    sdat = calc.summary.stats( dat )
+    sdat = calc_summary_stats( dat )
     sdat
     #write_csv( sdat, path="summary_fake_data.csv" )
 
@@ -246,7 +246,7 @@ scat = function( str, ... ) {
 #'
 #'@return Estimates of ATE along with SEs.
 #'@export
-estimate.ATE.design.based.adjusted = function( formula,
+estimate_ATE_design_based_adjusted = function( formula,
                                                control.formula,
                                                data,
                                                siteID = NULL,
@@ -259,7 +259,7 @@ estimate.ATE.design.based.adjusted = function( formula,
     method = match.arg( method )
     weight = match.arg( weight )
 
-    data = make.canonical.data( formula, control.formula, siteID, data )
+    data = make_canonical_data( formula, control.formula, siteID, data )
 
     # Get control variables
     c.names = formula.tools::rhs.vars(control.formula)
@@ -276,7 +276,7 @@ estimate.ATE.design.based.adjusted = function( formula,
     data = data %>% group_by( B ) %>%
         mutate_at( c.names, center ) %>% ungroup()
 
-    new.form = make.FE.int.formula( control.formula=control.formula, data=data )
+    new.form = make_FE_int_formula( control.formula=control.formula, data=data )
 
     # Fit a linear model with indicators for each site, and each site by treatment
     # interaction.  Also have covariates entered in not interacted with treatment.
@@ -396,7 +396,7 @@ estimate.ATE.design.based.adjusted = function( formula,
 } # end estimator function
 
 
-all.adjusted.estimators = function( formula,
+all_adjusted_estimators = function( formula,
                                     control.formula,
                                     data ) {
     ests = expand.grid( method = c("finite", "superpop" ), #, "superpop.adj" ),
@@ -404,7 +404,7 @@ all.adjusted.estimators = function( formula,
                         stringsAsFactors = FALSE )
     ests = as_tibble(ests)
 
-    ests$est = pmap( ests, estimate.ATE.design.based.adjusted,
+    ests$est = pmap( ests, estimate_ATE_design_based_adjusted,
                      formula = formula,
                      control.formula = control.formula,
                      data=data )
@@ -427,7 +427,7 @@ if ( FALSE ) {
 
 
     #set.seed( 1019)
-    dat = gen.dat( n.bar = 20, J = 5, beta.X = 0.5 )
+    dat = gen_dat( n.bar = 20, J = 5, beta.X = 0.5 )
     nrow( dat )
     head( dat )
 
@@ -445,20 +445,20 @@ if ( FALSE ) {
     #dat = sample_n( dat, size=nrow(dat) )
     #head( dat )
 
-    estimate.ATE.design.based.adjusted( formula = Y ~ Tx*ID,
+    estimate_ATE_design_based_adjusted( formula = Y ~ Tx*ID,
                                         control.formula = ~ X1 + X2,
                                         data=dat,
                                         method="superpop",
                                         weight="individual" )
 
 
-    estimate.ATE.design.based( formula = Y ~ Tx*ID,
+    estimate_ATE_design_based( formula = Y ~ Tx*ID,
                                data=dat,
                                method="superpop",
                                weight="individual" )
 
 
-    all.adjusted.estimators( formula = Y ~ Tx*ID,
+    all_adjusted_estimators( formula = Y ~ Tx*ID,
                              control.formula = ~ X1 + X2,
                              data=dat )
 
@@ -468,7 +468,7 @@ if ( FALSE ) {
     # With more vars
     dat$Xx = rnorm( nrow(dat) )
     dat$Xalso = rnorm( nrow(dat) )
-    all.adjusted.estimators( formula = Y ~ Tx*ID,
+    all_adjusted_estimators( formula = Y ~ Tx*ID,
                              control.formula = ~ X1 + X2 + Xx + Xalso,
                              data=dat )
 
@@ -480,7 +480,7 @@ if ( FALSE ) {
 
     if ( FALSE ) {
         source( "covariate_adjusted_design_cleaned.R" )
-        all.adjusted.estimators.old( data=dat.bk )
+        all_adjusted_estimators.old( data=dat.bk )
 
     }
 
