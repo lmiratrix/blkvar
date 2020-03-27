@@ -1,5 +1,5 @@
 Package: blkvar
-Title: Blocked design variance estimation
+Title: Blocked Design Variance Estimation
 Version: 0.0.1.4
 Authors@R: c(
     person("Nicole", "Pashley", email = "npashley@g.harvard.edu", role = "cre"),
@@ -8,15 +8,17 @@ Description: Calculates variance estimates for treatment effect estimator under 
 Depends: R (>= 3.3.2),
     lme4,
     dplyr,
-    survey
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: testthat,
     knitr,
     rmarkdown
-Imports: sandwich,
+Imports: arm, msm, sandwich,
     randomizationInference,
-    survey
-RoxygenNote: 7.0.2
+    survey, magrittr, MASS, datapasta,
+    formula.tools, lmtest, nlme,
+    purrr, rlang, rstudioapi,
+    tibble, tidyr, ggplot2, tidyverse,
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr

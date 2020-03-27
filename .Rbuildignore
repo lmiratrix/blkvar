@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^doc$
+^Meta$
+^extra code$
+^notes_blkvar$
+^00check.log$

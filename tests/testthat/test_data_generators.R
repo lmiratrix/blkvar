@@ -38,7 +38,6 @@ test_that("data generation functions work", {
 test_that( "testing equispaced X", {
 
     dat = make_obs_data_linear( method="small", X=1:10 )
-    dat
     table( dat$B )
     expect_equal( nrow(dat), 10 )
 } )
@@ -51,7 +50,6 @@ test_that( "out of order X", {
     expect_equal( dat, c( "B1", "B1", "B1", "B2", "B2", "B2", "B1", "B1" ) )
 
     dat = make_blocks( method="small", X=c(1.1,1.7,1.3,4.1,4.2,4.3,1.2,1.8) )
-    dat
     expect_equal( dat, c( "B1", "B2", "B1", "B3","B3","B3", "B1", "B2" ) )
 
 } )
@@ -75,7 +73,6 @@ test_that( "Block specific generator works", {
     expect_equal( nrow( dt ), 7 )
     expect_equal( length( unique( dt$B ) ), 2 )
     expect_true( is.factor( dt$B ) )
-    head( dt )
     dt = add_obs_data( dt )
 
     ss = calc_summary_stats_oracle( dt )

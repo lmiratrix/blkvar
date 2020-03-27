@@ -1,8 +1,8 @@
-
-
 library( testthat )
 library( blkvar )
 context("Checking nested randomization blocks")
+
+
 
 
 # Make a dataset with nested blocks and full balance of tx and co assignment so
@@ -17,10 +17,12 @@ make.balanced.dataset = function(  ) {
     b = a
     b$Z = 0
     b$Yobs = b$Y0
-    a = bind_rows( a, b )
-    a = bind_rows( a, filter( b, B == "B6" ) )
+    a = rbind( a, b )
+   
+    
+    a = rbind( a,  b[which(b[, 1] == "B6"), ])
 
-    a  # perfectly balanced dataset.  Three sites, one with two blocks, one with three blocks.
+    # a  # perfectly balanced dataset.  Three sites, one with two blocks, one with three blocks.
     # one of those blocks has p!=0.5 treated
     table( a$sssite, a$B )
     table( a$B, a$Z )
@@ -30,14 +32,24 @@ make.balanced.dataset = function(  ) {
 }
 
 make.big.balanced.dataset = function(rps=5) {
-    rps = plyr::ldply( 1:rps, function(l) {
-        df = make.balanced.dataset()
-        df$sssite = paste( l, df$sssite, sep="-" )
-        df$B = paste( l, df$B, sep="-" )
-        df
-        })
-    rps
+    # rps = plyr::ldply( 1:rps, function(l) {
+        # df = make.balanced.dataset()
+        # df$sssite = paste( l, df$sssite, sep="-" )
+        # df$B = paste( l, df$B, sep="-" )
+        # df
+        # })
+    # rps
+     full <- c()
+   for (l in 1:rps) {
+     df = make.balanced.dataset()
+     df$sssite = paste( l, df$sssite, sep="-" )
+     df$B = paste( l, df$B, sep="-" )
+     full  <- rbind(full, df)
+  }
+  return(full)
+    
 }
+
 
 get.params = function( a ) {
     ss = a %>% group_by( B ) %>% summarise( tau = mean( Y1 ) - mean( Y0 ),
@@ -70,21 +82,18 @@ test_that("DB estimators work with nested randomization blocks", {
 
     # Our dataset with blocks in sites
     sdat = calc_summary_stats( dat, siteID="siteNo" )
-    sdat
 
     # Finite population, person weighted
     a = estimate_ATE_design_based_from_stats( sdat, siteID="siteID", weight="individual", method="finite" )
 
     a2 = estimate_ATE_design_based_from_stats( sdat, weight="individual", method="finite" )
-    a2
     expect_equal( a, a2 )
 
     # Finite population, site weighted
     # Should be different due to weighting the RA blocks differently.
     b = estimate_ATE_design_based_from_stats( sdat, siteID="siteID", weight="site", method="finite" )
     b2 = estimate_ATE_design_based_from_stats( sdat, weight="site", method="finite" )
-    b2
-    b
+
     expect_true( b$tau.hat != b2$tau.hat )
     expect_true( b$SE != b2$SE )
 
@@ -194,14 +203,11 @@ test_that("weighted linear regression works with nested randomization blocks", {
 
     a = rename( a, outcome = Yobs, Tx = Z, BB = B )
 
-    est1 = blkvar:::weighted_linear_estimators( outcome ~ Tx * BB, siteID = "sssite", data=a, scaled.weights = TRUE )
-    est1
+    est1 = weighted_linear_estimators( outcome ~ Tx * BB, siteID = "sssite", data=a, scaled.weights = TRUE )
 
-    est1b = blkvar:::weighted_linear_estimators( outcome ~ Tx * BB, data=a, scaled.weights = FALSE )
-    est1b
+    est1b = weighted_linear_estimators( outcome ~ Tx * BB, data=a, scaled.weights = FALSE )
 
     estDB = compare_methods( outcome, Tx, BB, data=a, siteID = "sssite", include.MLM = FALSE, include.LM = TRUE, include.block = FALSE )
-    estDB
 
     expect_equal( est1$tau[[2]], estDB$tau[[2]] )
     expect_equal( est1$tau[[2]], estDB$tau[estDB$method=="DB-FP-Sites"] )
@@ -218,19 +224,13 @@ test_that("weighted linear regression works with nested randomization blocks", {
     set.seed( 1019 )
     dat = make_obs_data_linear( X=1:50, method="big" )
     dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
-    head( dat )
 
     # Our dataset with blocks in sites
     sdat = calc_summary_stats( dat, siteID="siteNo" )
-    sdat
 
     # Finite population, person weighted
     a = estimate_ATE_design_based_from_stats( sdat, siteID="siteID", weight="site", method="finite" )
-    a
-
     a2 = blkvar:::weighted_linear_estimators( Yobs ~ Z*B, siteID = "siteNo", data=dat )
-    a2
-
     expect_equal( a$tau.hat, a2$tau[[2]] )
 
 })
@@ -281,8 +281,11 @@ test_that("all linear regression works with nested randomization blocks", {
 
     res
 
-    ff = filter( res, change != 0 | changeSE != 0 )
+    ff = res [sort(unique(c(which(res$change != 0), which(res$changeSE != 0)))), ]
     ff
+    
+    
+    
 
     expect_true( nrow( ff ) == 4 )
 
@@ -313,8 +316,9 @@ test_that("compare_methods works with nested randomization blocks", {
     res$changeSE = res$SE.site - res$SE.block
 
     res
-
-    ff = filter( res, change != 0 | changeSE != 0 )
+    
+    
+    ff = res [sort(unique(c(which(res$change != 0), which(res$changeSE != 0)))), ]
     ff
 
     expect_true( nrow( ff ) == 8 )
@@ -362,10 +366,10 @@ test_that("compare_methods with adjustment works with nested randomization block
     options( digits= 3 )
     res
 
-    ff = filter( res, change == 0 & changeSE == 0 )
-    ff
+    # ff = filter( res, change == 0 & changeSE == 0 )
+    # ff
 
-    ff = filter( res, change != 0 | changeSE != 0 )
+    ff = res [sort(unique(c(which(res$change != 0), which(res$changeSE != 0)))), ]
     ff
 
     expect_true( nrow( ff ) == 8 )

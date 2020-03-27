@@ -9,165 +9,156 @@
 #   * Weighted MoM for both simulations (with and without covariate)
 #
 
-
 #' MoM Unweighted
 #'
 #' @param df  The dataframe to analyze, with sid, Z, X and Yobs
-analysis_MoM_unweighted_cov = function( df ){
-  s = max(as.numeric(as.character(df$sid)))
-  df$sid = as.factor(df$sid)
-
+analysis_MoM_unweighted_cov <- function(df) {
+  s <- max(as.numeric(as.character(df$sid)))
+  df$sid <- as.factor(df$sid)
+  
   # get the model matrix we need to estimate the relevant betas
-  M0 = lm( Yobs ~ sid*(-1+Z)+X, data=df)
-  mmat = as.data.frame(model.matrix(M0))
-  mmat$`sid1:Z` = with(mmat,sid1*Z)
-  mmat$Z = NULL
-  mmat$Yobs = df$Yobs
+  M0 <- lm(Yobs ~ sid*(-1 + Z) + X, data = df)
+  mmat <- as.data.frame(model.matrix(M0))
+  mmat$`sid1:Z` <- with(mmat, sid1 * Z)
+  mmat$Z <- NULL
+  mmat$Yobs <- df$Yobs
 
   # Estimate our model
-  Mtest = lm(Yobs~.,data=mmat)
+  Mtest <- lm(Yobs~.,data = mmat)
 
   # Tidy this up!
-  coef_table = summary(Mtest)$coef
-  hetero_vars = grep("Z",rownames(coef_table))
+  coef_table <- summary(Mtest)$coef
+  hetero_vars <- grep("Z", rownames(coef_table))
 
   ### pool treatment effect estimates and compute their variance estimates
-  bj = coef_table[hetero_vars,"Estimate"]
-  vj = coef_table[hetero_vars,"Std. Error"]^2
+  bj <- coef_table[hetero_vars, "Estimate"]
+  vj <- coef_table[hetero_vars, "Std. Error"] ^ 2
 
   ## Var bj
-  var_bj = var(bj)
+  var_bj <- var(bj)
   # Average variance bj
-  mean_vj = mean(vj)
-
-  MoM_unweighted = var_bj - mean_vj
-
+  mean_vj <- mean(vj)
+  MoM_unweighted <- var_bj - mean_vj
   return(MoM_unweighted)
 }
-
 
 #' MoM weighted
 #'
 #' @param df Dataframe to analyze.
-analysis_MoM_weighted_cov = function( df ){
-  s = max(as.numeric(as.character(df$sid)))
-  df$sid = as.factor(df$sid)
+analysis_MoM_weighted_cov <- function(df) {
+  s <- max(as.numeric(as.character(df$sid)))
+  df$sid <- as.factor(df$sid)
 
   # get the model matrix we need to estimate the relevant betas
-  M0 = lm( Yobs ~ sid*(-1+Z)+X, data=df)
-  mmat = as.data.frame(model.matrix(M0))
-  mmat$`sid1:Z` = with(mmat,sid1*Z)
-  mmat$Z = NULL
-  mmat$Yobs = df$Yobs
+  M0 <- lm( Yobs ~ sid * (-1 + Z) + X, data = df)
+  mmat <- as.data.frame(model.matrix(M0))
+  mmat$`sid1:Z` <- with(mmat, sid1 * Z)
+  mmat$Z <- NULL
+  mmat$Yobs <- df$Yobs
 
   # Estimate our model
-  Mtest = lm(Yobs~.,data=mmat)
+  Mtest <- lm(Yobs~., data = mmat)
 
   # Tidy this up!
-  coef_table = summary(Mtest)$coef
-  hetero_vars = grep("Z",rownames(coef_table))
+  coef_table <- summary(Mtest)$coef
+  hetero_vars <- grep("Z", rownames(coef_table))
 
   ### pool treatment effect estimates and compute their variance estimates
-  bj = coef_table[hetero_vars,"Estimate"]
-  vj = coef_table[hetero_vars,"Std. Error"]^2
+  bj <- coef_table[hetero_vars, "Estimate"]
+  vj <- coef_table[hetero_vars, "Std. Error"] ^ 2
 
   #browser()
 
   ## estimate q
-  wj = 1/vj
-  wjsq = wj^2
+  wj <- 1 / vj
+  wjsq <- wj ^ 2
 
   ## weight*site-specific treatment effect
-  wjT = wj*bj
-  wjTsq = wj*(bj^2)
+  wjT <- wj * bj
+  wjTsq <- wj * (bj ^ 2)
 
   ## calculate Q
-  sumwj = sum(wj) #total weights
-  sumwjsq = sum(wjsq) # total weight squared
-  sumwjT = sum(wjT) #sum of weights interecations with site-specific effect
-  sumwjTsq = sum(wjTsq) #same but for squared
-  sumwjT_sq = sumwjT^2 #and we square again
-  Q = sumwjTsq - sumwjT_sq/sumwj
+  sumwj <- sum(wj) #total weights
+  sumwjsq <- sum(wjsq) # total weight squared
+  sumwjT <- sum(wjT) #sum of weights interecations with site-specific effect
+  sumwjTsq <- sum(wjTsq) #same but for squared
+  sumwjT_sq <- sumwjT ^ 2 #and we square again
+  Q <- sumwjTsq - sumwjT_sq / sumwj
 
   ## calculate c
-  c = sumwj - (sumwjsq)/sumwj
+  c <- sumwj - (sumwjsq) / sumwj
 
   ## calculate tau^2 hat
-  tausq = (Q - (s - 1))/c
+  tausq <- (Q - (s - 1)) / c
 
   return(tausq)
 }
 
 
-
 ## MoM Unweighted, no covariate
-analysis_MoM_unweighted = function( df ){
-  s = length( unique( df$sid ) ) # max(as.numeric(as.character(df$sid)))
-  df$sid = as.factor(df$sid)
+analysis_MoM_unweighted <- function(df) {
+  s <- length(unique( df$sid)) # max(as.numeric(as.character(df$sid)))
+  df$sid <- as.factor(df$sid)
 
   # get the model matrix we need to estimate the relevant betas
-  Mtest = lm( Yobs ~ sid*Z - 1 - Z, data=df)
+  Mtest <- lm(Yobs ~ sid * Z - 1 - Z, data = df)
 
   # Tidy this up!
-  coef_table = summary(Mtest)$coef
-  hetero_vars = grep("Z",rownames(coef_table))
+  coef_table <- summary(Mtest)$coef
+  hetero_vars <- grep("Z", rownames(coef_table))
 
   ### pool treatment effect estimates and compute their variance estimates
-  bj = coef_table[hetero_vars,"Estimate"]
-  vj = coef_table[hetero_vars,"Std. Error"]^2
+  bj <- coef_table[hetero_vars, "Estimate"]
+  vj <- coef_table[hetero_vars, "Std. Error"] ^ 2
 
   ## Var bj
-  var_bj = var(bj)
+  var_bj <- var(bj)
   # Average variance bj
-  mean_vj = mean(vj)
-
-  MoM_unweighted = var_bj - mean_vj
-
+  mean_vj <- mean(vj)
+  MoM_unweighted <- var_bj - mean_vj
   return(MoM_unweighted)
 }
 
 
 
 ## MoM weighted, no covariate
-analysis_MoM_weighted = function( df ){
-  s = length( unique( df$sid ) ) # max(as.numeric(as.character(df$sid)))
-  df$sid = as.factor(df$sid)
+analysis_MoM_weighted <- function(df) {
+  s <- length(unique(df$sid)) # max(as.numeric(as.character(df$sid)))
+  df$sid <- as.factor(df$sid)
 
   # get the model matrix we need to estimate the relevant betas
-  Mtest = lm( Yobs ~ sid*Z - 1 - Z, data=df)
+  Mtest <- lm(Yobs ~ sid * Z - 1 - Z, data = df)
 
   # Tidy this up!
-  coef_table = summary(Mtest)$coef
-  hetero_vars = grep("Z",rownames(coef_table))
+  coef_table <- summary(Mtest)$coef
+  hetero_vars <- grep("Z", rownames(coef_table))
 
   ### pool treatment effect estimates and compute their variance estimates
-  bj = coef_table[hetero_vars,"Estimate"]
-  vj = coef_table[hetero_vars,"Std. Error"]^2
+  bj <- coef_table[hetero_vars, "Estimate"]
+  vj <- coef_table[hetero_vars, "Std. Error"] ^ 2
 
   #browser() = command to test whether everything within the function works
 
   ## estimate q and pvalue
-  wj = 1/vj
-  wjsq = wj^2
+  wj <- 1 / vj
+  wjsq <- wj ^ 2
 
   ## weight*site-specific treatment effect
-  wjT = wj*bj
-  wjTsq = wj*(bj^2)
+  wjT <- wj * bj
+  wjTsq <- wj * (bj ^ 2)
 
   ## calculate Q
-  sumwj = sum(wj) #total weights
-  sumwjsq = sum(wjsq) # total weight squared
-  sumwjT = sum(wjT) #sum of weights interecations with site-specific effect
-  sumwjTsq = sum(wjTsq) #same but for squared
-  sumwjT_sq = sumwjT^2 #and we square again
-  Q = sumwjTsq - sumwjT_sq/sumwj
+  sumwj <- sum(wj) #total weights
+  sumwjsq <- sum(wjsq) # total weight squared
+  sumwjT <- sum(wjT) #sum of weights interecations with site-specific effect
+  sumwjTsq <- sum(wjTsq) #same but for squared
+  sumwjT_sq <- sumwjT ^ 2 #and we square again
+  Q <- sumwjTsq - sumwjT_sq / sumwj
 
   ## calculate c
-  c = sumwj - (sumwjsq)/sumwj
+  c <- sumwj - (sumwjsq) / sumwj
 
   ## calculate tau^2 hat
-  tausq = (Q - (s - 1))/c
-
+  tausq <- (Q - (s - 1)) / c
   return(tausq)
-
 }

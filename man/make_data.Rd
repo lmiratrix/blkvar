@@ -26,6 +26,8 @@ make_obs_data(n_k = c(2, 3, 4, 8), p = 0.5, ...)
 \item{sigma_tau}{Standard deviation of the separation of the block mean
 treatment effects (Y1-Y0)}
 
+\item{tau}{Cross site VARIANCE of site-level ATEs.}
+
 \item{sigma_0}{Standard deviation of residual Y0 added to block means (can be
 vector for individual variances per block)}
 

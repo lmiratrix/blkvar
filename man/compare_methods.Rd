@@ -22,6 +22,8 @@ compare_methods(
 )
 }
 \arguments{
+\item{Yobs}{vector observed outcomes (or column name in data)}
+
 \item{Z}{vector of assignment indicators (1==treated) (or column name in data)}
 
 \item{B}{vector of block ids (or column name in data)}
@@ -44,7 +46,11 @@ and classic Neyman to large blocks.}
 
 \item{include.method_characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
 
-\item{Y}{vector observed outcomes (or column name in data)}
+\item{weight.LM.method}{TOADD}
+
+\item{weight.LM.scale.weights}{TOADD}
+
+\item{control.formula}{What variables to control for, in the form of "~ X1 + X2".}
 }
 \description{
 This function calculates the point estimates and SE estimates for a variety

@@ -4,7 +4,7 @@
 
 library( testthat )
 library( blkvar )
-library( ggplot2 )
+
 context("Checking multisite DGP functions")
 
 test_that( "Multisite DGP works", {
@@ -46,11 +46,11 @@ test_that( "Variable p and n works", {
                    Y.hat = mean( Yobs[Z==1] ) - mean( Yobs[Z==0] ) )
 
     head( sites )
-    qplot( sites$n )
+    # ggplot2::qplot( sites$n )
     range( sites$n )
     rat = max( sites$n ) / min( sites$n )
     rat
-    qplot( sites$p.Z )
+    # ggplot2::qplot( sites$p.Z )
     mean( sites$p.Z )
     rat.Z = max( sites$p.Z ) / min( sites$p.Z )
     rat.Z
@@ -76,7 +76,7 @@ test_that( "Site impact correlation works", {
                    Y.true = mean( Y1 ) - mean( Y0 ) )
 
     head( sites )
-    qplot( sites$n, sites$Y.true )
+    # ggplot2::qplot( sites$n, sites$Y.true )
     cor(  sites$n, sites$Y.true )
 
     ATE.site = mean( sites$Y.true )
@@ -108,13 +108,13 @@ test_that( "prop treated by impact correlation works", {
     mean( sites$n == 4 )
     mean( sites$n )
     summary( sites$n )
-    qplot( sites$n )
+    # ggplot2::qplot( sites$n )
 
     head( sites )
-    qplot( sites$n, sites$Y.true )
+    # ggplot2::qplot( sites$n, sites$Y.true )
     cor(  sites$n, sites$Y.true )
 
-    qplot( sites$p.Z, sites$Y.true )
+    # ggplot2::qplot( sites$p.Z, sites$Y.true )
     cor( sites$p.Z, sites$Y.true )
 
     expect_true( cor(  sites$p.Z, sites$Y.true ) > 0.50 )
@@ -138,10 +138,10 @@ test_that( "prop treated by impact correlation works", {
                    Y.true = mean( Y1 ) - mean( Y0 ) )
 
     head( sites )
-    qplot( sites$n, sites$Y.true )
+    # ggplot2::qplot( sites$n, sites$Y.true )
     cor(  sites$n, sites$Y.true )
 
-    qplot( sites$p.Z, sites$Y.true )
+    # ggplot2::qplot( sites$p.Z, sites$Y.true )
     cor( sites$p.Z, sites$Y.true )
 
     expect_true( cor(  sites$p.Z, sites$Y.true ) < -0.50 )
@@ -167,10 +167,10 @@ test_that( "prop treated by impact correlation works", {
                    Y.true = mean( Y1 ) - mean( Y0 ) )
 
     head( sites )
-    qplot( sites$n, sites$Y.true )
+    # ggplot2::qplot( sites$n, sites$Y.true )
     cor(  sites$n, sites$Y.true )
 
-    qplot( sites$p.Z, sites$Y.true )
+    # ggplot2::qplot( sites$p.Z, sites$Y.true )
     cor( sites$p.Z, sites$Y.true )
 
     expect_true( cor(  sites$p.Z, sites$Y.true ) > 0.50 )

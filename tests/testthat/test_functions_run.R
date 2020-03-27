@@ -95,14 +95,13 @@ test_that("B as factor works", {
     head( dat )
     table( dat$B )
     dat$B = as.factor( dat$B )
-    dat = filter( dat, as.numeric(B) > 5 )
+    dat [-which( as.numeric(dat$B) > 5 ), ]
     table( dat$B )
 
     res <- compare_methods( Yobs, Z, B, data=dat, include.MLM = FALSE )
     res
     expect_true( "hybrid_m" %in% res$method )
 })
-
 
 
 

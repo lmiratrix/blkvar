@@ -20,7 +20,6 @@ test_that("Check compare_methods with covariate adjustment", {
 
     if ( FALSE ) {
         head( rs )
-        library( tidyverse )
         qplot( rs$tau, rs2$tau )
         rs2$tau.adj = rs$tau
         rs2 = mutate( rs2, delta = tau - tau.adj )

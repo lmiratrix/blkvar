@@ -1,0 +1,18 @@
+NOTES:
+
+1. Change all code according to the Google style VignetteBuilder
+2. calc.RCT.Yes.SE - does that import from an exterior package or does it need
+to be defined?
+3. compare_methods_oracle - is this function used?
+analysis_systematic.R & analysis_systematic.RTx.R
+
+
+4. add.neyman, scaled.weights,  REML, calc.CI, sid (is this site ID?),
+sigma2.W, variable.p, finite.model, size.ratio, block.stats, weight.LM.method,
+weight.LM.scale.weights, 
+
+  - not defined as argument in the package.
+
+Functions that need new argumnts: describe_data,
+
+5. No longer used: qstatistic_method.R, FIRC_method.R,

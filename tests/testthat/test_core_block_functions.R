@@ -73,6 +73,3 @@ test_that("Dropping levels works", {
     expect_equal( nrow(rs), 3 )
 
 })
-
-
-
