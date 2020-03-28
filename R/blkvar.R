@@ -1,9 +1,22 @@
 #' \code{blkvar} package
 #'
-#' Blocked Design Variance Estimation
+#' Estimating ATE and Cross-Site Variation for Multisite (block) RCTs
 #'
-#' See the README on
-#' \href{https://github.com/lmiratrix/blkvar#readme}{GitHub}
+#' This code bundle is a package for estimating impacts and cross-site variation
+#' in multi-site or blocked RCTs.
+#'
+#' It is the compainion package for Pashley & Miratrix (2020) and Miratrix &
+#' Weiss (2020).
+#'
+#' It also has a bunch of routines for running multisite simulation scenarios.
+#' It is used in a variety of research projects connected with the Miratrix
+#' CARES Lab (https://cares.gse.harvard.edu/) and other research that Miratrix
+#' is part of.
+#'
+#' For working (cleaner) versions see CRAN.
+#'
+#' See \href{https://github.com/lmiratrix/blkvar#readme}{GitHub} for current
+#' development version.
 #'
 #' @docType package
 #' @name blkvar
