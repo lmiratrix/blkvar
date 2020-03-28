@@ -1,9 +1,9 @@
 Package: blkvar
-Title: Blocked Design Variance Estimation
-Version: 0.0.1.4
+Title: ATE and Treatment Variation Estimation for Blocked and Multisite RCTs
+Version: 0.0.1.5
 Authors@R: c(
-    person("Nicole", "Pashley", email = "npashley@g.harvard.edu", role = "cre"),
-    person("Luke", "Miratrix", email = "lmiratrix@stat.harvard.edu", role = "aut"))
+    person("Nicole", "Pashley", email = "npashley@g.harvard.edu", role = "aut"),
+    person("Luke", "Miratrix", email = "lmiratrix@stat.harvard.edu", role = "cre"))
 Description: Calculates variance estimates for treatment effect estimator under block randomized design.
 Depends: R (>= 3.3.2),
     lme4,

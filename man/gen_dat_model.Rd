@@ -54,7 +54,7 @@ gen_dat_model(
 
 \item{sigma2.e}{Residual standard error}
 
-\item{sigma2.W}{TOADD}
+\item{sigma2.W}{The variation of the site-level covariate.}
 
 \item{beta.X}{Coefficient for the individual-level X covariate.  NA means no covariate.}
 
@@ -62,13 +62,13 @@ gen_dat_model(
 
 \item{variable.n}{Allow n to vary around n.bar, Default: TRUE}
 
-\item{variable.p}{TOADD}
+\item{variable.p}{Should the proportion of units treated in each site vary?  Yes/No.}
 
 \item{cluster.rand}{TRUE means cluster-randomized.  FALSE means randomized within site.}
 
 \item{return.sites}{Return sites, not individual students, Default: FALSE}
 
-\item{finite.model}{TOADD}
+\item{finite.model}{If TRUE use a canonical set of random site effects.  When TRUE this method will save the multivariate normal draw and reuse it in subsequent calls to gen_dat_model until a call with a different J is made.  Recommended to use FALSE.}
 
 \item{size.impact.correlate}{Takes values of -1, 0, or 1: Are site impacts
 negatively correlated, uncorrelated, or positively correlated with site
@@ -82,12 +82,12 @@ correlated with site size?}
 of site impacts will be with proptx and site size, if they are set to be
 correlated.}
 
-\item{size.ratio}{TOADD}
+\item{size.ratio}{The degree to which the site sizes should vary, if they should vary.}
 
 \item{verbose}{Say stuff while maing data?, Default: FALSE}
 }
 \value{
-Dataframe of data!
+Dataframe of data!  Dataframe
 }
 \description{
 Given a 2-level model, generate data to specifications

@@ -13,7 +13,7 @@ estimate_ATE_FIRC(
   control.formula = NULL,
   data = NULL,
   REML = FALSE,
-  include.testing = TRUE,
+  include_testing = TRUE,
   anova = FALSE,
   pool = FALSE
 )
@@ -31,9 +31,9 @@ estimate_ATE_FIRC(
 
 \item{data}{Dataframe with all needed variables.}
 
-\item{REML}{TOADD}
+\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood estimation.}
 
-\item{include.testing}{Logical TOADD}
+\item{include_testing}{Logical Include likelihood ratio test for cross-site treatment variation.}
 
 \item{anova}{Use the anova() method to do the test for significance between
 the models.  FALSE means do the modified chi-squared test.}

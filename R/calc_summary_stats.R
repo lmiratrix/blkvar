@@ -8,7 +8,9 @@
 #' @param B block ids
 #' @param data Dataframe with defined Yobs, Z, and B variables.
 #' @param siteID If not null, name of siteID that has randomization blocks nested inside.
-#' @param add.neyman TO ADD
+#' @param add.neyman If TRUE, add block-specific SEs using Neyman formula of $s^2_T/n_t + s^2_C/n_c$ as column in output.
+#' @param data Dataframe with defined Yobs, Z, and B variables.
+#' @family calc_summary_stats
 #'
 #' @return dataframe with summary statistics by block
 #' @importFrom rlang .data
@@ -41,7 +43,7 @@ calc_summary_stats <- function(Yobs, Z, B, data = NULL, siteID = NULL, add.neyma
   } else {
     sdat <- dat %>% dplyr::group_by(B, Z)
   }
-  
+
   sdat <- sdat %>% dplyr::summarise(n = n(), Ybar = mean(Yobs), var = var(Yobs))
   sdat <- reshape(as.data.frame(sdat), direction = "wide", v.names = c("n", "Ybar", "var"),
     idvar = "B", timevar = "Z", sep= "")
@@ -57,3 +59,22 @@ calc_summary_stats <- function(Yobs, Z, B, data = NULL, siteID = NULL, add.neyma
   }
   sdat
 }
+
+
+
+#' Summarise data by block.
+#'
+#' Given dataframe or list of variables, return table of stats for each
+#' randomization block.
+#'
+#' @inheritParams calc_summary_stats
+#' @param  formula  Formula of form Yobs ~ Z * B (ONLY)
+#' @family calc_summary_stats
+#' @return dataframe with summary statistics by block
+#' @export
+calc_summary_stats_formula <- function(formula, data = NULL, siteID = NULL, add.neyman = FALSE) {
+
+    data = make_canonical_data( formula=formula, data=data, siteID=siteID )
+    calc_summary_stats(Yobs, Z, B, data = data, siteID = siteID, add.neyman = add.neyman )
+}
+

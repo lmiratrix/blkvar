@@ -5,9 +5,21 @@ date: "`r Sys.Date()`"
 output: html_document
 vignette: >
   %\VignetteIndexEntry{Overview of the blkvar package}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
+
+<style type="text/css">
+.table {
+
+    width: 40%;
+    margin-left:auto; 
+    margin-right:auto;
+}
+</style>
+
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -17,6 +29,7 @@ knitr::opts_chunk$set(
 library( blkvar )
 library( dplyr )
 library( knitr )
+options( digits=3 )
 ```
 
 The `blkvar` package implements a variety of methods for estimating the average treatment impact in a blocked or multisite randomized trial. It also provides methods for estimating the amount of cross-site (or cross-block) treatment variation, defined as the variance of the individual block (or site) ATEs. It finally provides a variety of methods to implement blocked or multisite simulation studies.
@@ -31,19 +44,35 @@ There are several classes of methods for estimating the ATE:
     
 For a running example we generate some data
 ```{r}
-df <- gen_dat_no_cov(n.bar = 50, J = 30, gamma.10 = 0, tau.11.star = 0.2 ^ 2, ICC = 0.65, variable.n = TRUE)
-head( df)
+df <- gen_dat_no_cov(n.bar = 50, J = 30, 
+                     gamma.10 = 0, 
+                     tau.11.star = 0.2 ^ 2, ICC = 0.65, 
+                     variable.n = TRUE)
+head( df )
 ```
 
 To estimate the ATE using (almost) all the various methods provided we have
 ```{r}
-compare_methods(Yobs, Z, sid, data=df )
+tbl <- compare_methods(Yobs, Z, sid, data=df )
+knitr::kable( tbl )
 ```
+
+The results are as follows:
+
+* The `hybrid_m` and `hybrid_p` methods are from Pashley & Miratrix (2020), and are estimators that can account for singleton treated and control units in some of the blocks. `plug_in_big` is another version that uses the estimated variance across the big blocks for the small block variances.
+* The `DB` are the 4 design-based estimators (see, e.g., the RCTYes software and documentation).  
+* `FE` are the "Fixed Effect" linear model estimators with different choices for uncertainty estimation (classic OLS, heteroskedastic robust, cluster robust, and the club sandwich cluster robust).  
+* `FE-IPTW` are reweighted fixed effect regressions to debias the model to target either site or person average ATE.  
+* RICC, FIRC, and RIRC are multilevel model estimators. RICC is the Random Intercept, Constant Coefficient, FIRC is Fixed Intercept, Random Coefficient, and RIRC is Random Intercept, Random Coefficient.
+
 
 One can select which methods to use:
 ```{r}
-compare_methods(Yobs, Z, sid, data=df, include.block = FALSE, include.MLM = FALSE,
-                include.DB = FALSE)
+tbl <- compare_methods(Yobs, Z, sid, data=df, 
+                       include_block = FALSE, 
+                       include_MLM = FALSE,
+                       include_DB = FALSE)
+knitr::kable( tbl )
 ```
 
 
@@ -56,43 +85,59 @@ Covariate adjustment for individual level covariates is implemented for several 
 df$X1 = df$Y0 + rnorm( nrow( df ) ) # add a fake covariate
 df$X2 = df$Y1 + rnorm( nrow( df ) ) # add another fake covariate
 
-rs = compare_methods( Yobs, Z, sid, data=df, control.formula = ~X1 + X2 )
+rs = compare_methods( Yobs, Z, sid, data=df, 
+                      control.formula = ~X1 + X2 )
 knitr::kable( rs )
 ```
 
 # Estimating cross site variation
 
-We can estimate cross site variation using some of the multilevel modeling methods.  The `estimate_ATE_FIRC` method, for example, provides `tau.hat`, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).
+We can estimate cross site variation using some of the multilevel modeling methods. See Weiss et al. (2017) for good discussion of the methods discussed. The `estimate_ATE_FIRC` method, for example, provides `tau_hat`, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).
+
 ```{r}
 ests <- estimate_ATE_FIRC( Yobs, Z, sid, data=df )
 t( ests )
 ```
+
 (We transpose with `t()` to make it a nice row instead of a list.)
 
 This can also be done as
+
 ```{r}
 ests <- estimate_ATE_FIRC( df$Yobs, df$Z, df$sid )
+t( ests )
 ```
 
+It is preferred, however, to pass as a dataframe with variable names as follows:
 
-We also have
 ```{r}
 ests.RIRC = estimate_ATE_RIRC( Yobs, Z, sid, data=df )
 t( ests.RIRC )
 ```
 
-These methods also have a `pool` option which uses a MLM with a single variance parameter for all individuals, rather than separate ones for the treatment and control groups (which is still pooled across block).
+These methods also have a `pool` option which uses a MLM with a single variance parameter for all individuals, rather than separate ones for the treatment and control groups (the latter option is still pooled across block, as is suggested by the literature).
 
-We can test for cross site variation using a $Q$-statistic approach:
+We can also test for cross site variation using a $Q$-statistic approach:
+
 ```{r}
-t( analysis_Qstatistic( Yobs, Z, sid, data=df, alpha=0.05, calc.CI=TRUE ) )
+ests.Qstat = analysis_Qstatistic( Yobs, Z, sid, data=df, alpha=0.05, calc.CI=TRUE )
+t( ests.Qstat )
 ```
+
 The confidence interval comes from inverting the test statistic for various values of cross-site variation.
 
 
 We can compare all these estimators via
+
 ```{r}
-compare_methods_variation( Yobs, Z, sid, data=df, long.results=TRUE )
+tbl = compare_methods_variation( Yobs, Z, sid, data=df, long_results=TRUE )
+knitr::kable(tbl)
 ```
+
 The $p$-values are testing for these estimates being nonzero.
 
+# References
+
+Pashley, N. E., & Miratrix, L. W. (2020). Insights on variance estimation for blocked and matched pairs designs. arXiv preprint arXiv:1710.10342.
+
+Weiss, M. J., Bloom, H. S., Verbitsky-Savitz, N., Gupta, H., Vigil, A. E., & Cullinan, D. N. (2017). How Much Do the Effects of Education and Training Programs Vary Across Sites? Evidence From Past Multisite Randomized Trials. Journal of Research on Educational Effectiveness, 10(4), 843–876. http://doi.org/10.1080/19345747.2017.1300719

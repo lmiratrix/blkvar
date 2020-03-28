@@ -1,15 +1,20 @@
 #' Compare different estimates of cross site variation.
 #'
-#' Given a dataframe, use the different methods to pull out point estimates and
+#' Given a dataframe, use the different methods to pull out point estimates for cross site variation and
 #' (if desired) pvalues and return them all.
 #'
 #' @inheritParams compare_methods
-#' @param long.results TRUE means each estimator gets a line in a data.frame.  FALSE gives all as columns in a 1-row dataframe.
-#' @param include.testing TOADD
+#' @param long_results TRUE means each estimator gets a line in a data.frame.
+#'                FALSE gives all as columns in a 1-row dataframe.
+#' @param include_testing Include tests for null of no cross site variation.
+#' @param include_Q_estimate Include a estimate for tau_hat from Q method (involves calculating the full confidence interval so potentially time intensive).
 #' @param siteID if blocks B nested in sites, then pass the site indicator.
 #'
 #' @export
-compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL, include.testing = TRUE, long.results = FALSE) {
+compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL,
+                                      include_testing = TRUE,
+                                      include_Q_estimate = TRUE,
+                                      long_results = FALSE ) {
   if (!is.null(data)) {
     if (missing("Yobs")) {
       data <- data.frame(Yobs = data[, 1], Z = data[, 2], B = data[, 3])
@@ -20,7 +25,9 @@ compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL, in
       if (!is.null(siteID)) {
         siteID <- data[[siteID]]
       }
-      data <- data.frame(Yobs = eval( substitute(Yobs), data), Z = eval(substitute(Z), data), B = eval( substitute(B), data))
+      data <- data.frame(Yobs = eval( substitute(Yobs), data),
+                         Z = eval(substitute(Z), data),
+                         B = eval( substitute(B), data))
       data$siteID <- siteID
 
       # if ( !missing( siteID ) ) {
@@ -55,35 +62,47 @@ compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL, in
   }
 
   # FIRC model (separate variances)
-  FIRC <- estimate_ATE_FIRC(Yobs, Z, B, siteID = siteID, data = data, include.testing = include.testing)
+  FIRC <- estimate_ATE_FIRC(Yobs, Z, B, siteID = siteID, data = data, include_testing = include_testing)
 
   # FIRC model (with pooled residual variances)
-  FIRC.pool <- estimate_ATE_FIRC(Yobs, Z, B, siteID = siteID, data = data, include.testing = include.testing, pool = TRUE)
+  FIRC_pool <- estimate_ATE_FIRC(Yobs, Z, B, siteID = siteID, data = data,
+                                 include_testing = include_testing, pool = TRUE)
 
   # the random-intercept, random-coefficient (RIRC) model
-  RIRC <- estimate_ATE_RIRC(Yobs, Z, B, data, include.testing = include.testing)
+  RIRC <- estimate_ATE_RIRC(Yobs, Z, B, data,
+                            include_testing = include_testing)
 
   # the random-intercept, random-coefficient (RIRC) model
-  RIRC.pool <- estimate_ATE_RIRC(Yobs, Z, B, data, include.testing = include.testing, pool = TRUE)
-  Qstat <- analysis_Qstatistic(Yobs, Z, B, siteID = siteID, data = data )
+  RIRC_pool <- estimate_ATE_RIRC(Yobs, Z, B, data,
+                                 include_testing = include_testing,
+                                 pool = TRUE)
+
+  Qstat <- analysis_Qstatistic(Yobs, Z, B, siteID = siteID,
+                               data = data, calc.CI = include_Q_estimate )
 
   # collect results
-  res <- data.frame(tau.hat.FIRC = FIRC$tau.hat, tau.hat.RIRC = RIRC$tau.hat, tau.hat.FIRC.pool = FIRC.pool$tau.hat, tau.hat.RIRC.pool = RIRC.pool$tau.hat)
-  res$tau.hat.Q <- Qstat$tau.hat
-  
-  if (include.testing) {
-  	res$pv.FIRC <- FIRC$p.variation
-    res$pv.RIRC <- RIRC$p.variation
-    res$pv.FIRC.pool <- FIRC.pool$p.variation
-    res$pv.RIRC.pool <- RIRC.pool$p.variation
-    res$pv.Qstat <- Qstat$p.value
+  res <- data.frame(tau_hat_FIRC = FIRC$tau_hat,
+                    tau_hat_RIRC = RIRC$tau_hat,
+                    tau_hat_FIRC_pool = FIRC_pool$tau_hat,
+                    tau_hat_RIRC_pool = RIRC_pool$tau_hat,
+                    tau_hat_Q = Qstat$tau_hat )
+
+  if (include_testing) {
+  	res$pv_FIRC <- FIRC$p_variation
+    res$pv_RIRC <- RIRC$p_variation
+    res$pv_FIRC_pool <- FIRC_pool$p_variation
+    res$pv_RIRC_pool <- RIRC_pool$p_variation
+    res$pv_Qstat <- Qstat$p.value
   }
 
-  if (long.results) {
-    if (include.testing) {
-      res <- data.frame( method = c("FIRC", "RIRC", "FIRC.pool", "RIRC.pool", "Q"), tau.hat = c( as.numeric( res[1:4] ), NA), pv = as.numeric(res[5:9]))
+  if (long_results) {
+    if (include_testing) {
+      res <- data.frame( method = c("FIRC", "RIRC", "FIRC_pool", "RIRC_pool", "Q"),
+                         tau_hat = c( as.numeric( res[1:5] ) ),
+                         pv = as.numeric(res[6:10]))
     } else {
-      res = data.frame( method = c("FIRC", "RIRC", "FIRC.pool", "RIRC.pool"), tau.hat = as.numeric(c(res[1:4])))
+      res = data.frame( method = c("FIRC", "RIRC", "FIRC_pool", "RIRC_pool", "Q"),
+                        tau_hat = as.numeric(c(res[1:5])))
     }
   }
   res

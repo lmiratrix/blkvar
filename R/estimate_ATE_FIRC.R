@@ -13,14 +13,14 @@
 #' @param siteID Character name of the ID variable of site (blocks are conBered nested in site).  If omitted, then blocks are considered sites (the default).
 #' @param Yobs Name of outcome variable (assumed to exist in data)
 #' @param Z vector of assignment indicators (1==treated)
-#' @param REML TOADD
+#' @param REML Logical, Restricted maximum likelihood or maximum likelihood estimation.
 #' @param siteID If not null, name of siteID that has randomization blocks
 #' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param include.testing Logical TOADD
+#' @param include_testing Logical Include likelihood ratio test for cross-site treatment variation.
 #'@param data Dataframe with all needed variables.
 #' @export
-estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL, data = NULL, REML = FALSE, include.testing = TRUE, anova = FALSE, pool = FALSE) {
-  stopifnot(!(include.testing && REML))
+estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL, data = NULL, REML = FALSE, include_testing = TRUE, anova = FALSE, pool = FALSE) {
+  stopifnot(!(include_testing && REML))
   if (!is.null(control.formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing( "Yobs"))
@@ -39,7 +39,7 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL,
       Yobs.n <- as.character(substitute(Yobs))
       Z.n <- as.character(substitute(Z))
       B.n <- as.character(substitute(B))
-      data <- rename(data, Yobs = Yobs.n, Z = Z.n, B = B.n)
+      data <- dplyr::rename(data, Yobs = Yobs.n, Z = Z.n, B = B.n)
       if (!is.null(siteID)) {
         data$siteID <- data[[siteID]]
         stopifnot(!is.null(data$siteID))
@@ -51,28 +51,28 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL,
       data$siteID <- siteID
     }
   }
-  
+
   if (is.null(siteID)) {
     data$siteID <- data$B
   }
-  
+
   stopifnot( length(unique(data$Z)) == 2)
   stopifnot(is.numeric(data$Yobs))
-  
+
   #fit multilevel model and extract tau
   method <- ifelse( REML, "REML", "ML" )
-  
+
   # Make control variable function
   formula <- make_FE_formula("Yobs", "Z", "B", control.formula = control.formula, data = data)
-  
+
   if (pool) {
     re.mod <- nlme::lme(formula, data = data, random = ~ 0 + Z | siteID, method = method, control=nlme::lmeControl(opt="optim", returnObject = TRUE))
   } else {
     re.mod <- nlme::lme(formula, data = data, random = ~ 0 + Z | siteID, weights = nlme::varIdent(form = ~ 1 | Z), na.action=stats::na.exclude, method = method,
       control=nlme::lmeControl(opt="optim",returnObject=TRUE))
   }
-  
-  if (include.testing) {
+
+  if (include_testing) {
     # Test for cross site variation
     if (pool) {
       re.mod.null <- nlme::gls(formula, data = data, method = method, control=nlme::lmeControl(opt="optim", returnObject = TRUE))
@@ -87,14 +87,14 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL,
       # "original model was of class "gls", updated model is of class "lme""
       myanova <- suppressWarnings( lmtest::lrtest( re.mod.null, re.mod ) ) #anova(re.mod.null, re.mod)
       p.value.anova <- myanova[2,5] #myanova[2,9]
-      p.variation <- (p.value.anova / 2)  # divide by 2 by same logic as chi-squared test.
+      p_variation <- (p.value.anova / 2)  # divide by 2 by same logic as chi-squared test.
       td <- NA
     } else {
       td <- as.numeric(deviance(re.mod.null) - deviance(re.mod))
-      p.variation <- 0.5 * pchisq(td, 1, lower.tail = FALSE )
+      p_variation <- 0.5 * pchisq(td, 1, lower.tail = FALSE )
     }
   } else {
-    p.variation <- td <- NA
+    p_variation <- td <- NA
   }
 
     # get ATE and SE
@@ -104,7 +104,7 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL,
   # extract tau (estimated cross site variation)
   vc <- nlme::VarCorr(re.mod)
   suppressWarnings(storage.mode(vc) <- "numeric")
-  tau.hat <- vc["Z","StdDev"]
+  tau_hat <- vc["Z","StdDev"]
 
   # extract se of tau
   ## not source code: https://stackoverflow.com/questions/31694812/standard-error-of-variance-component-from-the-output-of-lmer/31704646#31704646
@@ -113,13 +113,13 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL,
   # let logged sds first
   var <- re.mod$apVar
   if (is.character(var)) {
-    SE.tau <- NA
+    SE_tau <- NA
   } else {
     par <- attr(var, "Pars")
     #transform to variances
     var.re <- exp(par) ^ 2
     #use delta method from msm package
-    SE.tau <- msm::deltamethod(~ exp(x1) ^ 2, par, var)
+    SE_tau <- msm::deltamethod(~ exp(x1) ^ 2, par, var)
   }
-  return(list(ATE = ATE, SE.ATE = SE.ATE, tau.hat = tau.hat, SE.tau=SE.tau, p.variation = p.variation, deviance = td ))
+  return(list(ATE = ATE, SE.ATE = SE.ATE, tau_hat = tau_hat, SE_tau=SE_tau, p_variation = p_variation, deviance = td ))
 }

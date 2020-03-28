@@ -14,17 +14,17 @@ weighted_linear_estimators(
 )
 }
 \arguments{
-\item{formula}{TOADD}
+\item{formula}{Specification of outcome, treatment, and block ID variables as a formula of form "Yobs ~ Z*B" (order of variables is important).}
 
 \item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
-\item{siteID}{Vector of site IDs if there are randomization blocks nested in}
+\item{siteID}{If not null, name of siteID that has randomization blocks}
 
-\item{data}{Dataframe to analyze, with Y, Z, and B columns.}
+\item{data}{Dataframe of the data to analyse.}
 
-\item{scaled.weights}{Logical TOADD}
+\item{scaled.weights}{Logical Scale the weights by overall proportions of treated and control.}
 
-\item{weight.method}{TOADD}
+\item{weight.method}{Use survey package (svgglm) or classic OLS (lm) for model fitting.}
 }
 \value{
 Dataframe of results for different estimators.

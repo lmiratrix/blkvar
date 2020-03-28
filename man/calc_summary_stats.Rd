@@ -17,7 +17,7 @@ calc_summary_stats(Yobs, Z, B, data = NULL, siteID = NULL, add.neyman = FALSE)
 
 \item{siteID}{If not null, name of siteID that has randomization blocks nested inside.}
 
-\item{add.neyman}{TO ADD}
+\item{add.neyman}{If TRUE, add block-specific SEs using Neyman formula of $s^2_T/n_t + s^2_C/n_c$ as column in output.}
 }
 \value{
 dataframe with summary statistics by block
@@ -26,3 +26,8 @@ dataframe with summary statistics by block
 Given dataframe or list of variables, return table of stats for each
 randomization block.
 }
+\seealso{
+Other calc_summary_stats: 
+\code{\link{calc_summary_stats_formula}()}
+}
+\concept{calc_summary_stats}

@@ -53,7 +53,7 @@ Dataframe with original potential outcomes and observed outcome based
 This method is the one that generates the simulation data used in Pashley &
 Miratrix.
 
-Generate data, make_blocks, and randomize within block and generate observed
+Generate data, form_blocks_from_continuous, and randomize within block and generate observed
 potential outcomes
 }
 \details{

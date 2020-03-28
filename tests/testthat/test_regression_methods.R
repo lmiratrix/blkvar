@@ -43,8 +43,8 @@ test_that("Weighted regression matches db", {
     head( dat )
     r = blkvar:::weighted_linear_estimators( Yobs ~ Z*B, data=dat )
     r
-    expect_equal( a$tau.hat, r$tau[[1]] )
-    expect_equal( b$tau.hat, r$tau[[2]] )
+    expect_equal( a$tau_hat, r$tau[[1]] )
+    expect_equal( b$tau_hat, r$tau[[2]] )
 
 
 })

@@ -1,3 +1,6 @@
+
+
+
 #' @title gen_dat
 #' @description Generate data for a multisite trial with a given collection of
 #'   features.

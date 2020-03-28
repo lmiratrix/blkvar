@@ -177,7 +177,7 @@ make_data <- function(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1,
 
 #' Make a random simulated dataset from a linear model.
 #'
-#' Generate data, make_blocks, and randomize within block and generate
+#' Generate data, form_blocks_from_continuous, and randomize within block and generate
 #' observed potential outcomes
 #'
 #' @rdname make_data_linear
@@ -193,14 +193,14 @@ make_data <- function(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1,
 make_obs_data_linear <- function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65), p = 0.5, a = 0, b = 0, ATE = 0.2, d = 0,
   method = c("small", "pair", "big", "none")) {
   dat <- make_data_linear(X, a, b, ATE, d)
-  dat$B <- make_blocks(dat$X, method = method)
+  dat$B <- form_blocks_from_continuous(dat$X, method = method)
   dat <- add_obs_data(dat, p = p)
   dat
 }
 
 #' Make a random simulated dataset from a list of block sizes
 #'
-#' Generate data, make_blocks, and randomize within block and generate observed
+#' Generate data, form_blocks_from_continuous, and randomize within block and generate observed
 #' potential outcomes
 #'
 #' @rdname make_data

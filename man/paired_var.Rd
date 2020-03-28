@@ -4,10 +4,10 @@
 \alias{paired_var}
 \title{Matched pairs type variance function}
 \usage{
-paired_var(data.table, weighted = TRUE)
+paired_var(data_table, weighted = TRUE)
 }
 \arguments{
-\item{data.table}{data frame containing info for set of blocks of same size}
+\item{data_table}{data frame containing info for set of blocks of same size}
 
 \item{weighted}{indicates whether variance should be weighted by number of units}
 }

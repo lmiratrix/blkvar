@@ -22,15 +22,11 @@
 # R implementation of methods described in Schochet paper
 # Miratrix, 2019
 
-scat = function( str, ... ) {
-    cat( sprintf( str, ... ) )
-}
-
 
 
 all_adjusted_estimators <- function(formula, control.formula, data) {
-  
-  est <- tau.hat <- NA                                
+
+  est <- tau_hat <- NA
   ests <- expand.grid(method = c("finite", "superpop" ), #, "superpop.adj" ),
     weight = c( "individual", "site" ), stringsAsFactors = FALSE )
   ests <- tibble::as_tibble(ests)
@@ -39,7 +35,7 @@ all_adjusted_estimators <- function(formula, control.formula, data) {
   ests$weight <- NULL
   ests <- tidyr::unnest( ests, cols = est)
   ests$method <- paste0( "DBadj-", ests$method, "-", ests$weight )
-  ests <- dplyr::rename( ests, tau = tau.hat )
+  ests <- dplyr::rename( ests, tau = tau_hat )
   ests
 }
 
@@ -94,7 +90,7 @@ all_adjusted_estimators <- function(formula, control.formula, data) {
 
 
     # rs = compare_methods( Y, Tx, ID, data=dat,
-                          # include.MLM = FALSE )
+                          # include_MLM = FALSE )
     # rs
 
 

@@ -6,10 +6,10 @@
 #' @param B block ids
 #' @param siteID If not null, name of siteID that has randomization blocks
 #' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param weight.LM.method TOADD
-#' @param weight.LM.scale.weights TOADD
-#' @param block.stats TOADD
-#' @param data TOADD
+#' @param weight.LM.method Argument passed to weight.method of weighted_linear_estimators
+#' @param weight.LM.scale.weights Argument passed to sclae.weights of weighted_linear_estimators
+#' @param block.stats Table of precomputed block-level statistics (optional, for speed concerns; this gets precomputed in compare_methods).
+#' @param data Dataframe of the data to analyse.
 #' @importFrom dplyr group_by ungroup mutate
 #' @importFrom sandwich vcovHC vcovCL
 #' @importFrom stats coef
@@ -17,7 +17,7 @@
 #' @export
 linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, block.stats = NULL, control.formula = NULL, weight.LM.method = "survey",
   weight.LM.scale.weights = TRUE) {
-  
+
   if (!is.null(control.formula)) {
     stopifnot( !is.null(data))
     stopifnot( !missing("Yobs"))
@@ -49,10 +49,11 @@ linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, bloc
   }
   dat <- data
   dat$B <- as.factor(dat$B)
-  FEmodels <- fixed_effect_estimators(Yobs, Z, B, siteID = siteID, data=dat, block.stats = block.stats, control.formula = control.formula )
+  FEmodels <- fixed_effect_estimators(Yobs, Z, B, siteID = siteID, data=dat,
+                                      block.stats = block.stats, control.formula = control.formula )
   weightModels <- weighted_linear_estimators(Yobs ~ Z*B, siteID = siteID, data=dat, control.formula = control.formula,
     weight.method = weight.LM.method, scaled.weights = weight.LM.scale.weights)
   interactModels <- interacted_linear_estimators(Yobs, Z, B, siteID = siteID, data = dat, control.formula = control.formula )
   # combine and return results
-  bind_rows(FEmodels, weightModels, interactModels)
+  dplyr::bind_rows(FEmodels, weightModels, interactModels)
 }

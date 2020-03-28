@@ -1,7 +1,16 @@
+##
+## Utility functions for the rest of the package
+##
 
-##
-## Functions to help process control functions
-##
+
+scat = function( str, ... ) {
+    cat( sprintf( str, ... ) )
+}
+
+
+
+##### Functions to help process control functions  ####
+
 
 # #' Make a canonical fixed effect formula, possibly with control variables.
 # #'
@@ -18,7 +27,7 @@ make_base_formula = function( Yobs = "Yobs", Z = "Z", control.formula = NULL, da
     new.form <- sprintf( "%s ~ 1 + %s ", Yobs, Z )
     return(as.formula(new.form ))
   }
- 
+
   if (length(formula.tools::lhs.vars(control.formula)) != 0 | length(formula.tools::rhs.vars(control.formula)) < 1) {
     stop("The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)")
   }
@@ -118,6 +127,12 @@ make_canonical_data <- function(formula, control.formula = NULL, siteID = NULL, 
     # Copy over the variables to our names
     data$Yobs <- data[[out.name]]
     data$Z <- data[[ main.name[[1]] ]]
+
+    if ( length( unique( data$Z ) ) != 2 ) {
+        stop( sprintf( "Identified treatment variable '%s' has more than two values. Did you swap treatment and block?",
+                       main.name[[1]] ) )
+    }
+
     data$B <- data[[ main.name[[2]] ]]
 
     if (is.null(siteID)) {
@@ -128,7 +143,7 @@ make_canonical_data <- function(formula, control.formula = NULL, siteID = NULL, 
    return( data )
 }
 
-# # # 
+# # #
 # if ( FALSE ) {
 
     # make_base_formula()

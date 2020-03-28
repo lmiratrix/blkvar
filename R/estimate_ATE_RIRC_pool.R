@@ -1,17 +1,10 @@
 #' Fit Random-intercept, random-slope model
 #'
 #' This is a wrapper for a simpler lmer call.
-#' @param B Name of the block indicator.
-#' @param Yobs Name of outcome variable (assumed to exist in data)
-#' @param Z vector of assignment indicators (1==treated)
-#' @param REML TOADD
-#' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param data Dataframe with all needed variables.
-#' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param include.testing Logical TOADD
+#' @inheritParams estimate_ATE_FIRC
 #' @importFrom lme4 lmer VarCorr
 # #' @export
-estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL, REML = FALSE, include.testing = TRUE, control.formula = NULL) {
+estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_testing = TRUE, control.formula = NULL) {
   if (!is.null(control.formula)) {
     stopifnot(!is.null( data ))
     stopifnot(!missing("Yobs"))
@@ -44,7 +37,7 @@ estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL, REML = FALSE, includ
   stopifnot(length(unique(data$Z)) == 2)
   stopifnot(is.numeric(data$Yobs))
   M0.full <- lme4::lmer( Yobs ~ 1 + Z + (1 + Z|B), data = data, REML = REML)
-  if (include.testing) {
+  if (include_testing) {
     M0.null <- lme4::lmer( Yobs ~ 1 + Z + (1|B), data = data, REML = REML)
     # I _think_ this is what is suggested to handle the boundary by Snijders and Bosker
     td <- deviance(M0.null) - deviance(M0.full)
@@ -57,12 +50,12 @@ estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL, REML = FALSE, includ
   # get ATE and SE
   a <- summary(M0.full)
   a <- a$coefficients[2, ]
-  
+
   # Cross site variation
-  tau.hat <- sqrt( VarCorr(M0.full)$B[2, 2])
-  res <- list(ATE = a[[1]], SE.ATE = a[[2]], tau.hat = tau.hat, SE.tau = NA)
-  if (include.testing) {
-    res$p.variation <- pv
+  tau_hat <- sqrt( VarCorr(M0.full)$B[2, 2])
+  res <- list(ATE = a[[1]], SE.ATE = a[[2]], tau_hat = tau_hat, SE_tau = NA)
+  if (include_testing) {
+    res$p_variation <- pv
     res$deviance <- td
   }
   res

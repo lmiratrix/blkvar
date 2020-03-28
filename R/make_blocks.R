@@ -9,7 +9,7 @@
 #' @return Vector with one element per element of `X`
 #' @export
 
-make_blocks <- function(X, method = c("small", "pair", "big", "none"), num.blocks) {
+form_blocks_from_continuous <- function(X, method = c("small", "pair", "big", "none"), num.blocks) {
   method <- match.arg(method)
   X.orig = X
   X.order <- rank(X, ties.method = "first")

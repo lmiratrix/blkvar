@@ -9,10 +9,9 @@ analysis_systematic.R & analysis_systematic.RTx.R
 
 4. add.neyman, scaled.weights,  REML, calc.CI, sid (is this site ID?),
 sigma2.W, variable.p, finite.model, size.ratio, block.stats, weight.LM.method,
-weight.LM.scale.weights, 
+weight.LM.scale.weights,
 
   - not defined as argument in the package.
 
 Functions that need new argumnts: describe_data,
 
-5. No longer used: qstatistic_method.R, FIRC_method.R,

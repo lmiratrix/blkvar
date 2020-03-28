@@ -45,7 +45,7 @@ Dataframe with original potential outcomes and observed outcome based on random 
 Function that, given a covariate vector X, returns a dataframe of potential
 outcomes and blocks.
 
-Generate data, make_blocks, and randomize within block and generate
+Generate data, form_blocks_from_continuous, and randomize within block and generate
 observed potential outcomes
 }
 \details{

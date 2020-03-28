@@ -39,18 +39,21 @@ analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL, alpha = 
       data$siteID <- siteID
     }
   }
-  
+
   # make sites RA blocks if there are no sites.
   if (is.null(siteID)) {
     data$siteID = data$B
   }
-  
+
   n <- nrow(data)
   s <- length(unique(data$B))
   s.site <- length(unique(data$siteID))
   # calculate Q-statistic
   # run ols model with no intercept and no "treatment intercept"
-  ols <- nlme::gls(Yobs ~ 0 + Z + factor(B) + factor(siteID):Z - Z, data = data, weights = nlme::varIdent(form = ~ 1 | Z), na.action = stats::na.exclude,  
+  ols <- nlme::gls(Yobs ~ 0 + Z + factor(B) + factor(siteID):Z - Z,
+                   data = data,
+                   weights = nlme::varIdent(form = ~ 1 | Z),
+                   na.action = stats::na.exclude,
     control = nlme::lmeControl(opt = "optim", returnObject = TRUE))
   bj <- ols$coefficients[(s + 1):(s + s.site)]
   vj <- (coef(summary(ols))[(s + 1):(s + s.site), 2]) ^ 2
@@ -87,7 +90,7 @@ analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL, alpha = 
     pval.low <- pchisq(q_invert, df = s - 1, lower.tail = TRUE)
     pvals <- 2 * pmin(pval.hi, pval.low)
     mx <- which.max(pvals)
-    tau.hat <- tau_test[[mx]]
+    tau_hat <- tau_test[[mx]]
 
     if (length(tau_test[CI_95 == 1]) == 0) {
       CI_low <- NA
@@ -98,10 +101,10 @@ analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL, alpha = 
     }
 
   } else {
-    tau.hat = NA
+    tau_hat = NA
     CI_low = NULL
     CI_high = NULL
   }
 
-  return(list(tau.hat = tau.hat, p.value = pval, reject = reject, Q = q, CI_low = CI_low, CI_high = CI_high))
+  return(list(tau_hat = tau_hat, p.value = pval, reject = reject, Q = q, CI_low = CI_low, CI_high = CI_high))
 }

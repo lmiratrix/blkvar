@@ -22,11 +22,7 @@ interacted_linear_estimators(
 
 \item{siteID}{If not null, name of siteID that has randomization blocks}
 
-\item{data}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-If siteID passed, it will weight the RA blocks within site and then average
-these site estimates.
-
-SEs come from the overall variance-covariance matrix.}
+\item{data}{Dataframe of the data to analyse.}
 
 \item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 }
@@ -38,4 +34,10 @@ Dataframe of the different versions of this estimator (person and
 These linear models have block by treatment interaction terms.  The final ATE
 estimates are then weighted average of the block (site) specific ATE
 estimates.
+}
+\details{
+#' If siteID passed, it will weight the RA blocks within site and then average
+these site estimates.
+
+SEs come from the overall variance-covariance matrix.
 }

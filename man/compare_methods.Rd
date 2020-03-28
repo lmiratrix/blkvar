@@ -10,12 +10,12 @@ compare_methods(
   B,
   siteID = NULL,
   data = NULL,
-  include.block = TRUE,
-  include.MLM = TRUE,
-  include.DB = TRUE,
-  include.LM = TRUE,
-  include.DBBlended = FALSE,
-  include.method_characteristics = FALSE,
+  include_block = TRUE,
+  include_MLM = TRUE,
+  include_DB = TRUE,
+  include_LM = TRUE,
+  include_DBBlended = FALSE,
+  include_method_characteristics = FALSE,
   weight.LM.method = "survey",
   weight.LM.scale.weights = TRUE,
   control.formula = NULL
@@ -32,23 +32,23 @@ compare_methods(
 
 \item{data}{frame holding Y, Z, B and (possibly a column with name specified by siteID).}
 
-\item{include.block}{Include the Pashley blocking variants.}
+\item{include_block}{Include the Pashley blocking variants.}
 
-\item{include.MLM}{Include MLM estimators}
+\item{include_MLM}{Include MLM estimators}
 
-\item{include.DB}{Include Design-Based estimators (taken from RCTYes documentation and prior literature).}
+\item{include_DB}{Include Design-Based estimators (taken from RCTYes documentation and prior literature).}
 
-\item{include.LM}{Include Linear Model-based estimators (including
+\item{include_LM}{Include Linear Model-based estimators (including
 Huber-White SEs, etc.)}
 
-\item{include.DBBlended}{Include DB estimators applied to small block
+\item{include_DBBlended}{Include DB estimators applied to small block
 and classic Neyman to large blocks.}
 
-\item{include.method_characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
+\item{include_method_characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
 
-\item{weight.LM.method}{TOADD}
+\item{weight.LM.method}{Argument passed to weight.method of weighted_linear_estimators}
 
-\item{weight.LM.scale.weights}{TOADD}
+\item{weight.LM.scale.weights}{Argument passed to sclae.weights of weighted_linear_estimators}
 
 \item{control.formula}{What variables to control for, in the form of "~ X1 + X2".}
 }

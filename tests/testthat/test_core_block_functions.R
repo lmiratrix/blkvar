@@ -22,10 +22,79 @@ test_that("Nicole block estimators provide reasonable answers", {
 
     rctyes = estimate_ATE_design_based_from_stats( sum_tab = rs, method = "finite", weight = "individual" )
     rctyes
-    expect_equal( f1$tau_est, rctyes$tau.hat )
+    expect_equal( f1$tau_est, rctyes$tau_hat )
     expect_equal( f1$var_est, rctyes$SE^2 )
 
 })
+
+
+test_that("All options of method for block_estimator_tabulated run without error", {
+    set.seed( 101910 )
+    dat = make_obs_data_linear( method="big")
+    head( dat )
+    rs <- calc_summary_stats( dat$Yobs, dat$Z, dat$B, add.neyman = TRUE)
+    rs
+    f2 = block_estimator_tabulated( rs )
+    f2
+
+    methods = list("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small")
+    grabs = lapply( methods, function( x ) {
+        block_estimator_tabulated( rs, method=x ) } )
+
+    expect_true( length( grabs ) == length( methods ) )
+} )
+
+
+
+
+
+test_that("calc_summary_stats functions work", {
+    datr = data.frame( TX = c(0,0,1,1,0,0,0,1,1,1,1,1),
+                      BK = c(1,1,1,1,2,2,2,2,2,2,2,2),
+                      Y = c(1,3,10,13,1,2,3,1,2,3,4,5) )
+    datr
+
+    #dat = make_obs_data( method="small")
+    nrow( datr )
+
+    sdat = calc_summary_stats( Y, TX, BK, datr )
+    sdat
+    expect_equal( sdat$Ybar0, c(2,2) )
+    expect_equal( sdat$Ybar1, c(11.5,3) )
+    expect_equal( sdat$n0, c(2,3) )
+    expect_equal( sdat$n1, c(2,5) )
+    expect_equal( sdat$n, c(4,8) )
+    expect_equal( sdat$var0,
+                  c( var( c(1,3) ), var( c(1,2,3) ) ) )
+
+
+    sdat2 = calc_summary_stats_formula( Y~TX*BK, data=datr )
+    expect_equal( sdat, sdat2 )
+
+} )
+
+
+
+
+
+test_that("calc_summary_stats with site works", {
+    set.seed( 1019 )
+    dat = make_obs_data_linear( X=1:50, method="big" )
+    #dat = make_obs_data( method="small")
+    nrow( dat )
+    dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
+    table( dat$siteNo )
+    table( dat$B )
+
+    sdat = calc_summary_stats( dat, siteID="siteNo" )
+    sdat
+    expect_true( "siteID" %in% names(sdat) )
+    expect_true( all( sdat$siteID %in% unique( dat$siteNo ) ) )
+} )
+
+
+
+
 
 
 
@@ -53,7 +122,7 @@ test_that("With small block estimators Nicole estimators provide answers", {
     rctyes
     expect_true( is.na( rctyes$SE ) )
 
-    expect_equal( f1$tau_est, rctyes$tau.hat )
+    expect_equal( f1$tau_est, rctyes$tau_hat )
 
 })
 

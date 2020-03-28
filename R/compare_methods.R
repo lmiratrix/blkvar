@@ -8,24 +8,23 @@
 #' @param B vector of block ids (or column name in data)
 #' @param siteID site ids (variable name as string if data frame passed) (if randomization blocks are nested in site).
 #' @param data frame holding Y, Z, B and (possibly a column with name specified by siteID).
-#' @param include.MLM Include MLM estimators
-#' @param include.DB Include Design-Based estimators (taken from RCTYes documentation and prior literature).
-#' @param include.LM Include Linear Model-based estimators (including
+#' @param include_MLM Include MLM estimators
+#' @param include_DB Include Design-Based estimators (taken from RCTYes documentation and prior literature).
+#' @param include_LM Include Linear Model-based estimators (including
 #'   Huber-White SEs, etc.)
-#' @param include.DBBlended Include DB estimators applied to small block
+#' @param include_DBBlended Include DB estimators applied to small block
 #'   and classic Neyman to large blocks.
-#' @param weight.LM.method TOADD
-#' @param weight.LM.scale.weights TOADD
+#' @param weight.LM.method Argument passed to weight.method of weighted_linear_estimators
+#' @param weight.LM.scale.weights Argument passed to sclae.weights of weighted_linear_estimators
 #' @param control.formula What variables to control for, in the form of "~ X1 + X2".
-#' @param include.block Include the Pashley blocking variants.
-#' @param include.method_characteristics Include details of the methods (target estimands and sampling framework assumed).
+#' @param include_block Include the Pashley blocking variants.
+#' @param include_method_characteristics Include details of the methods (target estimands and sampling framework assumed).
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor cov filter model.matrix na.exclude pf pnorm predict qchisq qf qnorm rbinom reshape resid runif vcov weighted.mean
 #' @export
+compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL, include_block = TRUE, include_MLM = TRUE, include_DB = TRUE, include_LM = TRUE, include_DBBlended = FALSE,
+  include_method_characteristics = FALSE, weight.LM.method = "survey", weight.LM.scale.weights = TRUE, control.formula = NULL) {
 
-compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL, include.block = TRUE, include.MLM = TRUE, include.DB = TRUE, include.LM = TRUE, include.DBBlended = FALSE,
-  include.method_characteristics = FALSE, weight.LM.method = "survey", weight.LM.scale.weights = TRUE, control.formula = NULL) {
-  
   if (!is.null(control.formula)) {
     stopifnot( !is.null(data))
     # stopifnot( !missing("Yobs"))
@@ -68,18 +67,18 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL, include.bloc
   }
 
   #Get data into table
-  data.table <- calc_summary_stats(Yobs, Z, B, data = data, siteID= siteID, add.neyman = TRUE)
-  
-  if (include.block || include.DBBlended) {
+  summary_stats <- calc_summary_stats(Yobs, Z, B, data = data, siteID= siteID, add.neyman = TRUE)
+
+  if (include_block || include_DBBlended) {
     method_list <- c()
-    if (include.block) {
+    if (include_block) {
       methods_list <- c("hybrid_m", "hybrid_p", "plug_in_big")
      }
-     if (include.DBBlended) {
-       methods_list <- c( methods_list, "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small")
+     if (include_DBBlended) {
+       methods_list <- c( methods_list, "rct_yes_atll", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small")
      }
      fits <- sapply( methods_list, function(m) {
-       dd <- block_estimator_tabulated(data.table = data.table, method = m, throw.warnings = FALSE)
+       dd <- block_estimator_tabulated(summary_stats = summary_stats, method = m, throw.warnings = FALSE)
        c(dd$tau_est, dd$se_est)
       })
       SE_estimates <- fits[2, ]
@@ -94,13 +93,13 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL, include.bloc
     siteID <- "siteID"
   }
 
-  if (include.DB) {
+  if (include_DB) {
     if (is.null(control.formula)) {
       # Design based methods
-      DB.fi <- estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="finite", weight="individual" )
-      DB.fs <- estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="finite", weight="site" )
-      DB.si <- estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="superpop", weight="individual" )
-      DB.ss <- estimate_ATE_design_based_from_stats( data.table, siteID=siteID, method="superpop", weight="site" )
+      DB.fi <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="finite", weight="individual" )
+      DB.fs <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="finite", weight="site" )
+      DB.si <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="superpop", weight="individual" )
+      DB.ss <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="superpop", weight="site" )
       DB <- dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
       DB$method <- c( "DB-FP-Persons", "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites")
       DB$weight <- NULL
@@ -120,18 +119,18 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL, include.bloc
     }
   }
 
-  if (include.LM) {
-    lms <- linear_model_estimators(Yobs, Z, B, data = data, siteID = siteID, block.stats = data.table, control.formula = control.formula, weight.LM.method = weight.LM.method,
+  if (include_LM) {
+    lms <- linear_model_estimators(Yobs, Z, B, data = data, siteID = siteID, block.stats = summary_stats, control.formula = control.formula, weight.LM.method = weight.LM.method,
       weight.LM.scale.weights = weight.LM.scale.weights)
     summary_table = dplyr::bind_rows(summary_table, lms)
   }
-  if (include.MLM) {
+  if (include_MLM) {
     mlms <- compare_MLM_methods(Yobs, Z, B, data = data, siteID = siteID, control.formula = control.formula)
     summary_table <- dplyr::bind_rows( summary_table, mlms )
   }
 
   # Add info on the methods (e.g., what estimand they are targeting)
-  if (include.method_characteristics) {
+  if (include_method_characteristics) {
     mc <- method_characteristics()
     #mcm = mc$method
     #names(mcm) = mc$fullname

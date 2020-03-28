@@ -49,7 +49,7 @@ test_that( "Covariate adjusted Design based works through compare_methods", {
     ATE = weighted.mean( blocks$ATE.hat, blocks$n )
     ATE
 
-    rsA =  compare_methods( Yobs, Z, sid, data=dat, include.MLM = FALSE, include.block = FALSE,
+    rsA =  compare_methods( Yobs, Z, sid, data=dat, include_MLM = FALSE, include_block = FALSE,
                             control.formula = ~ X1 + X2)
     rsA
 

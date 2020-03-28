@@ -11,20 +11,20 @@ test_that("data generation functions work", {
     expect_equal( nrow(dat), 16 )
 
     dat = make_data_linear()
-    dat$blk = make_blocks( dat$X, method="pair" )
+    dat$blk = form_blocks_from_continuous( dat$X, method="pair" )
     expect_true( all( table( dat$blk ) == 2 ) )
 
-    dat$blk = make_blocks( dat$X, method="none" )
+    dat$blk = form_blocks_from_continuous( dat$X, method="none" )
     expect_true( length( unique( dat$blk ) ) == 1 )
 
-    dat$blk = make_blocks( dat$X, method="small" )
+    dat$blk = form_blocks_from_continuous( dat$X, method="small" )
     expect_true( all( table( dat$blk ) > 1 ) )
 
 
     dat = add_obs_data( dat, blockvar="blk" )
     expect_true( all( table( dat$blk, dat$Z ) > 0 ) )
 
-    dat$blk = make_blocks( dat$X, method="big" )
+    dat$blk = form_blocks_from_continuous( dat$X, method="big" )
     expect_true( all( table( dat$blk ) >= 4 ) )
 
     dat = add_obs_data( dat, blockvar="blk" )
@@ -46,10 +46,10 @@ test_that( "testing equispaced X", {
 
 test_that( "out of order X", {
 
-    dat = make_blocks( method="small", X=c(1.1,1.2,1.3,4.1,4.2,4.3,1.4,1.5), num.blocks = 2 )
+    dat = form_blocks_from_continuous( method="small", X=c(1.1,1.2,1.3,4.1,4.2,4.3,1.4,1.5), num.blocks = 2 )
     expect_equal( dat, c( "B1", "B1", "B1", "B2", "B2", "B2", "B1", "B1" ) )
 
-    dat = make_blocks( method="small", X=c(1.1,1.7,1.3,4.1,4.2,4.3,1.2,1.8) )
+    dat = form_blocks_from_continuous( method="small", X=c(1.1,1.7,1.3,4.1,4.2,4.3,1.2,1.8) )
     expect_equal( dat, c( "B1", "B2", "B1", "B3","B3","B3", "B1", "B2" ) )
 
 } )

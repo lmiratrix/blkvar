@@ -3,16 +3,13 @@
 #' These linear models have block by treatment interaction terms.  The final ATE
 #' estimates are then weighted average of the block (site) specific ATE
 #' estimates.
-#' @param Yobs Name of outcome variable (assumed to exist in data)
-#' @param Z vector of assignment indicators (1==treated)
-#' @param B block ids
-#' @param siteID If not null, name of siteID that has randomization blocks
-#' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param data The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' If siteID passed, it will weight the RA blocks within site and then average
+#'
+#'#' If siteID passed, it will weight the RA blocks within site and then average
 #' these site estimates.
 #'
 #' SEs come from the overall variance-covariance matrix.
+#'
+#' @inheritParams linear_model_estimators
 #'
 #' @return Dataframe of the different versions of this estimator (person and
 #'   site weighted)
@@ -49,28 +46,29 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
       data$siteID = siteID
     }
   }
-  
+
   data$B <- droplevels(as.factor(data$B))
   J <- length(unique(data$B))
   nj <- table(data$B)
   n <- nrow(data)
-  
+
   formula <- make_FE_int_formula("Yobs", "Z", "B", control.formula, data)
   M0.int <- lm(formula, data = data)
   ids <- grep( "Z:", names(coef(M0.int)))
   stopifnot(length(ids) == J)
   VC <- vcov(M0.int)
-  tau.hats <- coef(M0.int)[ids]
-  
+  tau_hats <- coef(M0.int)[ids]
+
   # site weighting
   if (!is.null( siteID)) {
     # aggregate!
-    wts <- data %>% group_by(B, siteID) %>% summarise(n = n()) %>% group_by(siteID) %>% mutate(wts = n / sum(n))
+    wts <- data %>% group_by(B, siteID) %>%
+        dplyr::summarise(n = n()) %>% group_by(siteID) %>% mutate(wts = n / sum(n))
 
     # some checks to make sure we are matching RA blocks and sites to the
     # right things
     stopifnot( nrow( wts ) == J )
-    nms <- gsub( "Z:B", "", names(tau.hats))
+    nms <- gsub( "Z:B", "", names(tau_hats))
     stopifnot(all(nms == wts$B))
     wts <- wts$wts / sum(wts$wts)
   } else {
@@ -79,18 +77,18 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
 
   # the block SEs from our linear model
   SE.hat <- diag(VC)[ids]
-  tau.site <- weighted.mean(tau.hats, wts)
+  tau.site <- weighted.mean(tau_hats, wts)
   # Calculate SE for tau.site
   SE.site <- sqrt(sum(wts ^ 2 * SE.hat))
   wts.indiv <- nj / n
-  tau.indiv <- weighted.mean(tau.hats, wts.indiv)
+  tau.indiv <- weighted.mean(tau_hats, wts.indiv)
   SE.indiv <- sqrt(sum(wts.indiv ^ 2 * SE.hat))
 
   # This is the cautious way we don't need since we have 0s in the off diagonal
   # SE.site = sqrt( t(wts) %*% VC %*% wts )
   # faster way---this should work easily.
   # sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
-  
+
   interactModels <- data.frame(method = c("FE-Int-Sites", "FE-Int-Persons"), tau = c(tau.site, tau.indiv), SE = c(SE.site, SE.indiv), stringsAsFactors = FALSE)
   if (!is.null(control.formula)) {
     interactModels$method <- paste0(interactModels$method, "-adj")

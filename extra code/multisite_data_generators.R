@@ -11,10 +11,16 @@
 
 
 
-# This is a hack so if the 'finite.model' flag is set to true, it will save the
-# randomly generated units in this variable and simply rerandomize them with
-# subsequent calls to gen_dat.
-CANONICAL = NULL
+
+block_distn <- function(J, n.bar, size.ratio) {
+    N <- 1 + 3 * size.ratio
+    p <- (N - 1) / N
+    small <- rbinom(J, 1, p)
+    Y <- runif(J)
+    Y <- n.bar * ifelse(small, Y, Y * (N - 1) + 1)
+    Y
+}
+
 
 
 # For pretty-printing output.  Can do things like, e.g.,
@@ -45,34 +51,6 @@ scat = function( str, ... ) {
     # sigma2.e = 1
 # }
 
-
-# #' Generate piecewise uniform distribution with a mean of n.bar
-block_distn <- function(J, n.bar, size.ratio) {
-  N <- 1 + 3 * size.ratio
-  p <- (N - 1) / N
-  small <- rbinom(J, 1, p)
-  Y <- runif(J)
-  Y <- n.bar * ifelse(small, Y, Y * (N - 1) + 1)
-  Y
-}
-
-
-
-#' Rerandomize a given multisite simulated dataset and recalulate observed
-#' outcomes
-#'
-#' Useful for simulations of finite sample inference where the dataset should be
-#' held static and only randomization is necessary.
-#'
-#' @param dat Dataframe from, e.g., gen_dat()
-#'
-#' @return Same dataframe with treatment shuffled and Yobs recalculated.
-#' @export
-rerandomize_data <- function(dat) {
-  dat <- dat %>% group_by(sid) %>% mutate(Z = sample(Z)) %>% ungroup()
-  dat <- mutate(dat, Yobs = ifelse(Z, Y1, Y0))
-  dat
-}
 
 
 
@@ -148,13 +126,13 @@ catherine_gen_dat <- function(a, t, s, n) {
     # display( M1 )
 
 
-    # sites = df %>% group_by( sid, W ) %>% summarise( Y0.bar = mean( Y0 ),
+    # sites = df %>% group_by( sid, W ) %>% dplyr::( Y0.bar = mean( Y0 ),
                                                      # Y1.bar = mean( Y1 ),
                                                      # beta = mean( Y1 - Y0 ),
                                                      # n = n(),
                                                      # p.Tx = mean( Z ) )
     # nrow( sites )
-    # sites %>% ungroup() %>% summarise( mean.Y0 = mean( Y0.bar ),
+    # sites %>% ungroup() %>% dplur::summarise( mean.Y0 = mean( Y0.bar ),
                                        # mean.Y1 = mean( Y1.bar ),
                                        # cor.Ys = cor( Y0.bar, Y1.bar ),
                                        # cov.Ys = cov( Y0.bar, Y1.bar ),
@@ -190,7 +168,7 @@ catherine_gen_dat <- function(a, t, s, n) {
     # res = map_df( rhos, single.rho, R=100 )
     # head( res )
 
-    # powers = res %>% group_by( rho2.1W, variable ) %>% summarise( power = mean( value <= 0.05 ) )
+    # powers = res %>% group_by( rho2.1W, variable ) %>% dplyr::summarise( power = mean( value <= 0.05 ) )
     # head( powers )
 
     # ggplot( powers, aes(x=rho2.1W, y=power, col=variable ) ) +

@@ -1,19 +1,30 @@
+
+
+
+# Utility function
+grab_SE <- function(MOD, coef="Z") {
+    vc <- vcov(MOD)
+    sqrt(vc[coef, coef])
+}
+
+
+
+
 #' Survey-weighted adjusted linear regression
 #'
 #' Use survey weight regression to reweight blocks to target unbiased ATE estimators.
 #'
-#' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param siteID Vector of site IDs if there are randomization blocks nested in
-#' @param data Dataframe to analyze, with Y, Z, and B columns.
-#' @param scaled.weights Logical TOADD
-#' @param weight.method TOADD
-#' @param formula TOADD
+#' @inheritParams linear_model_estimators
+#' @param formula Specification of outcome, treatment, and block ID variables as a formula of form "Yobs ~ Z*B" (order of variables is important).
+#' @param scaled.weights Logical Scale the weights by overall proportions of treated and control.
+#' @param weight.method Use survey package (svgglm) or classic OLS (lm) for model fitting.
 #' @return Dataframe of results for different estimators.
 #' @importFrom survey svydesign svyglm
 #' @importFrom stats gaussian
 #' @export
 
-weighted_linear_estimators <- function(formula, control.formula = NULL, siteID = NULL, data, scaled.weights = TRUE, weight.method = c("survey", "precision")) {
+weighted_linear_estimators <- function(formula, control.formula = NULL, siteID = NULL, data, scaled.weights = TRUE,
+                                       weight.method = c("survey", "precision")) {
   weight.method <- match.arg(weight.method)
   data <- make_canonical_data(formula, control.formula, siteID, data)
   data$B <- as.factor(data$B)

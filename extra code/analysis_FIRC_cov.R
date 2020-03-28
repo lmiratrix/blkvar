@@ -3,22 +3,14 @@
 
 #' Covariate adjusted test for cross-site variation
 #'
-#' This method fits a FIRC model but also includes a site-level covariate, X,
-#' potentially predictive of treatment impact.
+#' This method fits a FIRC model but also include_ a site-level covariate, X,
+#' potentially predictive of treatment impact.  This fits the unpooled FIRC model.
 #'
-#' This fits unpooled FIRC models.
-#' @param Yobs Name of outcome variable (assumed to exist in data)
-#' @param Z vector of assignment indicators (1==treated)
-#' @param B block ids
-#' @param data Dataframe with defined Yobs, Z, and B variables.
-#' @param siteID If not null, name of siteID that has randomization blocks
-# '@param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param X Site-level covariate ideally predictive of treatment variation.
-#' @param anova Use the anova() method to do the test for significance between the models. FALSE means do the modified chi-squared test.
-#' @param REML TOADD
-#'
+#' @inheritParams analysis_FIRC
+#' @param X Name of the covariate to be included in the FIRC model.
+#' @rdname analysis_FIRC
 analysis_FIRC_cov <- function(Yobs, Z, B, X, siteID = NULL, data = NULL, REML = FALSE, anova = FALSE) {
-  # stopifnot( !( include.testing && REML ) )
+  # stopifnot( !( include_testing && REML ) )
   # This code block takes the parameters of
   # Yobs, Z, B, siteID = NULL, data=NULL, ...
   # and makes a dataframe with canonical Yobs, Z, B, and siteID columns.
@@ -44,7 +36,7 @@ analysis_FIRC_cov <- function(Yobs, Z, B, X, siteID = NULL, data = NULL, REML = 
   if (is.null(data$siteID)) {
     data$siteID <- data$B
   }
-  
+
   stopifnot(length(unique(data$Z)) == 2)
   stopifnot(is.numeric(data$Yobs))
 
@@ -53,7 +45,7 @@ analysis_FIRC_cov <- function(Yobs, Z, B, X, siteID = NULL, data = NULL, REML = 
   # fit multilevel model and extract pvalue
   re.mod <- nlme::lme(Yobs ~ 0 + Z + Z:X + B, data = data, random = ~ 0 + Z | B, weights = nlme::varIdent(form = ~ 1 | Z), na.action = stats::na.exclude,
     method = "ML", control = nlme::lmeControl(opt = "optim", returnObject = TRUE))
-  
+
   # Test for cross site variation
   re.mod.null <- nlme::gls(Yobs ~ 0 + Z + Z:X + B, data = data, weights = nlme::varIdent(form = ~ 1 | Z), na.action = stats::na.exclude,
     method = "ML", control = nlme::lmeControl(opt = "optim", returnObject = TRUE))

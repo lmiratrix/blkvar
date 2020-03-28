@@ -10,7 +10,7 @@ estimate_ATE_RIRC_pool(
   B,
   data = NULL,
   REML = FALSE,
-  include.testing = TRUE,
+  include_testing = TRUE,
   control.formula = NULL
 )
 }
@@ -23,9 +23,9 @@ estimate_ATE_RIRC_pool(
 
 \item{data}{Dataframe with all needed variables.}
 
-\item{REML}{TOADD}
+\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood estimation.}
 
-\item{include.testing}{Logical TOADD}
+\item{include_testing}{Logical Include likelihood ratio test for cross-site treatment variation.}
 
 \item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 }

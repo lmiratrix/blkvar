@@ -20,12 +20,19 @@
 #'   uncertainty due to targeting a superpopulation quantity or not.
 #' @return dataframe with calculated impacts and standard errors.
 #' @export
-estimate_ATE_design_based <- function(formula, control.formula = NULL, siteID = NULL, data, method = c("finite", "superpop", "superpop.original"),
-  weight = c("individual", "site")) {
+estimate_ATE_design_based <- function(formula,
+                                      control.formula = NULL,
+                                      siteID = NULL,
+                                      data,
+                                      method = c("finite", "superpop", "superpop.original"),
+                                      weight = c("individual", "site")) {
  if (is.null(control.formula)) {
-   data.table <- calc_summary_stats_formula(formula, data=data, siteID=siteID, add.neyman = TRUE)
-   estimate_ATE_design_based_from_stats( data.table, siteID = siteID, method = method, weight = weight)
+   data_table <- calc_summary_stats_formula(formula, data=data, siteID=siteID, add.neyman = TRUE)
+   estimate_ATE_design_based_from_stats( data_table, siteID = siteID, method = method, weight = weight)
   } else {
-    estimate_ATE_design_based_adjusted(formula = formula, control.formula = control.formula, siteID = siteID, data = data, method = method, weight = weight)
+    estimate_ATE_design_based_adjusted(formula = formula,
+                                       control.formula = control.formula,
+                                       siteID = siteID, data = data,
+                                       method = method, weight = weight)
   }
 }

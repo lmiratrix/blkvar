@@ -1,5 +1,7 @@
 #' @title  Simplified version of gen_dat() with no W covariate.
-#' @description Generate fake data for simulation studies
+#'
+#' @description Generate fake data for simulation studies. Simplifies the call to `gen_dat()`.
+#'
 #' @inheritParams gen_dat
 #' @param control.sd.Y1 Make correlation of random intercept and random slope
 #'   such that the variance of the Y1s is 1.0, Default: TRUE
@@ -16,7 +18,8 @@
 #' @return Dataframe of individual data from a MLM DGP.
 #' @rdname gen_dat_no_cov
 #' @export
-gen_dat_no_cov <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE, 
+gen_dat_no_cov <- function(n.bar = 10, J = 30, p = 0.5,
+                           tau.11.star = 0.3, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE,
   variable.n = TRUE, control.sd.Y1 = TRUE, ... ) {
   tau.00 <- ICC
   tau.11 <- tau.11.star
@@ -26,7 +29,7 @@ gen_dat_no_cov <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, ICC =
     tau.01 <- 0
   }
   sigma2.e <- 1 - ICC
-  
+
   if (verbose) {
     scat( "tau.11* = %.2f\tICC = %.2f\n", tau.11.star, ICC)
     scat( "tau.00* = %.2f\n",  tau.00)

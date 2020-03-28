@@ -20,13 +20,13 @@
 #' @return dataframe with calculated impacts and standard errors.
 #' @importFrom magrittr "%>%"
 #' @export
-estimate_ATE_design_based_from_stats <- function(sum_tab, siteID = NULL, method = c( "finite", "superpop", "superpop.original"), weight = c("individual", "site")) {
-  tau.hat <- NA
+estimate_ATE_design_based_from_stats <- function(sum_tab,
+                                                 siteID = NULL,
+                                                 method = c( "finite", "superpop", "superpop.original"),
+                                                 weight = c("individual", "site")) {
+  tau_hat <- NA
   stopifnot(is.data.frame(sum_tab))
   stopifnot(all(c("Ybar0","Ybar1","n", "var1","var0", "n1","n0" ) %in% names( sum_tab)))
-  if ( !( "Ybar1" %in% names(sum_tab))) {
-    sum_tab = convert.table.names( sum_tab )
-  }
   method <- match.arg(method)
   weight <- match.arg(weight)
   h <- nrow(sum_tab)
@@ -42,11 +42,11 @@ estimate_ATE_design_based_from_stats <- function(sum_tab, siteID = NULL, method 
   }
 
   # calculate individual block treatment impact estimates
-  sum_tab <- mutate( sum_tab, tau.hat.b = Ybar1 - Ybar0)
+  sum_tab <- mutate( sum_tab, tau_hat_b = Ybar1 - Ybar0)
 
   # calculate overall ATE estimate by taking a weighted average of the
   # individual
-  tau.hat <- with(sum_tab, sum(tau.hat.b * .weight) / sum(.weight))
+  tau_hat <- with(sum_tab, sum(tau_hat_b * .weight) / sum(.weight))
   # Now do the SEs.
   if (method == "finite") {
     # finite pop (Neyman)
@@ -54,24 +54,26 @@ estimate_ATE_design_based_from_stats <- function(sum_tab, siteID = NULL, method 
     # calculate SEs for each block by itself
     sum_tab <- mutate(sum_tab, block.vars = (var1 / n1 + var0 / n0 ))
     # and then take a weighted sum of these
-    var <- with(sum_tab, sum (.weight ^ 2 * block.vars) / w.tot ^ 2)
+    var <- sum (sum_tab$.weight ^ 2 * sum_tab$block.vars) / w.tot ^ 2
     SE <- sqrt(var)
   } else {  # superpopulation!
     # First aggregate to get sites, if needed
     if (!is.null(siteID)) {
-      sum_tab <- sum_tab %>% group_by(!!as.name(siteID)) %>% summarise(tau.hat.b = sum(tau.hat.b * .weight) / sum(.weight), .weight = sum(.weight))
+      sum_tab <- sum_tab %>% group_by(!!as.name(siteID)) %>%
+          dplyr::summarise(tau_hat_b = sum(.data$tau_hat_b * .data$.weight) / sum(.data$.weight),
+                           .weight = sum(.data$.weight))
       h <- nrow( sum_tab )
     }
     # Calculate average weight across sites
     wbar <- mean(sum_tab$.weight)
     if (method == "superpop.original") {
       # This is the formula 6.25
-      asyVar <- with( sum_tab, sum((.weight * tau.hat.b - wbar * tau.hat) ^ 2) / ((h - 1) * h * wbar ^ 2))
+      asyVar <- sum((sum_tab$.weight * sum_tab$tau_hat_b - wbar * tau_hat) ^ 2) / ((h - 1) * h * wbar ^ 2)
     } else if (method == "superpop") {
       # This is based on the email chain with Weiss, Pashley, etc.
-      asyVar <- with( sum_tab, sum(.weight ^ 2 * (tau.hat.b - tau.hat) ^ 2) / ((h -1 ) * h * wbar ^ 2))
+      asyVar <- sum(sum_tab$.weight ^ 2 * (sum_tab$tau_hat_b - tau_hat) ^ 2) / ((h -1 ) * h * wbar ^ 2)
     }
     SE <- sqrt(asyVar)
   }
-  data.frame(tau.hat = tau.hat, SE = SE, weight = weight, method = method, stringsAsFactors = FALSE)
+  data.frame(tau_hat = tau_hat, SE = SE, weight = weight, method = method, stringsAsFactors = FALSE)
 }

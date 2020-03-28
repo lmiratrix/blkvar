@@ -1,3 +1,58 @@
+
+
+
+# This global variable is a hack so if the 'finite.model' flag in
+# gen_dat_model() is set to TRUE, that method will save the first randomly
+# generated units in this variable and then, in subsequent calls to
+# gen_dat_model() simply rerandomize these units. (gen_dat_model will check if J
+# has changed and reset if the parameter J is different).
+.MULTISITE_CANONICAL = NULL
+
+
+
+
+#' Generate site sizes for simulation of multisite data
+#'
+# Generate piecewise uniform distribution with a mean of n.bar and a 'size.ratio' that controls the variance of site sizes.
+#' @param J number of sites to generate.
+#' @param n.bar Average site size.
+#' @param size.ratio Index of
+#' @return Numeric vector of site sizes.
+#' @examples
+#' block_distn( 4, 10, 1 )
+#' @export
+block_distn <- function(J, n.bar, size.ratio) {
+    N <- 1 + 3 * size.ratio
+    p <- (N - 1) / N
+    small <- rbinom(J, 1, p)
+    Y <- runif(J)
+    Y <- n.bar * ifelse(small, Y, Y * (N - 1) + 1)
+    round( Y )
+}
+
+
+
+#' Rerandomize a given multisite simulated dataset and recalulate observed
+#' outcomes
+#'
+#' Permute the treatment vector Z within site ID.  Useful for simulations of
+#' finite sample inference where the dataset should be held static and only
+#' randomization is necessary.
+#'
+#' @param dat Dataframe from, e.g., gen_dat() that has two columns, 'sid', and 'Z'.
+#'
+#' @return Same dataframe with treatment shuffled and Yobs recalculated.
+#' @export
+rerandomize_data <- function(dat) {
+    dat <- dat %>% group_by(sid) %>% mutate(Z = sample(Z)) %>% ungroup()
+    dat <- mutate(dat, Yobs = ifelse(Z, Y1, Y0))
+    dat
+}
+
+
+
+
+
 #' @title Generate multilevel data from a model
 #'
 #' @description Given a 2-level model, generate data to specifications
@@ -28,20 +83,18 @@
 #' @param correlate.strength In [0,1], and describes how correlated the ranking
 #'   of site impacts will be with proptx and site size, if they are set to be
 #'   correlated.
-
-#' @param variable.p TOADD
-#' @param sigma2.W TOADD
-#' @param finite.model TOADD
-#' @param size.ratio TOADD
-
-
-#' @return Dataframe of data!
+#' @param variable.p Should the proportion of units treated in each site vary?  Yes/No.
+#' @param sigma2.W The variation of the site-level covariate.
+#' @param finite.model If TRUE use a canonical set of random site effects.  When TRUE this method will save the multivariate normal draw and reuse it in subsequent calls to gen_dat_model until a call with a different J is made.  Recommended to use FALSE.
+#' @param size.ratio The degree to which the site sizes should vary, if they should vary.
+#' @return Dataframe of data!  Dataframe
 #' @rdname gen_dat_model
+#' @importFrom magrittr '%>%'
 #' @export
 gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
   beta.X = NULL, sigma2.mean.X = 0, variable.n = TRUE, variable.p = FALSE, cluster.rand = FALSE, return.sites = FALSE, finite.model = FALSE,
   size.impact.correlate = 0, proptx.impact.correlate = 0, correlate.strength = 0.75, size.ratio = 1 / 3, verbose = FALSE) {
-  
+
   stopifnot(size.impact.correlate %in% c(-1, 0, 1))
   stopifnot(proptx.impact.correlate %in% c(-1, 0, 1))
   if (verbose) {
@@ -55,7 +108,7 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
     stopifnot(n.bar > 4)
     # nj = rpois( J, n.bar)
     # nj = round( n.bar * runif( J, 0.25, 1.75 ) )
-    nj <- 4 + round(block_distn(J, n.bar - 4, size.ratio))
+    nj <- 4 + block_distn(J, n.bar - 4, size.ratio)
     nj[ nj < 4 ] <- 4
     # if ( any( nj < 4 ) ) {
     #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
@@ -63,19 +116,19 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
   } else {
     nj <- rep(n.bar, J)
   }
-  
+
   if (!is.null( gamma.10 ) || !is.null(gamma.11)) {
     Wj <- rnorm(J, mean = 0, sd = sqrt(sigma2.W))
-    include.W <- TRUE
+    include_W <- TRUE
   } else {
     Wj <- 0
-    include.W <- FALSE
+    include_W <- FALSE
   }
 
   if (!is.null(beta.X)) {
-    include.X <- TRUE
+    include_X <- TRUE
   } else {
-    include.X <- FALSE
+    include_X <- FALSE
   }
 
   # Generate average control outcome and average ATE for all sites
@@ -83,7 +136,7 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
   if (finite.model) {
     # Make a canonical set of site charactaristics and then never change
     # them until J changes.
-    if (is.null(CANONICAL) || nrow(CANONICAL) != J) {
+    if (is.null(.MULTISITE_CANONICAL) || nrow(.MULTISITE_CANONICAL) != J) {
       CC <- MASS::mvrnorm(J, c(0, 0), Sigma)
       if (var(CC[, 2]) > 0) {
         CC[, 2] <- sqrt(tau.11) * CC[, 2] / sd(CC[, 2])
@@ -91,9 +144,9 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
       if (var(CC[, 1]) > 0 ) {
         CC[, 1] <- sqrt(tau.00) * CC[, 1] / sd(CC[, 1])
       }
-      CANONICAL <<- CC
+      .MULTISITE_CANONICAL <<- CC
     }
-    mv <- CANONICAL
+    mv <- .MULTISITE_CANONICAL
   } else {
     mv <- MASS::mvrnorm(J, c(0, 0), Sigma)
   }
@@ -126,7 +179,7 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
     } else {
       df <- data.frame(n = nj, W = Wj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2])
     }
-    if (!include.W) {
+    if (!include_W) {
       df$W <- NULL
     }
     return( df )
@@ -139,11 +192,11 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
     if (variable.p) {
       ths <- min(p, 1 - p) * 0.75
       ps <- runif(J, p - ths, p + ths)
-      
+
       if (proptx.impact.correlate != 0) {
         ps <- sort( ps, decreasing = (proptx.impact.correlate < 0))
       }
-      
+
       # threshold to ensure we always have 2 units in tx and co for all blocks
       # regardless of assigned p
       ps <- pmin((nj - 2) / nj, pmax(2 / nj, ps))
@@ -158,9 +211,9 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
     }
     Zij <- dd$Z
     dd$p <- NULL
-    
+
     # individual covariates and residuals
-    if (include.X) {
+    if (include_X) {
       stopifnot(sigma2.mean.X < 1)
       Xbar <- rnorm(J, mean = 0, sd = sqrt(sigma2.mean.X))
       X <- rnorm(N, mean = Xbar[sid], sd = sqrt(1 - sigma2.mean.X))
@@ -173,10 +226,10 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
     }
     Y1 <- Y0 + beta.1j[sid]
     df <- data.frame(sid = as.factor(sid), Y0 = Y0, Y1 = Y1, Z = Zij, Yobs = ifelse(Zij, Y1, Y0))
-    if (include.X) {
+    if (include_X) {
       df$X <- X
     }
-    if (include.W) {
+    if (include_W) {
       df$W <- Wj[df$sid]
     }
     attr(df, "tau.S") <- sd( beta.1j)

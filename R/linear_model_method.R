@@ -10,20 +10,28 @@ scat = function( str, ... ) {
 }
 
 
-grab_SE <- function(MOD, coef="Z") {
-  vc <- vcov(MOD)
-  sqrt(vc[coef, coef])
-}
-
 # See https://www.jepusto.com/handmade-clubsandwich/
-clubsandwich_variance <- function(w, tau.hat.b, tau.hat) {
+clubsandwich_variance <- function(w, tau_hat_b, tau_hat) {
   W <- sum(w)
-  V <- (1 / W ^ 2) * sum((w ^ 2 * (tau.hat.b - tau.hat) ^ 2) / (1 - w / W))
+  V <- (1 / W ^ 2) * sum((w ^ 2 * (tau_hat_b - tau_hat) ^ 2) / (1 - w / W))
   df.inv <- sum(w ^ 2 / (W - w) ^ 2) - (2 / W) * sum(w ^ 3 / (W - w) ^ 2) + (1 / W ^ 2) * sum(w ^ 2 / (W - w)) ^ 2
   list(var.hat = V, df = 1 / df.inv)
 }
 
-fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, block.stats = NULL, control.formula = NULL) {
+
+#' Fixed effect linear regression
+#'
+#' Fit regressions with block fixed effects (and a single treatment parameter).
+#' Calculate standard errors in a variety of ways.
+#'
+#' For the club sandwich estimation ("Club"), see code proposed at
+#' https://www.jepusto.com/handmade-clubsandwich/
+#'
+#' @inheritParams linear_model_estimators
+#' @return Dataframe of results for different estimators.
+#' @export
+fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
+                                    block.stats = NULL, control.formula = NULL) {
   if (!is.null(control.formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing("Yobs"))
@@ -56,7 +64,7 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, bloc
       data$siteID = siteID
     }
   }
-  
+
   # make sites RA blocks if there are no sites.
   if (is.null(siteID)) {
     data$siteID = data$B
@@ -64,18 +72,18 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, bloc
 
   # Make control variable function
   formula <- make_FE_formula( "Yobs", "Z", "B", control.formula, data)
-  
+
   # simple linear model
   M0 <- lm( formula, data = data)
   SE.lm <- summary(M0)$coeff["Z", 2]
-  
+
   # est ATE (precision weighted)
-  tau.hat <- coef(M0)[["Z"]]
-  
+  tau_hat <- coef(M0)[["Z"]]
+
   # Huber-White SEs
   vcov_sand <- sandwich::vcovHC(M0, type = "HC1")
   SE.lm.sand <-sqrt( vcov_sand[1,1] )
-  
+
   # Cluster robust SEs (clustering at site level)
   vcov_clust <- sandwich::vcovCL(M0, data$siteID)
   SE.lm.clust <- sqrt(vcov_clust[1, 1])
@@ -85,14 +93,18 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, bloc
   if (is.null( block.stats)) {
     block.stats <- calc_summary_stats(Yobs, Z, B, data = data, siteID = siteID, add.neyman = FALSE)
   }
-  block.stats <- mutate(block.stats, tau.hat = Ybar1 - Ybar0, prec = n * (n0 / n) * (n1 / n))
+  block.stats <- mutate(block.stats, tau_hat = Ybar1 - Ybar0, prec = n * (n0 / n) * (n1 / n))
   if (!is.null(siteID)) {
-    # aggregate blocks into sites and calculate site weights and tau.hats
-    block.stats <- block.stats %>% group_by(siteID) %>% summarise(tau.hat = sum( prec * tau.hat ) / sum(prec), prec = sum(prec))
+    # aggregate blocks into sites and calculate site weights and tau_hats
+    block.stats <- block.stats %>% group_by(siteID) %>%
+        dplyr::summarise(tau_hat = sum( prec * tau_hat ) / sum(prec), prec = sum(prec))
   }
-  cs.var <- clubsandwich_variance(block.stats$prec, block.stats$tau.hat, tau.hat)
+  cs.var <- clubsandwich_variance(block.stats$prec, block.stats$tau_hat, tau_hat)
   SE.lm.clust.club <- sqrt(cs.var$var.hat)
-  FEmodels <- data.frame(method = c("FE", "FE-Het", "FE-CR", "FE-Club"), tau = rep(tau.hat, 4), SE = c(SE.lm, SE.lm.sand, SE.lm.clust, SE.lm.clust.club), stringsAsFactors = FALSE)
+  FEmodels <- data.frame(method = c("FE", "FE-Het", "FE-CR", "FE-Club"),
+                         tau = rep(tau_hat, 4),
+                         SE = c(SE.lm, SE.lm.sand, SE.lm.clust, SE.lm.clust.club),
+                         stringsAsFactors = FALSE)
   if (!is.null( control.formula)) {
     FEmodels$method <- paste0( FEmodels$method, "-adj")
   }

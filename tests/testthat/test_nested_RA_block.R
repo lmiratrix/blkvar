@@ -18,8 +18,8 @@ make.balanced.dataset = function(  ) {
     b$Z = 0
     b$Yobs = b$Y0
     a = rbind( a, b )
-   
-    
+
+
     a = rbind( a,  b[which(b[, 1] == "B6"), ])
 
     # a  # perfectly balanced dataset.  Three sites, one with two blocks, one with three blocks.
@@ -47,7 +47,7 @@ make.big.balanced.dataset = function(rps=5) {
      full  <- rbind(full, df)
   }
   return(full)
-    
+
 }
 
 
@@ -94,7 +94,7 @@ test_that("DB estimators work with nested randomization blocks", {
     b = estimate_ATE_design_based_from_stats( sdat, siteID="siteID", weight="site", method="finite" )
     b2 = estimate_ATE_design_based_from_stats( sdat, weight="site", method="finite" )
 
-    expect_true( b$tau.hat != b2$tau.hat )
+    expect_true( b$tau_hat != b2$tau_hat )
     expect_true( b$SE != b2$SE )
 
 
@@ -110,9 +110,9 @@ test_that("DB estimators work with nested randomization blocks", {
     aa
     expect_equal( aa$Ybar1, ss$ybar1 )
 
-    site.tau.hat = estimate_ATE_design_based_from_stats( aa, weight="site", method="finite"  )$tau.hat
-    site.tau.hat
-    expect_equal( 35, site.tau.hat )
+    site.tau_hat = estimate_ATE_design_based_from_stats( aa, weight="site", method="finite"  )$tau_hat
+    site.tau_hat
+    expect_equal( 35, site.tau_hat )
 
     ss2 = a %>% group_by( sssite ) %>% summarise( tau = mean( Y1 ) - mean( Y0 ),
                                             ybar1 = mean( Y1 ),
@@ -120,7 +120,7 @@ test_that("DB estimators work with nested randomization blocks", {
     ss2
     true.site.tau = mean( ss2$tau )
 
-    corrtauhat = estimate_ATE_design_based_from_stats( aa, siteID="siteID", weight="site", method="finite"  )$tau.hat
+    corrtauhat = estimate_ATE_design_based_from_stats( aa, siteID="siteID", weight="site", method="finite"  )$tau_hat
     corrtauhat
     expect_equal( true.site.tau,
                   corrtauhat )
@@ -132,7 +132,7 @@ test_that("DB estimators work with nested randomization blocks", {
     est2 = estimate_ATE_design_based_from_stats( aa, weight="individual", method="superpop"  )
     est1
     est2
-    expect_true( est1$tau.hat == est2$tau.hat )
+    expect_true( est1$tau_hat == est2$tau_hat )
     expect_true( est1$SE != est2$SE )
 
     # Superpopulation, site
@@ -140,13 +140,13 @@ test_that("DB estimators work with nested randomization blocks", {
     est2 = estimate_ATE_design_based_from_stats( aa, weight="site", method="superpop"  )
     est1
     est2
-    expect_true( est1$tau.hat == true.site.tau )
-    expect_true( est2$tau.hat == site.tau.hat )
+    expect_true( est1$tau_hat == true.site.tau )
+    expect_true( est2$tau_hat == site.tau_hat )
     expect_true( est1$SE != est2$SE )
 
     # If we pass siteID but don't actually have nesting
     est3 = estimate_ATE_design_based_from_stats( aa, siteID="B", weight="site", method="superpop"  )
-    expect_true( est3$tau.hat == site.tau.hat )
+    expect_true( est3$tau_hat == site.tau_hat )
     expect_true( est3$SE == est2$SE )
 
 })
@@ -207,7 +207,7 @@ test_that("weighted linear regression works with nested randomization blocks", {
 
     est1b = weighted_linear_estimators( outcome ~ Tx * BB, data=a, scaled.weights = FALSE )
 
-    estDB = compare_methods( outcome, Tx, BB, data=a, siteID = "sssite", include.MLM = FALSE, include.LM = TRUE, include.block = FALSE )
+    estDB = compare_methods( outcome, Tx, BB, data=a, siteID = "sssite", include_MLM = FALSE, include_LM = TRUE, include_block = FALSE )
 
     expect_equal( est1$tau[[2]], estDB$tau[[2]] )
     expect_equal( est1$tau[[2]], estDB$tau[estDB$method=="DB-FP-Sites"] )
@@ -231,7 +231,7 @@ test_that("weighted linear regression works with nested randomization blocks", {
     # Finite population, person weighted
     a = estimate_ATE_design_based_from_stats( sdat, siteID="siteID", weight="site", method="finite" )
     a2 = blkvar:::weighted_linear_estimators( Yobs ~ Z*B, siteID = "siteNo", data=dat )
-    expect_equal( a$tau.hat, a2$tau[[2]] )
+    expect_equal( a$tau_hat, a2$tau[[2]] )
 
 })
 
@@ -283,9 +283,9 @@ test_that("all linear regression works with nested randomization blocks", {
 
     ff = res [sort(unique(c(which(res$change != 0), which(res$changeSE != 0)))), ]
     ff
-    
-    
-    
+
+
+
 
     expect_true( nrow( ff ) == 4 )
 
@@ -316,8 +316,8 @@ test_that("compare_methods works with nested randomization blocks", {
     res$changeSE = res$SE.site - res$SE.block
 
     res
-    
-    
+
+
     ff = res [sort(unique(c(which(res$change != 0), which(res$changeSE != 0)))), ]
     ff
 
@@ -363,7 +363,7 @@ test_that("compare_methods with adjustment works with nested randomization block
     res$change = res$tau.site - res$tau.block
     res$changeSE = res$SE.site - res$SE.block
 
-    options( digits= 3 )
+    options( digits = 3 )
     res
 
     # ff = filter( res, change == 0 & changeSE == 0 )
