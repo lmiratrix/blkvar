@@ -11,6 +11,7 @@
 #' @param siteID if blocks B nested in sites, then pass the site indicator.
 #'
 #' @export
+
 compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL,
                                       include_testing = TRUE,
                                       include_Q_estimate = TRUE,

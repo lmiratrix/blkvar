@@ -8,7 +8,6 @@ scat = function( str, ... ) {
 }
 
 
-
 ##### Functions to help process control functions  ####
 
 

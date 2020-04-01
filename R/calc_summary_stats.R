@@ -15,6 +15,7 @@
 #' @return dataframe with summary statistics by block
 #' @importFrom rlang .data
 #' @export
+
 calc_summary_stats <- function(Yobs, Z, B, data = NULL, siteID = NULL, add.neyman = FALSE) {
   if (missing("Z") && is.null(data)) {
     data <- Yobs
@@ -72,6 +73,7 @@ calc_summary_stats <- function(Yobs, Z, B, data = NULL, siteID = NULL, add.neyma
 #' @family calc_summary_stats
 #' @return dataframe with summary statistics by block
 #' @export
+
 calc_summary_stats_formula <- function(formula, data = NULL, siteID = NULL, add.neyman = FALSE) {
 
     data = make_canonical_data( formula=formula, data=data, siteID=siteID )

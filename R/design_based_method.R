@@ -23,7 +23,6 @@
 # Miratrix, 2019
 
 
-
 all_adjusted_estimators <- function(formula, control.formula, data) {
 
   est <- tau_hat <- NA

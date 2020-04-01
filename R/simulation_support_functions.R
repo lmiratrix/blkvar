@@ -270,7 +270,6 @@ block_data_sim <- function(Y, Z, B, p.mat, data = NULL) {
   return(overall_mat)
 }
 
-
 #' Calculates variance of treatment effects.
 #'
 #' Function that helps calculate bias by caculating the true variance of treatment effects.

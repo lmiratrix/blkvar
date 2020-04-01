@@ -281,7 +281,6 @@ gen_dat <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0W = 0.
 
 
 
-
 #' @describeIn gen_dat_model   Simplified version of gen_dat() with no W covariate.
 #'
 #' @param control.sd.Y1 Make correlation of random intercept and random slope

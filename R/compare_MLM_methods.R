@@ -9,6 +9,7 @@
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor cov filter model.matrix na.exclude pf pnorm predict qchisq qf qnorm rbinom reshape resid runif vcov weighted.mean
 #' @export
+
 compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control.formula = NULL ) {
   if (!is.null(data)) {
     if (missing( "Yobs")) {

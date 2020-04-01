@@ -22,6 +22,7 @@
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor cov filter model.matrix na.exclude pf pnorm predict qchisq qf qnorm rbinom reshape resid runif vcov weighted.mean
 #' @export
+
 compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL, include_block = TRUE, include_MLM = TRUE, include_DB = TRUE, include_LM = TRUE, include_DBBlended = FALSE,
   include_method_characteristics = FALSE, weight.LM.method = "survey", weight.LM.scale.weights = TRUE, control.formula = NULL) {
 

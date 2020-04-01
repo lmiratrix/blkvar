@@ -14,6 +14,7 @@
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @importFrom msm deltamethod
 #' @export
+
 compare_methods_oracle <- function(Y, Z, B, p.mat, data = NULL) {
     if (!is.null(data)) {
         Y <- data[ ,1]

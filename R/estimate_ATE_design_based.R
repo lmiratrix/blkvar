@@ -20,6 +20,7 @@
 #'   uncertainty due to targeting a superpopulation quantity or not.
 #' @return dataframe with calculated impacts and standard errors.
 #' @export
+
 estimate_ATE_design_based <- function(formula,
                                       control.formula = NULL,
                                       siteID = NULL,

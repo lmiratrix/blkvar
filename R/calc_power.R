@@ -18,6 +18,7 @@
 #'
 #' @rdname calc_power
 #' @export
+
 calc_power <- function(J, n.bar, tau, p.tx = 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha = 0.05) {
   omega <- calc_omega(n.bar, tau, p.tx, ICC, R2.X)
   df.num <- J - 1

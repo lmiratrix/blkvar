@@ -15,6 +15,7 @@
 #' @importFrom stats coef
 #' @return Data frame of the various results.
 #' @export
+
 linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, block.stats = NULL, control.formula = NULL, weight.LM.method = "survey",
   weight.LM.scale.weights = TRUE) {
 

@@ -4,7 +4,6 @@
 # (With a ratio test)
 # Using work and results in Appendix A of Bloom and Spybrook
 
-
 calc_omega <- function(n.bar, tau, p.tx, ICC, R2.X) {
   tau * p.tx * (1 - p.tx) * n.bar / ((1 - ICC) * (1 - R2.X))
 }

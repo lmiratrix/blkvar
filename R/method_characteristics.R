@@ -8,6 +8,7 @@
 #' @return A tibble of characteristics.
 #'
 #' @export
+
  method_characteristics <- function() {
    # Code to make the hard-coded list of characteristics
    if (FALSE) {

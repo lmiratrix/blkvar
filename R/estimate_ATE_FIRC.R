@@ -17,8 +17,9 @@
 #' @param siteID If not null, name of siteID that has randomization blocks
 #' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
 #' @param include_testing Logical Include likelihood ratio test for cross-site treatment variation.
-#'@param data Dataframe with all needed variables.
+#' @param data Dataframe with all needed variables.
 #' @export
+
 estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control.formula = NULL, data = NULL, REML = FALSE, include_testing = TRUE, anova = FALSE, pool = FALSE) {
   stopifnot(!(include_testing && REML))
   if (!is.null(control.formula)) {

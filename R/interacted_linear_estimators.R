@@ -13,6 +13,8 @@
 #'
 #' @return Dataframe of the different versions of this estimator (person and
 #'   site weighted)
+#' @noRd
+
 interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, control.formula = NULL) {
   if (!is.null(control.formula)) {
     stopifnot(!is.null(data))

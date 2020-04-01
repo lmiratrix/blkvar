@@ -30,6 +30,7 @@ clubsandwich_variance <- function(w, tau_hat_b, tau_hat) {
 #' @inheritParams linear_model_estimators
 #' @return Dataframe of results for different estimators.
 #' @export
+
 fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
                                     block.stats = NULL, control.formula = NULL) {
   if (!is.null(control.formula)) {

@@ -7,6 +7,7 @@
 #' @return dataframe with summary statistics by block
 #'
 #' @export
+
 calc_summary_stats_oracle <- function (data, Y0 = "Y0", Y1 = "Y1", Z = "Z", B = "B") {
   data <- dplyr::rename(data, Y0 = !!rlang::sym(Y0), Y1 = !!rlang::sym(Y1), Z = !!rlang::sym(Z), B = !!rlang::sym(B))
   sdat <- data %>% dplyr::group_by( B ) %>%

@@ -19,6 +19,7 @@ scat = function( str, ... ) {
 #' @param data_table data frame containing info for set of blocks of same size
 #' @param weighted indicates whether variance should be weighted by number of units
 #' @importFrom stats aggregate lm quantile rnorm sd var
+#' @noRd
 
 paired_var <- function(data_table, weighted = TRUE) {
   #Vector of trt effect estimates
@@ -253,7 +254,3 @@ block_estimator <- function(Yobs, Z, B, data = NULL, method = c("hybrid_m", "hyb
     summary_table <- calc_summary_stats(Yobs, Z, B, add.neyman = TRUE)
     block_estimator_tabulated(summary_table, method = method, throw.warnings = throw.warnings)
 }
-
-
-
-
