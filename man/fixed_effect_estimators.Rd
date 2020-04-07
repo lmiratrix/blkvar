@@ -11,7 +11,7 @@ fixed_effect_estimators(
   siteID = NULL,
   data = NULL,
   block.stats = NULL,
-  control.formula = NULL
+  control_formula = NULL
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ fixed_effect_estimators(
 
 \item{block.stats}{Table of precomputed block-level statistics (optional, for speed concerns; this gets precomputed in compare_methods).}
 
-\item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 }
 \value{
 Dataframe of results for different estimators.

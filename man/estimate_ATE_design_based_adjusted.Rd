@@ -6,7 +6,7 @@
 \usage{
 estimate_ATE_design_based_adjusted(
   formula,
-  control.formula,
+  control_formula,
   data,
   siteID = NULL,
   method = c("finite", "superpop", "superpop.adj"),
@@ -16,7 +16,7 @@ estimate_ATE_design_based_adjusted(
 \arguments{
 \item{formula}{The formula argument must be of the form outcome ~ treatment:block_id.}
 
-\item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
 \item{data}{Dataframe with all needed variables.}
 

@@ -23,10 +23,10 @@ grab_SE <- function(MOD, coef="Z") {
 #' @importFrom stats gaussian
 #' @export
 
-weighted_linear_estimators <- function(formula, control.formula = NULL, siteID = NULL, data, scaled.weights = TRUE,
+weighted_linear_estimators <- function(formula, control_formula = NULL, siteID = NULL, data, scaled.weights = TRUE,
                                        weight.method = c("survey", "precision")) {
   weight.method <- match.arg(weight.method)
-  data <- make_canonical_data(formula, control.formula, siteID, data)
+  data <- make_canonical_data(formula, control_formula, siteID, data)
   data$B <- as.factor(data$B)
   n <- nrow(data)
   J <- length(unique(data$B))
@@ -51,7 +51,7 @@ weighted_linear_estimators <- function(formula, control.formula = NULL, siteID =
                       weight = weight * ifelse( Z, Z.bar, (1-Z.bar) ),
                       weight.site = weight.site * ifelse( Z, Z.bar, (1-Z.bar) ) )
   }
-  formula <- make_FE_formula("Yobs", "Z", "B", control.formula, data )
+  formula <- make_FE_formula("Yobs", "Z", "B", control_formula, data )
   if (weight.method == "survey") {
   	M0w2 <- svyglm( formula,
                        design=svydesign(ids = ~1, weights = ~weight, data=data ),
@@ -78,7 +78,7 @@ weighted_linear_estimators <- function(formula, control.formula = NULL, siteID =
   if (weight.method != "survey") {
     weightModels$method <- paste0( weightModels$method, "(pr)" )
   }
-  if (!is.null( control.formula)) {
+  if (!is.null( control_formula)) {
     weightModels$method <- paste0( weightModels$method, "-adj" )
   }
   weightModels

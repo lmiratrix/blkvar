@@ -65,11 +65,11 @@ test_that("weighting lm flags gets passed", {
     set.seed( 102030 )
     dat = gen_dat( n.bar = 20, J = 20 )
 
-    fulltab = compare_methods( Yobs, Z, sid, data=dat, weight.LM.scale.weights = FALSE,
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, weight_LM_scale_weights = FALSE,
                                include_MLM = FALSE, include_block = FALSE, include_DBBlended = FALSE, include_DB = FALSE )
     expect_true( "FE-IPTW(n)" %in% fulltab$method )
 
-    fulltab = compare_methods( Yobs, Z, sid, data=dat, weight.LM.scale.weights = TRUE,
+    fulltab = compare_methods( Yobs, Z, sid, data=dat, weight_LM_scale_weights = TRUE,
                                include_MLM = FALSE, include_block = FALSE, include_DBBlended = FALSE, include_DB = FALSE )
     fulltab
     expect_false( "FE-IPTW(n)" %in% fulltab$method )

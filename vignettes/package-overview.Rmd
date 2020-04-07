@@ -86,7 +86,7 @@ df$X1 = df$Y0 + rnorm( nrow( df ) ) # add a fake covariate
 df$X2 = df$Y1 + rnorm( nrow( df ) ) # add another fake covariate
 
 rs = compare_methods( Yobs, Z, sid, data=df, 
-                      control.formula = ~X1 + X2 )
+                      control_formula = ~X1 + X2 )
 knitr::kable( rs )
 ```
 

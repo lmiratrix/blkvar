@@ -10,7 +10,7 @@ compare_MLM_methods(
   B,
   siteID = NULL,
   data = NULL,
-  control.formula = NULL
+  control_formula = NULL
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ compare_MLM_methods(
 
 \item{data}{frame holding Y, Z, B and (possibly a column with name specified by siteID).}
 
-\item{control.formula}{What variables to control for, in the form of "~ X1 + X2".}
+\item{control_formula}{What variables to control for, in the form of "~ X1 + X2".}
 }
 \description{
 Compare different MLM methods

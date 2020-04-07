@@ -10,7 +10,7 @@ estimate_ATE_FIRC(
   Z,
   B,
   siteID = NULL,
-  control.formula = NULL,
+  control_formula = NULL,
   data = NULL,
   REML = FALSE,
   include_testing = TRUE,
@@ -27,7 +27,7 @@ estimate_ATE_FIRC(
 
 \item{siteID}{If not null, name of siteID that has randomization blocks}
 
-\item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
 \item{data}{Dataframe with all needed variables.}
 

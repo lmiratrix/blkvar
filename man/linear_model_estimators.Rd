@@ -12,9 +12,9 @@ linear_model_estimators(
   siteID = NULL,
   data = NULL,
   block.stats = NULL,
-  control.formula = NULL,
-  weight.LM.method = "survey",
-  weight.LM.scale.weights = TRUE
+  control_formula = NULL,
+  weight_LM_method = "survey",
+  weight_LM_scale_weights = TRUE
 )
 }
 \arguments{
@@ -30,11 +30,11 @@ linear_model_estimators(
 
 \item{block.stats}{Table of precomputed block-level statistics (optional, for speed concerns; this gets precomputed in compare_methods).}
 
-\item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
-\item{weight.LM.method}{Argument passed to weight.method of weighted_linear_estimators}
+\item{weight_LM_method}{Argument passed to weight.method of weighted_linear_estimators}
 
-\item{weight.LM.scale.weights}{Argument passed to sclae.weights of weighted_linear_estimators}
+\item{weight_LM_scale_weights}{Argument passed to sclae.weights of weighted_linear_estimators}
 }
 \value{
 Data frame of the various results.

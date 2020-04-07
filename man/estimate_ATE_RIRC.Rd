@@ -11,7 +11,7 @@ estimate_ATE_RICC(
   B,
   data = NULL,
   REML = FALSE,
-  control.formula = NULL
+  control_formula = NULL
 )
 
 estimate_ATE_RIRC(
@@ -22,7 +22,7 @@ estimate_ATE_RIRC(
   REML = FALSE,
   include_testing = TRUE,
   pool = FALSE,
-  control.formula = NULL
+  control_formula = NULL
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ estimate_ATE_RIRC(
 
 \item{REML}{Logical, Restricted maximum likelihood or maximum likelihood estimation.}
 
-\item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
 \item{include_testing}{Logical Include likelihood ratio test for cross-site treatment variation.}
 

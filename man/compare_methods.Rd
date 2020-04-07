@@ -16,9 +16,9 @@ compare_methods(
   include_LM = TRUE,
   include_DBBlended = FALSE,
   include_method_characteristics = FALSE,
-  weight.LM.method = "survey",
-  weight.LM.scale.weights = TRUE,
-  control.formula = NULL
+  weight_LM_method = "survey",
+  weight_LM_scale_weights = TRUE,
+  control_formula = NULL
 )
 }
 \arguments{
@@ -46,11 +46,11 @@ and classic Neyman to large blocks.}
 
 \item{include_method_characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
 
-\item{weight.LM.method}{Argument passed to weight.method of weighted_linear_estimators}
+\item{weight_LM_method}{Argument passed to weight.method of weighted_linear_estimators}
 
-\item{weight.LM.scale.weights}{Argument passed to sclae.weights of weighted_linear_estimators}
+\item{weight_LM_scale_weights}{Argument passed to sclae.weights of weighted_linear_estimators}
 
-\item{control.formula}{What variables to control for, in the form of "~ X1 + X2".}
+\item{control_formula}{What variables to control for, in the form of "~ X1 + X2".}
 }
 \description{
 This function calculates the point estimates and SE estimates for a variety

@@ -5,7 +5,7 @@
 #' document.
 #'
 #'@param formula  The formula argument must be of the form outcome ~ treatment:block_id.
-#'@param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
+#'@param control_formula The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
 #'@param data Dataframe with all needed variables.
 #' @param siteID Vector of site IDs if there are randomization blocks nested in
 #'    site that should be aggregated (will change results for site weighting only).
@@ -15,14 +15,14 @@
 #'@return Estimates of ATE along with SEs.
 #'@importFrom rlang .data
 #'@export
-estimate_ATE_design_based_adjusted <- function(formula, control.formula, data, siteID = NULL, method = c("finite", "superpop", "superpop.adj"), weight = c("individual", "site")) {
-  stopifnot(!is.null(control.formula))
+estimate_ATE_design_based_adjusted <- function(formula, control_formula, data, siteID = NULL, method = c("finite", "superpop", "superpop.adj"), weight = c("individual", "site")) {
+  stopifnot(!is.null(control_formula))
   # Determine which of the 4 versions of estimator we are doing.
   method <- match.arg(method)
   weight <- match.arg(weight)
-  data <- make_canonical_data(formula, control.formula, siteID, data)
+  data <- make_canonical_data(formula, control_formula, siteID, data)
   # Get control variables
-  c.names <- formula.tools::rhs.vars(control.formula)
+  c.names <- formula.tools::rhs.vars(control_formula)
   # Count observations, etc.
   N <- nrow(data)  # number of observations
   h <- length( unique( data$B ) ) # number of sites/clusters
@@ -33,7 +33,7 @@ estimate_ATE_design_based_adjusted <- function(formula, control.formula, data, s
     x - mean(x)
   }
   data <- data %>% dplyr::group_by(B) %>% dplyr::mutate_at(c.names, center) %>% dplyr::ungroup()
-  new.form <- make_FE_int_formula( control.formula = control.formula, data = data)
+  new.form <- make_FE_int_formula( control_formula = control_formula, data = data)
   # Fit a linear model with indicators for each site, and each site by treatment
   # interaction.  Also have covariates entered in not interacted with treatment.
   M0 <- lm( new.form, data = data )

@@ -9,16 +9,19 @@ outcomes.}
 compare_methods_oracle(Y0, Y1, B, data = NULL, p_mat = NULL)
 }
 \arguments{
-\item{Y0}{Vector of control potential outcomes.}
+\item{Y0}{Vector of control potential outcomes  (or name of column in data
+holding same).}
 
-\item{Y1}{Vector of treatment potential outcomes}
+\item{Y1}{Vector of treatment potential outcomes  (or name of column in data
+holding same).}
 
-\item{B}{block ids}
+\item{B}{block ids  (or name of column in data holding same).}
 
 \item{data}{alternatively is matrix of Y,Z,B}
 
-\item{p_mat}{matrix with two columns, one row per block.  First column is B,
-second column prop treated in that block, ("p")}
+\item{p_mat}{matrix with two columns, one row per block.  First column is
+the categorical covariate denoting blocks, with same levels as in B, above.
+Second column is proportion treated in that block.}
 }
 \description{
 Function that returns some variance function estimates based on all potential

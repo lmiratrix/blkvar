@@ -5,9 +5,9 @@
 #' @param Z vector of assignment indicators (1==treated)
 #' @param B block ids
 #' @param siteID If not null, name of siteID that has randomization blocks
-#' @param control.formula The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param weight.LM.method Argument passed to weight.method of weighted_linear_estimators
-#' @param weight.LM.scale.weights Argument passed to sclae.weights of weighted_linear_estimators
+#' @param control_formula The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
+#' @param weight_LM_method Argument passed to weight.method of weighted_linear_estimators
+#' @param weight_LM_scale_weights Argument passed to sclae.weights of weighted_linear_estimators
 #' @param block.stats Table of precomputed block-level statistics (optional, for speed concerns; this gets precomputed in compare_methods).
 #' @param data Dataframe of the data to analyse.
 #' @importFrom dplyr group_by ungroup mutate
@@ -15,10 +15,10 @@
 #' @importFrom stats coef
 #' @return Data frame of the various results.
 #' @export
-linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, block.stats = NULL, control.formula = NULL, weight.LM.method = "survey",
-  weight.LM.scale.weights = TRUE) {
+linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, block.stats = NULL, control_formula = NULL, weight_LM_method = "survey",
+  weight_LM_scale_weights = TRUE) {
 
-  if (!is.null(control.formula)) {
+  if (!is.null(control_formula)) {
     stopifnot( !is.null(data))
     stopifnot( !missing("Yobs"))
   }
@@ -50,10 +50,10 @@ linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, bloc
   dat <- data
   dat$B <- as.factor(dat$B)
   FEmodels <- fixed_effect_estimators(Yobs, Z, B, siteID = siteID, data=dat,
-                                      block.stats = block.stats, control.formula = control.formula )
-  weightModels <- weighted_linear_estimators(Yobs ~ Z*B, siteID = siteID, data=dat, control.formula = control.formula,
-    weight.method = weight.LM.method, scaled.weights = weight.LM.scale.weights)
-  interactModels <- interacted_linear_estimators(Yobs, Z, B, siteID = siteID, data = dat, control.formula = control.formula )
+                                      block.stats = block.stats, control_formula = control_formula )
+  weightModels <- weighted_linear_estimators(Yobs ~ Z*B, siteID = siteID, data=dat, control_formula = control_formula,
+    weight.method = weight_LM_method, scaled.weights = weight_LM_scale_weights)
+  interactModels <- interacted_linear_estimators(Yobs, Z, B, siteID = siteID, data = dat, control_formula = control_formula )
   # combine and return results
   dplyr::bind_rows(FEmodels, weightModels, interactModels)
 }

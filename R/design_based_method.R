@@ -24,13 +24,13 @@
 
 
 
-all_adjusted_estimators <- function(formula, control.formula, data) {
+all_adjusted_estimators <- function(formula, control_formula, data) {
 
   est <- tau_hat <- NA
   ests <- expand.grid(method = c("finite", "superpop" ), #, "superpop.adj" ),
     weight = c( "individual", "site" ), stringsAsFactors = FALSE )
   ests <- tibble::as_tibble(ests)
-  ests$est <- purrr::pmap( ests, estimate_ATE_design_based_adjusted, formula = formula, control.formula = control.formula, data=data)
+  ests$est <- purrr::pmap( ests, estimate_ATE_design_based_adjusted, formula = formula, control_formula = control_formula, data=data)
   ests$method <- NULL
   ests$weight <- NULL
   ests <- tidyr::unnest( ests, cols = est)
@@ -62,7 +62,7 @@ all_adjusted_estimators <- function(formula, control.formula, data) {
     # #head( dat )
 
     # estimate_ATE_design_based_adjusted( formula = Y ~ Tx*ID,
-                                        # control.formula = ~ X1 + X2,
+                                        # control_formula = ~ X1 + X2,
                                         # data=dat,
                                         # method="superpop",
                                         # weight="individual" )
@@ -75,7 +75,7 @@ all_adjusted_estimators <- function(formula, control.formula, data) {
 
 
     # all_adjusted_estimators( formula = Y ~ Tx*ID,
-                             # control.formula = ~ X1 + X2,
+                             # control_formula = ~ X1 + X2,
                              # data=dat )
 
 
@@ -85,7 +85,7 @@ all_adjusted_estimators <- function(formula, control.formula, data) {
     # dat$Xx = rnorm( nrow(dat) )
     # dat$Xalso = rnorm( nrow(dat) )
     # all_adjusted_estimators( formula = Y ~ Tx*ID,
-                             # control.formula = ~ X1 + X2 + Xx + Xalso,
+                             # control_formula = ~ X1 + X2 + Xx + Xalso,
                              # data=dat )
 
 

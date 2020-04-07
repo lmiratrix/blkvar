@@ -13,8 +13,8 @@
 #'
 #' @return Dataframe of the different versions of this estimator (person and
 #'   site weighted)
-interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, control.formula = NULL) {
-  if (!is.null(control.formula)) {
+interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, control_formula = NULL) {
+  if (!is.null(control_formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing( "Yobs"))
   }
@@ -52,7 +52,7 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   nj <- table(data$B)
   n <- nrow(data)
 
-  formula <- make_FE_int_formula("Yobs", "Z", "B", control.formula, data)
+  formula <- make_FE_int_formula("Yobs", "Z", "B", control_formula, data)
   M0.int <- lm(formula, data = data)
   ids <- grep( "Z:", names(coef(M0.int)))
   stopifnot(length(ids) == J)
@@ -90,7 +90,7 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   # sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
 
   interactModels <- data.frame(method = c("FE-Int-Sites", "FE-Int-Persons"), tau = c(tau.site, tau.indiv), SE = c(SE.site, SE.indiv), stringsAsFactors = FALSE)
-  if (!is.null(control.formula)) {
+  if (!is.null(control_formula)) {
     interactModels$method <- paste0(interactModels$method, "-adj")
   }
   interactModels

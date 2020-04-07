@@ -5,11 +5,11 @@
 #' @param B vector of block ids (or column name in data)
 #' @param siteID site ids (variable name as string if data frame passed) (if randomization blocks are nested in site).
 #' @param data frame holding Y, Z, B and (possibly a column with name specified by siteID).
-#' @param control.formula What variables to control for, in the form of "~ X1 + X2".
+#' @param control_formula What variables to control for, in the form of "~ X1 + X2".
 #'
 #' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor cov filter model.matrix na.exclude pf pnorm predict qchisq qf qnorm rbinom reshape resid runif vcov weighted.mean
 #' @export
-compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control.formula = NULL ) {
+compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control_formula = NULL ) {
   if (!is.null(data)) {
     if (missing( "Yobs")) {
       data <- data.frame(Yobs = data[[1]], Z = data[[2]], B = data[[3]])
@@ -34,12 +34,12 @@ compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control
   }
   stopifnot(length(unique(data$Z)) == 2)
   stopifnot(is.numeric(data$Yobs))
-  RICC <- estimate_ATE_RICC(Yobs, Z, B, data = data, REML = TRUE, control.formula = control.formula )
-  FIRC <- estimate_ATE_FIRC(Yobs, Z, B, data = data, siteID = siteID, REML = TRUE, include_testing = FALSE, control.formula = control.formula )
-  RIRC <- estimate_ATE_RIRC( Yobs, Z, B, data=data, REML = TRUE, include_testing = FALSE, control.formula = control.formula )
+  RICC <- estimate_ATE_RICC(Yobs, Z, B, data = data, REML = TRUE, control_formula = control_formula )
+  FIRC <- estimate_ATE_FIRC(Yobs, Z, B, data = data, siteID = siteID, REML = TRUE, include_testing = FALSE, control_formula = control_formula )
+  RIRC <- estimate_ATE_RIRC( Yobs, Z, B, data=data, REML = TRUE, include_testing = FALSE, control_formula = control_formula )
   mlms <- data.frame(method=c("RICC", "FIRC", "RIRC"), tau = c( RICC$ATE, FIRC$ATE, RIRC$ATE ), SE = c( RICC$SE.ATE, FIRC$SE.ATE, RIRC$SE.ATE ),
     stringsAsFactors = FALSE)
-  if (!is.null(control.formula)) {
+  if (!is.null(control_formula)) {
     mlms$method <- paste0(mlms$method, "-adj")
   }
   mlms

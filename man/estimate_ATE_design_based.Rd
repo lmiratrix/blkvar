@@ -6,7 +6,7 @@
 \usage{
 estimate_ATE_design_based(
   formula,
-  control.formula = NULL,
+  control_formula = NULL,
   siteID = NULL,
   data,
   method = c("finite", "superpop", "superpop.original"),
@@ -16,7 +16,7 @@ estimate_ATE_design_based(
 \arguments{
 \item{formula}{Input formula for analysis}
 
-\item{control.formula}{What variables to control for, in the form of "~ X1 + X2".}
+\item{control_formula}{What variables to control for, in the form of "~ X1 + X2".}
 
 \item{siteID}{Vector of site IDs if there are randomization blocks nested in
 site that should be aggregated (will change results for site weighting only).}

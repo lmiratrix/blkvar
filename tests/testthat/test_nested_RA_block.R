@@ -348,13 +348,13 @@ test_that("compare_methods with adjustment works with nested randomization block
 
 
     est1b = compare_methods( outcome, Tx, BB, data=a,
-                             control.formula = ~ X1 + X2 )
+                             control_formula = ~ X1 + X2 )
     est1b
 
 
     est1 = compare_methods( outcome, Tx, BB, data=a,
                             siteID = "sssite",
-                             control.formula = ~ X1 + X2 )
+                             control_formula = ~ X1 + X2 )
     est1
 
 

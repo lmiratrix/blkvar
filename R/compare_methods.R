@@ -14,9 +14,9 @@
 #'   Huber-White SEs, etc.)
 #' @param include_DBBlended Include DB estimators applied to small block
 #'   and classic Neyman to large blocks.
-#' @param weight.LM.method Argument passed to weight.method of weighted_linear_estimators
-#' @param weight.LM.scale.weights Argument passed to sclae.weights of weighted_linear_estimators
-#' @param control.formula What variables to control for, in the form of "~ X1 + X2".
+#' @param weight_LM_method Argument passed to weight.method of weighted_linear_estimators
+#' @param weight_LM_scale_weights Argument passed to sclae.weights of weighted_linear_estimators
+#' @param control_formula What variables to control for, in the form of "~ X1 + X2".
 #' @param include_block Include the Pashley blocking variants.
 #' @param include_method_characteristics Include details of the methods (target estimands and sampling framework assumed).
 #'
@@ -26,10 +26,10 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
                             include_block = TRUE, include_MLM = TRUE, include_DB = TRUE,
                             include_LM = TRUE, include_DBBlended = FALSE,
                             include_method_characteristics = FALSE,
-                            weight.LM.method = "survey",
-                            weight.LM.scale.weights = TRUE, control.formula = NULL) {
+                            weight_LM_method = "survey",
+                            weight_LM_scale_weights = TRUE, control_formula = NULL) {
 
-  if (!is.null(control.formula)) {
+  if (!is.null(control_formula)) {
     stopifnot( !is.null(data))
     # stopifnot( !missing("Yobs"))
   }
@@ -98,7 +98,7 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   }
 
   if (include_DB) {
-    if (is.null(control.formula)) {
+    if (is.null(control_formula)) {
       # Design based methods
       DB.fi <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="finite", weight="individual" )
       DB.fs <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="finite", weight="site" )
@@ -111,10 +111,10 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
       summary_table <- dplyr::bind_rows(summary_table, DB)
     } else {
       # Design based methods with covariate adjustment
-      DB.fi <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "finite", weight = "individual", control.formula = control.formula )
-      DB.fs <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "finite", weight = "site", control.formula = control.formula )
-      DB.si <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "superpop", weight = "individual", control.formula = control.formula)
-      DB.ss <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "superpop", weight = "site", control.formula = control.formula )
+      DB.fi <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "finite", weight = "individual", control_formula = control_formula )
+      DB.fs <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "finite", weight = "site", control_formula = control_formula )
+      DB.si <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "superpop", weight = "individual", control_formula = control_formula)
+      DB.ss <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "superpop", weight = "site", control_formula = control_formula )
       DB <- dplyr::bind_rows(DB.fi, DB.fs, DB.si, DB.ss)
       DB$method <- c( "DB-FP-Persons-adj", "DB-FP-Sites-adj", "DB-SP-Persons-adj", "DB-SP-Sites-adj")
       DB$weight <- NULL
@@ -124,12 +124,12 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   }
 
   if (include_LM) {
-    lms <- linear_model_estimators(Yobs, Z, B, data = data, siteID = siteID, block.stats = summary_stats, control.formula = control.formula, weight.LM.method = weight.LM.method,
-      weight.LM.scale.weights = weight.LM.scale.weights)
+    lms <- linear_model_estimators(Yobs, Z, B, data = data, siteID = siteID, block.stats = summary_stats, control_formula = control_formula, weight_LM_method = weight_LM_method,
+      weight_LM_scale_weights = weight_LM_scale_weights)
     summary_table = dplyr::bind_rows(summary_table, lms)
   }
   if (include_MLM) {
-    mlms <- compare_MLM_methods(Yobs, Z, B, data = data, siteID = siteID, control.formula = control.formula)
+    mlms <- compare_MLM_methods(Yobs, Z, B, data = data, siteID = siteID, control_formula = control_formula)
     summary_table <- dplyr::bind_rows( summary_table, mlms )
   }
 
@@ -139,7 +139,7 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     #mcm = mc$method
     #names(mcm) = mc$fullname
     #summary_table$method = mcm[ as.character( summary_table$method ) ]
-    if (!is.null(control.formula)) {
+    if (!is.null(control_formula)) {
       mc$method <- paste0(mc$method, "-adj")
     }
     summary_table <- merge( summary_table, mc, by = "method", all.x = TRUE, all.y = FALSE)

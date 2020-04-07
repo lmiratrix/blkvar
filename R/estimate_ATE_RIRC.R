@@ -5,9 +5,9 @@
 #'@param data Dataframe with all needed variables.
 #' @export
 
-estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_testing = TRUE, pool = FALSE, control.formula = NULL) {
+estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_testing = TRUE, pool = FALSE, control_formula = NULL) {
   stopifnot(!(include_testing && REML))
-  if (!is.null( control.formula)) {
+  if (!is.null( control_formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing("Yobs"))
   }
@@ -32,7 +32,7 @@ estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_tes
   #fit multilevel model and extract tau
   method <- ifelse( REML, "REML", "ML" )
 
-  formula <- make_base_formula(control.formula = control.formula, data = data)
+  formula <- make_base_formula(control_formula = control_formula, data = data)
   if (pool) {
     re.mod <- nlme::lme(formula, data = data, random = ~ 1 + Z | B, na.action = stats::na.exclude, method = method,
       control = nlme::lmeControl(opt="optim", returnObject = TRUE))

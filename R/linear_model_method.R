@@ -31,8 +31,8 @@ clubsandwich_variance <- function(w, tau_hat_b, tau_hat) {
 #' @return Dataframe of results for different estimators.
 #' @export
 fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
-                                    block.stats = NULL, control.formula = NULL) {
-  if (!is.null(control.formula)) {
+                                    block.stats = NULL, control_formula = NULL) {
+  if (!is.null(control_formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing("Yobs"))
   }
@@ -71,7 +71,7 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   }
 
   # Make control variable function
-  formula <- make_FE_formula( "Yobs", "Z", "B", control.formula, data)
+  formula <- make_FE_formula( "Yobs", "Z", "B", control_formula, data)
 
   # simple linear model
   M0 <- lm( formula, data = data)
@@ -105,7 +105,7 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
                          tau = rep(tau_hat, 4),
                          SE = c(SE.lm, SE.lm.sand, SE.lm.clust, SE.lm.clust.club),
                          stringsAsFactors = FALSE)
-  if (!is.null( control.formula)) {
+  if (!is.null( control_formula)) {
     FEmodels$method <- paste0( FEmodels$method, "-adj")
   }
   FEmodels
@@ -182,7 +182,7 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
 
     # rs = linear_model_estimators( Yobs, Z, sid, data=dat )
     # rs.adj = linear_model_estimators( Yobs, Z, sid, data=dat,
-                                      # control.formula = ~X1 + X2)
+                                      # control_formula = ~X1 + X2)
     # rs
     # rs.adj
 
@@ -191,7 +191,7 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     # rs = interacted_linear_estimators( Yobs, Z, sid, data=dat )
     # debug( interacted_linear_estimators )
     # rs.adj = interacted_linear_estimators( Yobs, Z, sid, data=dat,
-                                      # control.formula = ~X1 + X2)
+                                      # control_formula = ~X1 + X2)
     # rs.adj$tau.adj = rs$tau
     # rs.adj = mutate( rs.adj, delta = tau - tau.adj )
     # rs.adj

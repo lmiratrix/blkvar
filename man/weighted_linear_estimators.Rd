@@ -6,7 +6,7 @@
 \usage{
 weighted_linear_estimators(
   formula,
-  control.formula = NULL,
+  control_formula = NULL,
   siteID = NULL,
   data,
   scaled.weights = TRUE,
@@ -16,7 +16,7 @@ weighted_linear_estimators(
 \arguments{
 \item{formula}{Specification of outcome, treatment, and block ID variables as a formula of form "Yobs ~ Z*B" (order of variables is important).}
 
-\item{control.formula}{The control formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
 \item{siteID}{If not null, name of siteID that has randomization blocks}
 

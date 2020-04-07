@@ -74,14 +74,15 @@ test_that( "Block specific generator works", {
     expect_equal( length( unique( dt$B ) ), 2 )
     expect_true( is.factor( dt$B ) )
     dt = add_obs_data( dt )
+    head( dt )
 
-    ss = calc_summary_stats_oracle( dt )
-    ss
-    expect_equal( ss$sd0, c( 1, 1 ) )
-    expect_equal( ss$sd1, c( 1, 1 ) )
-    expect_equal( ss$corr, c( 1, 1 ) )
+    ss = calc_summary_stats_oracle( Y0, Y1, B, data=dt, Z=Z )
+    ss$tau = ss$Ybar1 - ss$Ybar0
+    expect_equal( ss$var0, c( 1, 1 ) )
+    expect_equal( ss$var1, c( 1, 1 ) )
+    #expect_equal( ss$corr, c( 1, 1 ) )
     expect_equal( ss$tau, c( 0, 0 ) )
-    expect_equal( ss$mu0, c( 0, 0 ) )
+    expect_equal( ss$Ybar0, c( 0, 0 ) )
 
     dt = generate_individuals_from_blocks( c( 4, 8 ), c( 0, 10 ),  c( 10, 1 ), c(1, 3), c( 3, 1 ), c( 0, 1 ), TRUE )
     dt
@@ -90,14 +91,16 @@ test_that( "Block specific generator works", {
     expect_true( is.factor( dt$B ) )
 
     dt = add_obs_data( dt )
-    ss = calc_summary_stats_oracle( dt )
+    ss = calc_summary_stats_oracle( Y0, Y1, B, data=dt, Z=Z )
+    ss$tau = ss$Ybar1 - ss$Ybar0
     ss
     expect_equal( ss$tau, c( 10, 1 ) )
-    expect_equal( ss$mu0, c( 0, 10 ) )
+    expect_equal( ss$Ybar0, c( 0, 10 ) )
 
     dt = generate_individuals_from_blocks( c( 4, 8 ), c( 0, 10 ),c( 10, 1 ),  c(1, 3), c( 3, 1 ), c( 0, 1 ), FALSE )
     dt = add_obs_data( dt )
-    ss = calc_summary_stats_oracle( dt )
+    ss = calc_summary_stats_oracle( Y0, Y1, B, data=dt, Z=Z )
+    ss$tau = ss$Ybar1 - ss$Ybar0
     ss
     expect_true( ss$tau[[1]] > ss$tau[[2]] )
 
