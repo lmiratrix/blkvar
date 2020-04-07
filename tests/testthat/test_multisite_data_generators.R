@@ -10,7 +10,7 @@ context("Checking multisite DGP functions")
 test_that( "Multisite DGP works", {
 
     # exploring sites
-    sdf = gen_dat( n.bar=10, J=10,
+    sdf = generate_multilevel_data( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=TRUE )
 
@@ -22,7 +22,7 @@ test_that( "Multisite DGP works", {
     cov( sdf$u0, sdf$u1 )
 
 
-    dat = gen_dat( n.bar=10, J=10,
+    dat = generate_multilevel_data( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
 
@@ -33,7 +33,7 @@ test_that( "Multisite DGP works", {
 
 test_that( "Variable p and n works", {
     set.seed( 1019 )
-    df = gen_dat_no_cov( n.bar=200, J=20,
+    df = generate_multilevel_data_no_cov( n.bar=200, J=20,
                          tau.11.star = 0.1^2,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -61,7 +61,7 @@ test_that( "Variable p and n works", {
 
 test_that( "Site impact correlation works", {
     set.seed( 1019 )
-    df = gen_dat_no_cov( n.bar=200, J=200,
+    df = generate_multilevel_data_no_cov( n.bar=200, J=200,
                          tau.11.star = 0.3^2,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -91,7 +91,7 @@ test_that( "Site impact correlation works", {
 
 test_that( "prop treated by impact correlation works", {
     set.seed( 1019 )
-    df = gen_dat_no_cov( n.bar=20, J=400,
+    df = generate_multilevel_data_no_cov( n.bar=20, J=400,
                          tau.11.star = 0.3^2,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -123,7 +123,7 @@ test_that( "prop treated by impact correlation works", {
 
 
 
-    df = gen_dat_no_cov( n.bar=20, J=200,
+    df = generate_multilevel_data_no_cov( n.bar=20, J=200,
                          tau.11.star = 0.3^2,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -152,7 +152,7 @@ test_that( "prop treated by impact correlation works", {
 
 
 
-    df = gen_dat_no_cov( n.bar=200, J=200,
+    df = generate_multilevel_data_no_cov( n.bar=200, J=200,
                          tau.11.star = 0.3^2,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -178,7 +178,7 @@ test_that( "prop treated by impact correlation works", {
 
 
 
-    df = gen_dat_no_cov( n.bar=25, J=80,
+    df = generate_multilevel_data_no_cov( n.bar=25, J=80,
                          tau.11.star = 0,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -199,7 +199,7 @@ test_that( "prop treated by impact correlation works", {
 
 test_that( "Bounding of 2 tx and 2 co units works", {
     set.seed( 1019 )
-    df = gen_dat_no_cov( n.bar=16, J=200,
+    df = generate_multilevel_data_no_cov( n.bar=16, J=200,
                          tau.11.star = 0.3^2,
                          ICC = 0.20,
                          variable.n = TRUE,
@@ -227,14 +227,14 @@ test_that( "Bounding of 2 tx and 2 co units works", {
 test_that( "Other DGP calls work", {
     set.seed( 101010 )
 
-    df = gen_dat_model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1, variable.n=FALSE)
+    df = generate_multilevel_data_model( 10, J=300, 0.5, 0, 0, 0, 0, 0.3, 0, 0.3, 1, variable.n=FALSE)
     expect_equal( nrow(df), 3000 )
 } )
 
 test_that( "Other DGP calls work (#2)", {
     set.seed( 101010 )
 
-    df = gen_dat( n.bar=10, J=300,
+    df = generate_multilevel_data( n.bar=10, J=300,
                   tau.11.star = 0.3,
                   verbose=FALSE)
 
@@ -270,14 +270,14 @@ test_that( "Other DGP calls work (#2)", {
 
 
 test_that( "Cluster randomization options work", {
-    df = gen_dat( n.bar=10, J=20,
+    df = generate_multilevel_data( n.bar=10, J=20,
                   tau.11.star = 0.3,
                   verbose=FALSE,
                   cluster.rand=TRUE)
     tb = table( df$Z, df$sid)
     tb
     expect_true( all( tb[1,] * tb[2,] == 0 ) )
-    df = gen_dat( n.bar=10, J=300,
+    df = generate_multilevel_data( n.bar=10, J=300,
                   tau.11.star = 0.3,
                   verbose=FALSE,
                   cluster.rand=FALSE)
@@ -290,7 +290,7 @@ test_that( "Cluster randomization options work", {
 
 test_that( "Individual covariate options work", {
     set.seed( 1020 )
-    df = gen_dat_model( n.bar = 20, J = 300,
+    df = generate_multilevel_data_model( n.bar = 20, J = 300,
                         gamma.00 = 1, gamma.01 = 1, gamma.10 = 0.3, gamma.11 = 0,
                         tau.00 = 1, tau.01 = 0, tau.11 = 0,
                         sigma2.e = 1, sigma2.W = 1,

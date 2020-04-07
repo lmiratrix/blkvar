@@ -7,7 +7,7 @@ context("Checking blocking functions (Nicole package parts)")
 test_that("Nicole block estimators provide reasonable answers", {
 
     set.seed( 1019 )
-    dat = make_obs_data_linear( method="big")
+    dat = generate_blocked_data_obs_linear( method="big")
     head( dat )
     rs <- calc_summary_stats( dat$Yobs, dat$Z, dat$B, add.neyman = TRUE)
     rs
@@ -30,7 +30,7 @@ test_that("Nicole block estimators provide reasonable answers", {
 
 test_that("All options of method for block_estimator_tabulated run without error", {
     set.seed( 101910 )
-    dat = make_obs_data_linear( method="big")
+    dat = generate_blocked_data_obs_linear( method="big")
     head( dat )
     rs <- calc_summary_stats( dat$Yobs, dat$Z, dat$B, add.neyman = TRUE)
     rs
@@ -54,7 +54,7 @@ test_that("calc_summary_stats functions work", {
                       Y = c(1,3,10,13,1,2,3,1,2,3,4,5) )
     datr
 
-    #dat = make_obs_data( method="small")
+    #dat = generate_blocked_data_obs( method="small")
     nrow( datr )
 
     sdat = calc_summary_stats( Y, TX, BK, datr )
@@ -79,8 +79,8 @@ test_that("calc_summary_stats functions work", {
 
 test_that("calc_summary_stats with site works", {
     set.seed( 1019 )
-    dat = make_obs_data_linear( X=1:50, method="big" )
-    #dat = make_obs_data( method="small")
+    dat = generate_blocked_data_obs_linear( X=1:50, method="big" )
+    #dat = generate_blocked_data_obs( method="small")
     nrow( dat )
     dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
     table( dat$siteNo )
@@ -101,7 +101,7 @@ test_that("calc_summary_stats with site works", {
 test_that("With small block estimators Nicole estimators provide answers", {
 
     set.seed( 1019 )
-    dat = make_obs_data_linear( method="small")
+    dat = generate_blocked_data_obs_linear( method="small")
     head( dat )
     rs <- calc_summary_stats( dat$Yobs, dat$Z, dat$B, add.neyman = TRUE)
     rs
@@ -132,7 +132,7 @@ test_that("With small block estimators Nicole estimators provide answers", {
 test_that("Dropping levels works", {
 
     set.seed( 1019 )
-    dat = make_obs_data_linear( method="big")
+    dat = generate_blocked_data_obs_linear( method="big")
     dat$Z[1:4] = 0
 
     expect_false( all( table( dat$Z, dat$B ) == 0 ) )

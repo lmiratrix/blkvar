@@ -10,7 +10,7 @@ context("Checking nested randomization blocks")
 make.balanced.dataset = function(  ) {
     # Make sure site weighting is correct
     # (Generate dataset with known tau to verify.)
-    a = make_data( c( 4, 4, 4, 3, 3, 6 ), tau = c( 10, 20, 30, 40, 50, 60 ), exact=TRUE )
+    a = generate_blocked_data( c( 4, 4, 4, 3, 3, 6 ), tau = c( 10, 20, 30, 40, 50, 60 ), exact=TRUE )
     a$sssite = c( 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 )
     a$Z = 1
     a$Yobs = a$Y1
@@ -77,7 +77,7 @@ get.params = function( a ) {
 test_that("DB estimators work with nested randomization blocks", {
 
     set.seed( 1019 )
-    dat = make_obs_data_linear( X=1:50, method="big" )
+    dat = generate_blocked_data_obs_linear( X=1:50, method="big" )
     dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
 
     # Our dataset with blocks in sites
@@ -222,7 +222,7 @@ test_that("weighted linear regression works with nested randomization blocks", {
 
     # Another test--match design based?
     set.seed( 1019 )
-    dat = make_obs_data_linear( X=1:50, method="big" )
+    dat = generate_blocked_data_obs_linear( X=1:50, method="big" )
     dat$siteNo = round( 1 + as.numeric( dat$B ) / 3 )
 
     # Our dataset with blocks in sites
@@ -327,7 +327,7 @@ test_that("compare_methods works with nested randomization blocks", {
 
 
 test_that("compare_methods with adjustment works with nested randomization blocks", {
-    a = gen_dat( n.bar=10, J=10 )
+    a = generate_multilevel_data( n.bar=10, J=10 )
     head( a )
     a$X1 = a$Y0 + rnorm( nrow(a), sd=1 )
     a$X2 = a$Y1 + rnorm( nrow(a), sd=1 )

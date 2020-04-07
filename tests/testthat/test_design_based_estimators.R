@@ -9,8 +9,8 @@ context("Checking RCT YES estimators")
 
 test_that("Design Based (RCT Yes) functions work", {
     set.seed( 1019 )
-    dat = make_obs_data_linear( method="big")
-    #dat = make_obs_data( method="small")
+    dat = generate_blocked_data_obs_linear( method="big")
+    #dat = generate_blocked_data_obs( method="small")
     head( dat )
 
     sdat = calc_summary_stats( dat )

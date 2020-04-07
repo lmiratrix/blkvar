@@ -7,10 +7,10 @@ library( blkvar )
 context("Checking DGP functions")
 
 test_that("data generation functions work", {
-    dat = make_data_linear()
+    dat = generate_blocked_data_linear()
     expect_equal( nrow(dat), 16 )
 
-    dat = make_data_linear()
+    dat = generate_blocked_data_linear()
     dat$blk = form_blocks_from_continuous( dat$X, method="pair" )
     expect_true( all( table( dat$blk ) == 2 ) )
 
@@ -37,7 +37,7 @@ test_that("data generation functions work", {
 
 test_that( "testing equispaced X", {
 
-    dat = make_obs_data_linear( method="small", X=1:10 )
+    dat = generate_blocked_data_obs_linear( method="small", X=1:10 )
     table( dat$B )
     expect_equal( nrow(dat), 10 )
 } )
@@ -56,11 +56,11 @@ test_that( "out of order X", {
 
 
 test_that( "Pashley paper data generators work", {
-    dat = make_data( c( 2,3,4) )
+    dat = generate_blocked_data( c( 2,3,4) )
     dat
     expect_equal( as.numeric( table( dat$B ) ), c( 2, 3, 4 ) )
 
-    dat = make_obs_data( c( 2,3,4, 20), p=0.001 )
+    dat = generate_blocked_data_obs( c( 2,3,4, 20), p=0.001 )
     dat
     expect_equal( sum(dat$Z), 4 )
 
@@ -108,7 +108,7 @@ test_that( "Block specific generator works", {
 
 
 test_that( "Block factors are factors and in increasing order even if we hit 10+ blocks", {
-    dat = make_data( rep( c( 5, 10, 20, 40, 60 ), each=2 ), sigma_alpha = 2, sigma_tau=1 )
+    dat = generate_blocked_data( rep( c( 5, 10, 20, 40, 60 ), each=2 ), sigma_alpha = 2, sigma_tau=1 )
     head( dat )
     expect_true( is.factor( dat$B ) )
     expect_equal( nlevels( dat$B ), 10 )

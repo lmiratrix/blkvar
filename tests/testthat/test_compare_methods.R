@@ -5,7 +5,7 @@ context("Checking compare methods all work")
 test_that("Check call options of the compare_methods", {
 
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 30 )
+    dat = generate_multilevel_data( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -28,7 +28,7 @@ test_that("Check call options of the compare_methods", {
 test_that("Check for lack warnings, etc., from compare_methods", {
 
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 30 )
+    dat = generate_multilevel_data( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -42,7 +42,7 @@ test_that("Check for lack warnings, etc., from compare_methods", {
 test_that("Check method_characteristics works", {
 
     set.seed( 101974 )
-    dat = gen_dat( n.bar = 30, J = 30 )
+    dat = generate_multilevel_data( n.bar = 30, J = 30 )
 
     fulltab = compare_methods( Yobs, Z, sid, data=dat, include_method_characteristics = TRUE )
 
@@ -63,7 +63,7 @@ test_that("Check method_characteristics works", {
 test_that("weighting lm flags gets passed", {
 
     set.seed( 102030 )
-    dat = gen_dat( n.bar = 20, J = 20 )
+    dat = generate_multilevel_data( n.bar = 20, J = 20 )
 
     fulltab = compare_methods( Yobs, Z, sid, data=dat, weight_LM_scale_weights = FALSE,
                                include_MLM = FALSE, include_block = FALSE, include_DBBlended = FALSE, include_DB = FALSE )
@@ -82,7 +82,7 @@ test_that("weighting lm flags gets passed", {
 test_that("Check method works on tibbles", {
 
     set.seed( 101974 )
-    dat = tibble::as_tibble( gen_dat( n.bar = 30, J = 30 ) )
+    dat = tibble::as_tibble( generate_multilevel_data( n.bar = 30, J = 30 ) )
 
     fulltab = compare_methods( Yobs, Z, sid, data=dat, include_method_characteristics = TRUE )
     fulltab
@@ -100,7 +100,7 @@ test_that("Check method works on tibbles", {
 test_that("Check for asking for different parts", {
 
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 30 )
+    dat = generate_multilevel_data( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -117,7 +117,7 @@ test_that("Check for asking for different parts", {
 
 test_that( "Comparing variation methods works", {
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 30 )
+    dat = generate_multilevel_data( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
 
@@ -158,7 +158,7 @@ test_that( "Comparing variation methods works", {
 
 test_that( "Comparing variation with site and block works", {
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 30 )
+    dat = generate_multilevel_data( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
     dat$siteNo = as.factor( round( as.numeric( dat$sid ) / 4 ) )
@@ -184,7 +184,7 @@ test_that( "Comparing variation with site and block works", {
 
 test_that( "Design based works through compare_methods", {
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 4 )
+    dat = generate_multilevel_data( n.bar = 30, J = 4 )
     nrow( dat )
     head( dat )
 

@@ -16,7 +16,7 @@
 #' @param ATE Average Tx
 #' @param d Interaction effect term.
 #' @export
-make_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65),
+generate_blocked_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65),
                             a = 0, b = 0, ATE = 0.2, d = 0) {
   X.sd <- round((X - mean(X)) / sd(X), digits = 1)
   # Quadratic relationship, OLS no help
@@ -78,7 +78,7 @@ add_obs_data <- function(dat, p = 0.5, Y0 = "Y0", Y1 = "Y1", blockvar = "B") {
 }
 
 if ( FALSE ) {
-    dat = make_data( c( 2, 5, 10 ) )
+    dat = generate_blocked_data( c( 2, 5, 10 ) )
     debug( add_obs_data )
     add_obs_data( dat, p=0.2 )
 }
@@ -171,7 +171,7 @@ if ( FALSE ) {
 #' @return Dataframe with block indicators, Y0, and Y1.
 #'
 #' @export
-make_data <- function(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact = FALSE) {
+generate_blocked_data <- function(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact = FALSE) {
   K <- length(n_k)
   percents <- seq(from = (1 - 1 / (K + 1)), to = 1 / (K + 1), by = -1 /(K + 1))
   alpha <- qnorm(percents, 0, sigma_alpha)
@@ -184,7 +184,7 @@ make_data <- function(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1,
 #' Generate data, form_blocks_from_continuous, and randomize within block and generate
 #' observed potential outcomes
 #'
-#' @rdname make_data_linear
+#' @rdname generate_blocked_data_linear
 #' @param method How to block
 #' @param X vector of indiviual level covariates
 #' @param a Intercept of Y0
@@ -194,9 +194,9 @@ make_data <- function(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1,
 #' @param p Proportion of units treated (as close as possible given block sizes)
 #' @return Dataframe with original potential outcomes and observed outcome based on random assigment.
 #' @export
-make_obs_data_linear <- function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65), p = 0.5, a = 0, b = 0, ATE = 0.2, d = 0,
+generate_blocked_data_obs_linear <- function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65), p = 0.5, a = 0, b = 0, ATE = 0.2, d = 0,
   method = c("small", "pair", "big", "none")) {
-  dat <- make_data_linear(X, a, b, ATE, d)
+  dat <- generate_blocked_data_linear(X, a, b, ATE, d)
   dat$B <- form_blocks_from_continuous(dat$X, method = method)
   dat <- add_obs_data(dat, p = p)
   dat
@@ -207,16 +207,16 @@ make_obs_data_linear <- function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 
 #' Generate data, form_blocks_from_continuous, and randomize within block and generate observed
 #' potential outcomes
 #'
-#' @rdname make_data
+#' @rdname generate_blocked_data
 #' @param n_k List of block sizes
 #' @param p Proportion of units treated (as close as possible given block
 #'   sizes).  This can be a vector with a probability for each block.
-#' @param ... Parameters to be passed to make_data()
+#' @param ... Parameters to be passed to generate_blocked_data()
 #' @return Dataframe with original potential outcomes and observed outcome based
 #'   on random assigment.
 #' @export
-make_obs_data = function(n_k = c(2, 3, 4, 8), p = 0.5, ... ) {
-  dat <- make_data( n_k = n_k, ... )
+generate_blocked_data_obs = function(n_k = c(2, 3, 4, 8), p = 0.5, ... ) {
+  dat <- generate_blocked_data( n_k = n_k, ... )
   dat <- add_obs_data(dat, p = p)
   dat
 }

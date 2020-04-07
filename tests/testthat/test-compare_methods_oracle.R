@@ -1,7 +1,7 @@
 
 test_that( "calc_summary_stats_oracle works", {
 
-    dat = make_data_linear()
+    dat = generate_blocked_data_linear()
     head( dat )
     nrow( dat )
     dat$blk = form_blocks_from_continuous( dat$X, method="small" )
@@ -28,7 +28,7 @@ test_that( "calc_summary_stats_oracle works", {
 
 test_that("compare_methods_oracle works", {
 
-    dat = make_data_linear()
+    dat = generate_blocked_data_linear()
     head( dat )
     dat$blk = form_blocks_from_continuous( dat$X, method="small" )
     p_mat<- dat %>% group_by( blk ) %>%

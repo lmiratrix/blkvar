@@ -1,10 +1,32 @@
-#' Test for treatment variation across site.
+
+
+#' @title Multilevel model based test for cross site variation
 #'
-#' This is a combination test: it uses
-#' a liklihood ratio test on model with both systematic and ideosyncratic
-#' variation
-#' @param df Dataframe to analyze.
-#' @rdname analysis_idio
+#' @description
+#' The idiosyncratic version tests for cross site variation using a liklihood
+#' ratio test vs. a model with no random slope (but random intercept). This is
+#' the RIRC version of such a test.
+#'
+#' This minimal method assumes a dataframe with specifically named columns
+#'
+#' @param df Dataframe to analyze.  Columns of Z, sid, Yobs, and X.
+#' @return P-value from the test.
+#' @importFrom lme4 lmer
+#' @importFrom stats deviance pchisq
+#' @export
+analysis_idio <- function(df) {
+    M0 <- lme4::lmer(Yobs ~ 1 + Z + (Z|sid), data = df, REML = FALSE )
+    M0.null <- lme4::lmer(Yobs ~ 1 + Z + (1|sid), data = df, REML = FALSE)
+    # I _think_ this is what is suggested to handle the boundary by Snijders and Bosker
+    td <- deviance( M0.null) - deviance(M0)
+    0.5 * pchisq(td, 2, lower.tail = FALSE) + 0.5 * pchisq(td, 1, lower.tail = FALSE)
+    # tst <- lrtest( M0, M0.null )
+    # tst[[5]][[2]]
+}
+
+
+#' @describeIn analysis_idio This is a combination test: it uses a liklihood
+#'   ratio test on model with both systematic and idiosyncratic variation
 #' @export
 
 analysis_combination <- function(df) {
@@ -17,3 +39,33 @@ analysis_combination <- function(df) {
   0.5 * pchisq(td, 3, lower.tail = FALSE) + 0.5 * pchisq(td, 2, lower.tail = FALSE)
   # tst[[5]][[2]]
 }
+
+
+#' @describeIn analysis_idio Test for cross site variation by testing for a covariate predictive of variation. This version does not allow for random tx variation (random slope).
+#' @importFrom arm se.coef
+#' @export
+
+analysis_systematic <- function(df) {
+    M0 <- lme4::lmer(Yobs ~ 1 + Z * X + (1|sid), data = df)
+    tstat <- lme4::fixef(M0) / arm::se.coef(M0)$fixef
+    2 * pnorm( - abs(tstat[["Z:X"]]))
+}
+
+
+
+#' @describeIn  analysis_idio Systematic test with the random idiosyncratic
+#'   variation.  This tests for systematic variation, ignoring explicitly
+#'   modeled random treatment variation.
+#'
+#' @importFrom arm se.coef
+#' @export
+
+analysis_systematic_RTx <- function(df) {
+    M0 <- lme4::lmer( Yobs ~ 1 + Z * X + (Z|sid), data = df)
+    tstat <- lme4::fixef(M0) / arm::se.coef(M0)$fixef
+    2 * pnorm( - abs(tstat[["Z:X"]]))
+}
+
+
+
+

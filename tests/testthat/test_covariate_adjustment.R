@@ -5,7 +5,7 @@ context("Checking covariate adjustment works")
 test_that("Check compare_methods with covariate adjustment", {
 
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 30 )
+    dat = generate_multilevel_data( n.bar = 30, J = 30 )
     nrow( dat )
     head( dat )
     dat$X1 = dat$W + rnorm( nrow(dat) )
@@ -35,7 +35,7 @@ test_that("Check compare_methods with covariate adjustment", {
 
 test_that( "Covariate adjusted Design based works through compare_methods", {
     set.seed( 1019 )
-    dat = gen_dat( n.bar = 30, J = 4 )
+    dat = generate_multilevel_data( n.bar = 30, J = 4 )
     nrow( dat )
     head( dat )
     dat$X1 = dat$W + rnorm( nrow(dat) )

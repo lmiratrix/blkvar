@@ -9,7 +9,7 @@ context("Checking regression estimators")
 
 test_that("interacted regression runs on balanced data", {
     set.seed( 1019 )
-    dat = make_obs_data_linear( method="big")
+    dat = generate_blocked_data_obs_linear( method="big")
     head( dat )
 
     rs = blkvar:::interacted_linear_estimators( Yobs, Z, B, data=dat )
@@ -28,8 +28,8 @@ test_that("interacted regression runs on balanced data", {
 
 test_that("Weighted regression matches db", {
     set.seed( 10191010 )
-    dat = make_obs_data_linear( method="small")
-    #dat = make_obs_data( method="small")
+    dat = generate_blocked_data_obs_linear( method="small")
+    #dat = generate_blocked_data_obs( method="small")
     head( dat )
 
     sdat = calc_summary_stats( dat )
@@ -56,7 +56,7 @@ test_that("Weighted regression matches db", {
 
 test_that("Different Weighted regression flags work", {
     set.seed( 1019101010 )
-    dat = make_obs_data_linear( method="small")
+    dat = generate_blocked_data_obs_linear( method="small")
     head( dat )
 
     A = blkvar:::weighted_linear_estimators( Yobs ~ Z*B, data=dat )

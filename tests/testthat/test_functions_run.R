@@ -4,7 +4,7 @@ context("Checking analysis functions run")
 
 test_that("Summary core function works", {
 
-    dat = make_obs_data_linear( method="big")
+    dat = generate_blocked_data_obs_linear( method="big")
 
     rs = calc_summary_stats( dat$Yobs, dat$Z, dat$B )
     rs
@@ -19,7 +19,7 @@ test_that("Summary core function works", {
 
 
 test_that("compare functions doesn't crash when called on big blocks", {
-    dat = make_obs_data_linear( method="big")
+    dat = generate_blocked_data_obs_linear( method="big")
     res <- calc_summary_stats(dat$Yobs, dat$Z, dat$B)
 
     res <- block_estimator(dat$Yobs, dat$Z, dat$B, method=c("hybrid_m") )
@@ -34,7 +34,7 @@ test_that("compare functions doesn't crash when called on big blocks", {
 
 
 test_that("compare functions doesn't crash when called on small blocks", {
-    dat = make_obs_data_linear( method="small")
+    dat = generate_blocked_data_obs_linear( method="small")
     dat
 
     res <- calc_summary_stats(dat$Yobs, dat$Z, dat$B)
@@ -91,7 +91,7 @@ test_that( "further tests of output, etc", {
 
 
 test_that("B as factor works", {
-    dat = make_obs_data_linear( X=1:200 )
+    dat = generate_blocked_data_obs_linear( X=1:200 )
     head( dat )
     table( dat$B )
     dat$B = as.factor( dat$B )

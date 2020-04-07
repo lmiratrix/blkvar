@@ -10,7 +10,7 @@ context("Checking FIRC estimators")
 test_that("FIRC functions work", {
     set.seed( 1019 )
 
-    sdf = gen_dat( n.bar=10, J=10,
+    sdf = generate_multilevel_data( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
@@ -35,7 +35,7 @@ test_that("FIRC functions work", {
 test_that("RIRC functions work", {
     set.seed( 1019 )
 
-    sdf = gen_dat( n.bar=10, J=10,
+    sdf = generate_multilevel_data( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
@@ -54,7 +54,7 @@ test_that("RIRC functions work", {
 test_that("RICC functions work", {
     set.seed( 1019 )
 
-    sdf = gen_dat( n.bar=10, J=10,
+    sdf = generate_multilevel_data( n.bar=10, J=10,
                    rho2.0W = 0.3, rho2.1W = 0.1,
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )

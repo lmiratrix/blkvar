@@ -44,7 +44,7 @@ There are several classes of methods for estimating the ATE:
     
 For a running example we generate some data
 ```{r}
-df <- gen_dat_no_cov(n.bar = 50, J = 30, 
+df <- generate_multilevel_data_no_cov(n.bar = 50, J = 30, 
                      gamma.10 = 0, 
                      tau.11.star = 0.2 ^ 2, ICC = 0.65, 
                      variable.n = TRUE)

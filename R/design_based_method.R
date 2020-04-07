@@ -1,8 +1,8 @@
 # # testing
 # if ( FALSE ) {
 
-    # dat = make_obs_data_linear( method="big")
-    # #dat = make_obs_data( method="small")
+    # dat = generate_blocked_data_obs_linear( method="big")
+    # #dat = generate_blocked_data_obs( method="small")
     # head( dat )
     # #write_csv( dat, path="some_fake_data.csv" )
 
@@ -43,7 +43,7 @@ all_adjusted_estimators <- function(formula, control_formula, data) {
 # if ( FALSE ) {
 
     # #set.seed( 1019)
-    # dat = gen_dat( n.bar = 20, J = 5, beta.X = 0.5 )
+    # dat = generate_multilevel_data( n.bar = 20, J = 5, beta.X = 0.5 )
     # nrow( dat )
     # head( dat )
 

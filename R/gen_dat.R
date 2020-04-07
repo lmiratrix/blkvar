@@ -2,9 +2,9 @@
 
 
 # This global variable is a hack so if the 'finite.model' flag in
-# gen_dat_model() is set to TRUE, that method will save the first randomly
+# generate_multilevel_data_model() is set to TRUE, that method will save the first randomly
 # generated units in this variable and then, in subsequent calls to
-# gen_dat_model() simply rerandomize these units. (gen_dat_model will check if J
+# generate_multilevel_data_model() simply rerandomize these units. (generate_multilevel_data_model will check if J
 # has changed and reset if the parameter J is different).
 .MULTISITE_CANONICAL = NULL
 
@@ -39,7 +39,7 @@ block_distn <- function(J, n.bar, size.ratio) {
 #' finite sample inference where the dataset should be held static and only
 #' randomization is necessary.
 #'
-#' @param dat Dataframe from, e.g., gen_dat() that has two columns, 'sid', and 'Z'.
+#' @param dat Dataframe from, e.g., generate_multilevel_data() that has two columns, 'sid', and 'Z'.
 #'
 #' @return Same dataframe with treatment shuffled and Yobs recalculated.
 #' @export
@@ -85,12 +85,12 @@ rerandomize_data <- function(dat) {
 #'   correlated.
 #' @param variable.p Should the proportion of units treated in each site vary?  Yes/No.
 #' @param sigma2.W The variation of the site-level covariate.
-#' @param finite.model If TRUE use a canonical set of random site effects.  When TRUE this method will save the multivariate normal draw and reuse it in subsequent calls to gen_dat_model until a call with a different J is made.  Recommended to use FALSE.
+#' @param finite.model If TRUE use a canonical set of random site effects.  When TRUE this method will save the multivariate normal draw and reuse it in subsequent calls to generate_multilevel_data_model until a call with a different J is made.  Recommended to use FALSE.
 #' @param size.ratio The degree to which the site sizes should vary, if they should vary.
 #' @return Dataframe of individual level data (unless return.sites=TRUE)!  Dataframe has treatment column, outcome column, covariates, and block IDs.
 #' @importFrom magrittr '%>%'
 #' @export
-gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
+generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
                           beta.X = NULL, sigma2.mean.X = 0, variable.n = TRUE, variable.p = FALSE, cluster.rand = FALSE, return.sites = FALSE, finite.model = FALSE,
                           size.impact.correlate = 0, proptx.impact.correlate = 0, correlate.strength = 0.75, size.ratio = 1 / 3, verbose = FALSE) {
 
@@ -241,8 +241,8 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
 
 
 
-#' @title gen_dat
-#' @describeIn gen_dat_model Wrapper for gen_dat_model that rescales parameters to make standardization easier.
+#' @title generate_multilevel_data
+#' @describeIn generate_multilevel_data_model Wrapper for generate_multilevel_data_model that rescales parameters to make standardization easier.
 #'
 #' @param tau.11.star Total amount of cross site treatment variation, both
 #'   explained by covariate and not, Default: 0.3
@@ -256,9 +256,9 @@ gen_dat_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma
 #' @param zero.corr TRUE means treatment impact and mean site outcome are not
 #'   correlated.  TRUE means they are negatively correlated to make the variance
 #'   of the treatment group 1, Default: FALSE
-#' @param ... Further parameters passed to gen_dat_model()
+#' @param ... Further parameters passed to generate_multilevel_data_model()
 #' @export
-gen_dat <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE, zero.corr = FALSE, ... ) {
+generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE, zero.corr = FALSE, ... ) {
     sigma2.W <- 1
     gamma.01 <- sqrt(rho2.0W * ICC / sigma2.W)
     gamma.11 <- sqrt(rho2.1W * tau.11.star)
@@ -276,12 +276,12 @@ gen_dat <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0W = 0.
         scat( "tau.11* <- %.2f\n", gamma.11 ^ 2 * sigma2.W + tau.11)
         scat( "sigma2.e* <- %.2f\n", sigma2.e)
     }
-    gen_dat_model(n.bar = n.bar, J = J, p = p, gamma.00, gamma.01, gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e, verbose = verbose, ...)
+    generate_multilevel_data_model(n.bar = n.bar, J = J, p = p, gamma.00, gamma.01, gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e, verbose = verbose, ...)
 }
 
 
 
-#' @describeIn gen_dat_model   Simplified version of gen_dat() with no W covariate.
+#' @describeIn generate_multilevel_data_model   Simplified version of generate_multilevel_data() with no W covariate.
 #'
 #' @param control.sd.Y1 Make correlation of random intercept and random slope
 #'   such that the variance of the Y1s is 1.0, Default: TRUE
@@ -293,7 +293,7 @@ gen_dat <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0W = 0.
 #' @param variable.n Allow n to vary around n.bar, Default: TRUE
 #' @param control.sd.Y1 Make correlation of random intercept and random slope
 #' @export
-gen_dat_no_cov <- function(n.bar = 10, J = 30, p = 0.5,
+generate_multilevel_data_no_cov <- function(n.bar = 10, J = 30, p = 0.5,
                            tau.11.star = 0.3, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE,
                            variable.n = TRUE, control.sd.Y1 = TRUE, ... ) {
     tau.00 <- ICC
@@ -311,7 +311,7 @@ gen_dat_no_cov <- function(n.bar = 10, J = 30, p = 0.5,
         scat( "tau.11* = %.2f\n",  tau.11)
         scat( "sigma2.e* = %.2f\n", sigma2.e)
     }
-    gen_dat_model(n.bar = n.bar, J = J, p = p, gamma.00 = gamma.00, gamma.10 = gamma.10, gamma.01 = 0, gamma.11 = 0, tau.00 = tau.00, tau.01 = tau.01, tau.11 = tau.11,
+    generate_multilevel_data_model(n.bar = n.bar, J = J, p = p, gamma.00 = gamma.00, gamma.10 = gamma.10, gamma.01 = 0, gamma.11 = 0, tau.00 = tau.00, tau.01 = tau.01, tau.11 = tau.11,
                   sigma2.e = sigma2.e, verbose = verbose, variable.n = variable.n, ...)
 }
 

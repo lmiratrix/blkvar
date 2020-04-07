@@ -27,7 +27,7 @@ In this document we review two ways to generate point estimates, confidence inte
 
 We first need some data, and so we simulate some:
 ```{r}
-df = gen_dat_no_cov( n.bar=40, J=20,
+df = generate_multilevel_data_no_cov( n.bar=40, J=20,
                      gamma.10 = 0,
                      tau.11.star = 0.2^2,
                      ICC = 0.52,

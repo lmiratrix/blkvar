@@ -12,7 +12,7 @@
  method_characteristics <- function() {
    # Code to make the hard-coded list of characteristics
    if (FALSE) {
-     dat <- make_obs_data(n_k = 4:10, p = 0.2)
+     dat <- generate_blocked_data_obs(n_k = 4:10, p = 0.2)
      a <- compare_methods(data = dat[c("Yobs", "Z", "B")])
      a <- a[1]
      a$fullname <- a$method

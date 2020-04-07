@@ -139,7 +139,7 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
 
 # #### Some overall testing code #####
 # if ( FALSE ) {
-    # dat = make_obs_data(p = 0.2)
+    # dat = generate_blocked_data_obs(p = 0.2)
     # head( dat )
     # localsource("control_formula_utilities.R" )
 
@@ -162,12 +162,12 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
 
 # #### Some overall testing code comparing adustment vs not #####
 # if ( FALSE ) {
-    # dat = make_obs_data(p = 0.2)
+    # dat = generate_blocked_data_obs(p = 0.2)
     # head( dat )
     # localsource("control_formula_utilities.R" )
 
     # set.seed( 1019 )
-    # dat = gen_dat( n.bar = 30, J = 30 )
+    # dat = generate_multilevel_data( n.bar = 30, J = 30 )
     # nrow( dat )
     # head( dat )
     # dat$X1 = dat$W + rnorm( nrow(dat) )

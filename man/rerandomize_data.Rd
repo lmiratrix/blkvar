@@ -8,7 +8,7 @@ outcomes}
 rerandomize_data(dat)
 }
 \arguments{
-\item{dat}{Dataframe from, e.g., gen_dat() that has two columns, 'sid', and 'Z'.}
+\item{dat}{Dataframe from, e.g., generate_multilevel_data() that has two columns, 'sid', and 'Z'.}
 }
 \value{
 Same dataframe with treatment shuffled and Yobs recalculated.

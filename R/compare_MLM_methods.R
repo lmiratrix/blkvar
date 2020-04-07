@@ -51,7 +51,7 @@ compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control
 # #### Testing and demo of this code ####
 
 # if  (FALSE ) {
-    # dat = make_obs_data( n_k = 4:10, p = 0.2 )
+    # dat = generate_blocked_data_obs( n_k = 4:10, p = 0.2 )
     # dat
     # table( dat$Z, dat$B )
     # compare_methods( data = dat[ c("Yobs", "Z","B" ) ] )
