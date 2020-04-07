@@ -6,19 +6,19 @@
 table).  This is for simulaton studies where we know all the potential
 outcomes.}
 \usage{
-compare_methods_oracle(Y, Z, B, p.mat, data = NULL)
+compare_methods_oracle(Y0, Y1, B, data = NULL, p_mat = NULL)
 }
 \arguments{
-\item{Y}{vector of all outcomes}
+\item{Y0}{Vector of control potential outcomes.}
 
-\item{Z}{vector that indicates if outcome is under treatment or control}
+\item{Y1}{Vector of treatment potential outcomes}
 
 \item{B}{block ids}
 
-\item{p.mat}{matrix with first column B,second column prop treated in
-that block, p}
-
 \item{data}{alternatively is matrix of Y,Z,B}
+
+\item{p_mat}{matrix with two columns, one row per block.  First column is B,
+second column prop treated in that block, ("p")}
 }
 \description{
 Function that returns some variance function estimates based on all potential

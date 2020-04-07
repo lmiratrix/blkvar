@@ -20,7 +20,7 @@ make_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 4
   X.sd <- round((X - mean(X)) / sd(X), digits = 1)
   # Quadratic relationship, OLS no help
   # Y0 = a + b*X^2 + rnorm( length(X), 0, 1 )
-  
+
   # Linear relationship, OLS help!
   Y0 <- a + b * X.sd + rnorm(length(X), 0, 1)
   Y1 <- Y0 + ATE + d * X.sd
@@ -49,7 +49,7 @@ add_obs_data <- function(dat, p = 0.5, Y0 = "Y0", Y1 = "Y1", blockvar = "B") {
   N <- nrow(dat)
   B <- as.factor(dat[[blockvar]])
   K <- nlevels(B)
-  
+
   if (length(p) == 1) {
     p <- rep(p, K)
   }
@@ -217,70 +217,6 @@ make_obs_data = function(n_k = c(2, 3, 4, 8), p = 0.5, ... ) {
   dat
 }
 
-#' Table of data for simulations
-#'
-#' Function that returns a summary of block level true values for sims.
-#'
-#' @param Y vector of all outcomes
-#' @param Z vector that indicates if outcome is under treatment or control
-#' @param B block ids
-#' @param data alternatively is matrix of Y,Z,B
-#' @param p.mat  matrix with first column B,second column prop treated in that block, p
-#' @importFrom stats aggregate lm quantile rnorm sd var
-#' @export
-block_data_sim <- function(Y, Z, B, p.mat, data = NULL) {
-  if (!is.null(data)) {
-    Y <- data[, 1]
-    Z <- data[, 2]
-    B <- data[, 3]
-  }
-  n <- length(Y)
-  #Quick test that input is correct
-  if (is.numeric(Z) == FALSE) {
-    return("Treatment indicator should be vector of ones and zeros")
-  }
-  if ((sum(Z == 1) + sum(Z == 0)) != n) {
-    return("Treatment indicator should be vector of ones and zeros")
-  }
-  #First convert block ids into numbers
-  B <- factor(B)
-  B <- as.numeric(B)
-  p.mat$B <- factor(p.mat$B)
-  p.mat$B <- as.numeric(p.mat$B)
-  #Get number of units assigned to each treatment
-  #In each block
-  n_matrix <- aggregate(list(n_k = B), list(B = B), FUN = length)
-  n_matrix$n_k <- n_matrix$n_k / 2
-  n_ctk_matrix <- merge(n_matrix, p.mat, by = "B")
-  n_ctk_matrix$n1 <- n_ctk_matrix$n_k * n_ctk_matrix$p
-  n_ctk_matrix$n0 <- n_ctk_matrix$n_k - n_ctk_matrix$n1
-  treated_mat <- cbind(Y[Z == 1], B[Z == 1])
-  control_mat <- cbind(Y[Z == 0], B[Z == 0])
-  Y1_matrix <- aggregate(list(Ybar1 = treated_mat[, 1]), list(B = treated_mat[, 2]), FUN = mean)
-  Y0_matrix <- aggregate(list(Ybar0 = control_mat[, 1]), list(B = control_mat[, 2]), FUN = mean)
-  Ybar_matrix <- merge(Y1_matrix, Y0_matrix, by = "B")
-  var1_matrix <- aggregate(list(var1 = treated_mat[, 1]), list(B = treated_mat[, 2]), FUN = var)
-  var0_matrix <- aggregate(list(var0 = control_mat[, 1]), list(B = control_mat[, 2]), FUN = var)
-  var_matrix <- merge(var1_matrix, var0_matrix, by = "B")
-  overall_mat <- merge(n_ctk_matrix, Ybar_matrix, by = "B")
-  overall_mat <- merge(overall_mat, var_matrix, by = "B")
-  overall_mat$se_ney <- sqrt(overall_mat$var1 / overall_mat$n1 + overall_mat$var0 / overall_mat$n0)
-  drops <- c("n_k", "p")
-  overall_mat <- overall_mat[ , !(names(overall_mat) %in% drops)]
-  return(overall_mat)
-}
-
-
-#' Calculates variance of treatment effects.
-#'
-#' Function that helps calculate bias by caculating the true variance of treatment effects.
-#' @param tau_vec  vector of treatment effects
-#' @importFrom stats aggregate lm quantile rnorm sd var
-#' @export
-s_tc_func <- function(tau_vec) {
-  s.tc<-var(tau_vec)
-  return(s.tc)
-}
 
 #' Rescaled variance
 #'

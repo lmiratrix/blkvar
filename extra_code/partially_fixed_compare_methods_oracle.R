@@ -1,31 +1,36 @@
 
 
 
+#' Calculates variance of treatment effects.
+#'
+#' Function that helps calculate bias by caculating the true variance of treatment effects.
+#' @param tau_vec  vector of treatment effects
+#' @importFrom stats aggregate lm quantile rnorm sd var
+#' @export
+s_tc_func <- function(tau_vec) {
+    s.tc<-var(tau_vec)
+    return(s.tc)
+}
+
+
+
 #' Table of data for simulations
 #'
 #' Function that returns a summary of block level true values for sims.
 #'
 #' @param Y vector of all outcomes
-#' @param Z vector that indicates if outcome is under treatment or control
 #' @param B block ids
-#' @param data alternatively is matrix of Y,Z,B
+#' @param data alternatively is matrix of Y,B
 #' @param p.mat  matrix with first column B,second column prop treated in that block, p
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
-block_data_sim <- function(Y, Z, B, p.mat, data = NULL) {
+block_data_sim <- function(Y, B, p.mat, data = NULL) {
     if (!is.null(data)) {
         Y <- data[, 1]
-        Z <- data[, 2]
-        B <- data[, 3]
+        B <- data[, 2]
     }
     n <- length(Y)
-    #Quick test that input is correct
-    if (is.numeric(Z) == FALSE) {
-        return("Treatment indicator should be vector of ones and zeros")
-    }
-    if ((sum(Z == 1) + sum(Z == 0)) != n) {
-        return("Treatment indicator should be vector of ones and zeros")
-    }
+
     #First convert block ids into numbers
     B <- factor(B)
     B <- as.numeric(B)
@@ -38,33 +43,27 @@ block_data_sim <- function(Y, Z, B, p.mat, data = NULL) {
     n_ctk_matrix <- merge(n_matrix, p.mat, by = "B")
     n_ctk_matrix$n1 <- n_ctk_matrix$n_k * n_ctk_matrix$p
     n_ctk_matrix$n0 <- n_ctk_matrix$n_k - n_ctk_matrix$n1
-    treated_mat <- cbind(Y[Z == 1], B[Z == 1])
-    control_mat <- cbind(Y[Z == 0], B[Z == 0])
-    Y1_matrix <- aggregate(list(Ybar1 = treated_mat[, 1]), list(B = treated_mat[, 2]), FUN = mean)
-    Y0_matrix <- aggregate(list(Ybar0 = control_mat[, 1]), list(B = control_mat[, 2]), FUN = mean)
+    treated_mat <- cbind(Y1, B)
+    control_mat <- cbind(Y0, B)
+    Y1_matrix <- aggregate(list(Ybar1 = treated_mat[, 1]),
+                           list(B = treated_mat[, 2]), FUN = mean)
+    Y0_matrix <- aggregate(list(Ybar0 = control_mat[, 1]),
+                           list(B = control_mat[, 2]), FUN = mean)
     Ybar_matrix <- merge(Y1_matrix, Y0_matrix, by = "B")
-    var1_matrix <- aggregate(list(var1 = treated_mat[, 1]), list(B = treated_mat[, 2]), FUN = var)
-    var0_matrix <- aggregate(list(var0 = control_mat[, 1]), list(B = control_mat[, 2]), FUN = var)
+    var1_matrix <- aggregate(list(var1 = treated_mat[, 1]),
+                             list(B = treated_mat[, 2]), FUN = var)
+    var0_matrix <- aggregate(list(var0 = control_mat[, 1]),
+                             list(B = control_mat[, 2]), FUN = var)
     var_matrix <- merge(var1_matrix, var0_matrix, by = "B")
     overall_mat <- merge(n_ctk_matrix, Ybar_matrix, by = "B")
     overall_mat <- merge(overall_mat, var_matrix, by = "B")
-    overall_mat$se_ney <- sqrt(overall_mat$var1 / overall_mat$n1 + overall_mat$var0 / overall_mat$n0)
+    overall_mat$se_ney <- sqrt(overall_mat$var1 / overall_mat$n1 +
+                                   overall_mat$var0 / overall_mat$n0)
     drops <- c("n_k", "p")
     overall_mat <- overall_mat[ , !(names(overall_mat) %in% drops)]
     return(overall_mat)
 }
 
-
-#' Calculates variance of treatment effects.
-#'
-#' Function that helps calculate bias by caculating the true variance of treatment effects.
-#' @param tau_vec  vector of treatment effects
-#' @importFrom stats aggregate lm quantile rnorm sd var
-#' @export
-s_tc_func <- function(tau_vec) {
-    s.tc<-var(tau_vec)
-    return(s.tc)
-}
 
 
 
@@ -79,33 +78,34 @@ s_tc_func <- function(tau_vec) {
 #' @param Y0 Vector of control potential outcomes.
 #' @param Y1 Vector of treatment potential outcomes
 #' @param B block ids
-#' @param data alternatively is matrix of Y,Z,B
-#' @param p_mat  matrix with two columns, one row per block.  First column is B,
+#' @param data Dataframe holding Y0,Y1,B
+#' @param p.mat  matrix with two columns, one row per block.  First column is B,
 #'   second column prop treated in that block, ("p")
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @importFrom msm deltamethod
 #' @export
-compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
+compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p.mat = NULL ) {
 
     if (!is.null(data)) {
-        Y0 <- eval(substitute(Y0), data)
-        Y1 <- eval(substitute(Y1), data)
-        B <- eval(substitute(B), data)
+            d2 <- data
+            d2$Y0 <- eval(substitute(Y0), data)
+            d2$Y1 <- eval(substitute(Y1), data)
+            d2$B <- eval(substitute(B), data)
+            data <- d2
+            rm(d2)
+    } else {
+        data <- data.frame(Y0 = Y0, Y1=Y1, B = B)
     }
+    Y0 = data$Y0
+    Y1 = data$Y1
+    B = data$ B
 
-    stopifnot( length(Y0) == length(Y1) )
-    stopifnot( length(Y0) == length(B) )
-
-    Y = c( Y1, Y0 )
-    Z  = rep( c(1,0), each= length(Y0) )
-    B = c( B, B )
-
-    n <- length(Y)
+    n <- nrow( data )
 
 
     #Get data into table
     s.tc.bk <- aggregate(list(s.tc.bk = Y1 - Y0), list(B = B[1:(n / 2)]), FUN = s_tc_func)
-    data_table <- block_data_sim(Y, Z, B, p_mat)
+    data_table <- block_data_sim(Y, B, p.mat)
     K <- max(data_table$B)
     n <- sum(data_table$n1) + sum(data_table$n0)
     data_table$nk <- data_table$n1 + data_table$n0
@@ -124,16 +124,21 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
         combine_table <- merge(s.tc.bk, data_table, by = "B")
         mod.small <- combine_table[data_table$n1 == 1 | data_table$n0 == 1, ]
         var_small <- sum((mod.small$se_ney ^ 2 - mod.small$s.tc.bk / mod.small$nk) * (mod.small$nk) ^ 2) / n ^ 2
-        hybrid_m_est <- hybrid_m_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big + var_small
-        hybrid_p_est <- hybrid_p_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big + var_small
-        plug_in_big_est <- plug_in_big(data.small, data.big) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big
+        hybrid_m_est <- hybrid_m_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 +
+            var_big + var_small
+        hybrid_p_est < -hybrid_p_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 +
+            var_big + var_small
+        plug_in_big_est <- plug_in_big(data.small, data.big) * sum(data.small$nk) ^ 2 / n ^ 2 +
+            var_big
     }
     #Get trt effect estimates and aggregate
-    tau_vec <- data_table$Ybar1 - data_table$Ybar0
+    tau_vec < -data_table$Ybar1 - data_table$Ybar0
     tau_est <- sum(tau_vec * data_table$nk) / n
 
     #Get linear model estimates (sandwich)
-    M0 <- lm(Y ~ Z + as.factor(B))
+    d2 = bind_rows( data, data )
+    d2$Z = rep( c(0,1), each=nrow(data) )
+    M0 <- lm(Y ~ Z + as.factor(B), data=d2)
     tau_est_lm <- summary(M0)$coefficients[2, 1]
     var_est_lm <- sandwich::vcovHC(M0, type = "HC1")[2, 2]
     blk.id <- as.numeric(as.factor(B))
