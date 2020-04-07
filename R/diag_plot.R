@@ -7,6 +7,8 @@
 #' @param B block ids
 #' @param data matrix of Y, Z, B, as alternative to using vectors
 #' @importFrom graphics axis par plot
+#' @noRd
+
 make_diagnostic_plot <- function(Y, Z, B, data = NULL) {
   if (!is.null(data)) {
     Y < -data[, 1]

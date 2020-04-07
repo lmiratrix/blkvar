@@ -6,6 +6,7 @@
 #' @param df Dataframe to analyze.
 #' @rdname analysis_idio
 #' @export
+
 analysis_combination <- function(df) {
   M0 <- lme4::lmer( Yobs ~ 1 + Z + X + Z:X + (Z|sid), data = df, REML = FALSE)
   M0.null <- lme4::lmer( Yobs ~ 1 + Z + X + (1|sid), data = df, REML = FALSE)

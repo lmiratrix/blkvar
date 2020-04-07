@@ -2,8 +2,7 @@
 % Please edit documentation in R/simulation_support_functions.R
 \name{add_obs_data}
 \alias{add_obs_data}
-\title{Given potential outcomes schedule, randomize within block and generate
-observed potential outcomes and add them to the schedule.}
+\title{Randomize and calculate observed outcome}
 \usage{
 add_obs_data(dat, p = 0.5, Y0 = "Y0", Y1 = "Y1", blockvar = "B")
 }
@@ -26,6 +25,6 @@ of this factor.}
 augmented `dat` with Z and Yobs columns
 }
 \description{
-Given potential outcomes schedule, randomize within block and generate
+Given a passed potential outcomes schedule, randomize within block and generate
 observed potential outcomes and add them to the schedule.
 }

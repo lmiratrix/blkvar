@@ -27,19 +27,24 @@ estimate_ATE_FIRC(
 
 \item{siteID}{If not null, name of siteID that has randomization blocks}
 
-\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1
++ X2 + ... + XN. (nothing on left hand side of ~)}
 
 \item{data}{Dataframe with all needed variables.}
 
-\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood estimation.}
+\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood
+estimation.}
 
-\item{include_testing}{Logical Include likelihood ratio test for cross-site treatment variation.}
+\item{include_testing}{Logical Include likelihood ratio test for cross-site
+treatment variation.}
 
 \item{anova}{Use the anova() method to do the test for significance between
 the models.  FALSE means do the modified chi-squared test.}
 
-\item{pool}{TRUE means tx and co have same reBual variance. FALSE gives seperate estimates for each (recommended, default).}
+\item{pool}{TRUE means tx and co have same reBual variance. FALSE gives
+seperate estimates for each (recommended, default).}
 }
 \description{
-Acknowledgement: Unpooled version taken and adapted from Catherine's weiss.tau() method.
+Acknowledgement: Unpooled version taken and adapted from Catherine's
+weiss.tau() method.
 }

@@ -2,9 +2,7 @@
 % Please edit documentation in R/compare_methods_oracle.R
 \name{compare_methods_oracle}
 \alias{compare_methods_oracle}
-\title{Function to compare estimators using the true values (i.e., whole science
-table).  This is for simulaton studies where we know all the potential
-outcomes.}
+\title{Compare estimators using the true values (i.e., full schedule of potential outcomes)}
 \usage{
 compare_methods_oracle(Y0, Y1, B, data = NULL, p_mat = NULL)
 }
@@ -24,6 +22,10 @@ the categorical covariate denoting blocks, with same levels as in B, above.
 Second column is proportion treated in that block.}
 }
 \description{
+This method is for simulaton studies where we know all the potential
+outcomes.
+}
+\details{
 Function that returns some variance function estimates based on all potential
 outcomes.
 }

@@ -13,7 +13,9 @@
 #'
 #' @return Dataframe of the different versions of this estimator (person and
 #'   site weighted)
-interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, control_formula = NULL) {
+#' @export
+interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
+                                         control_formula = NULL) {
   if (!is.null(control_formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing( "Yobs"))

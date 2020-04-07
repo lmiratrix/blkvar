@@ -15,8 +15,12 @@
 #'@return Estimates of ATE along with SEs.
 #'@importFrom rlang .data
 #'@export
-estimate_ATE_design_based_adjusted <- function(formula, control_formula, data, siteID = NULL, method = c("finite", "superpop", "superpop.adj"), weight = c("individual", "site")) {
+estimate_ATE_design_based_adjusted <- function(formula,
+                                               control_formula, data, siteID = NULL,
+                                               method = c("finite", "superpop", "superpop.adj"),
+                                               weight = c("individual", "site")) {
   stopifnot(!is.null(control_formula))
+
   # Determine which of the 4 versions of estimator we are doing.
   method <- match.arg(method)
   weight <- match.arg(weight)

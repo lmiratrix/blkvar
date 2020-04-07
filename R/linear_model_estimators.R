@@ -5,18 +5,25 @@
 #' @param Z vector of assignment indicators (1==treated)
 #' @param B block ids
 #' @param siteID If not null, name of siteID that has randomization blocks
-#' @param control_formula The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param weight_LM_method Argument passed to weight.method of weighted_linear_estimators
-#' @param weight_LM_scale_weights Argument passed to sclae.weights of weighted_linear_estimators
-#' @param block.stats Table of precomputed block-level statistics (optional, for speed concerns; this gets precomputed in compare_methods).
+#' @param control_formula The control_formula argument must be of the form ~ X1
+#'   + X2 + ... + XN. (nothing on left hand side of ~)
+#' @param weight_LM_method Argument passed to weight.method of
+#'   weighted_linear_estimators
+#' @param weight_LM_scale_weights Argument passed to sclae.weights of
+#'   weighted_linear_estimators
+#' @param block.stats Table of precomputed block-level statistics (optional, for
+#'   speed concerns; this gets precomputed in compare_methods).
 #' @param data Dataframe of the data to analyse.
 #' @importFrom dplyr group_by ungroup mutate
 #' @importFrom sandwich vcovHC vcovCL
 #' @importFrom stats coef
 #' @return Data frame of the various results.
 #' @export
-linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL, block.stats = NULL, control_formula = NULL, weight_LM_method = "survey",
-  weight_LM_scale_weights = TRUE) {
+linear_model_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
+                                    block.stats = NULL,
+                                    control_formula = NULL,
+                                    weight_LM_method = "survey",
+                                    weight_LM_scale_weights = TRUE) {
 
   if (!is.null(control_formula)) {
     stopifnot( !is.null(data))

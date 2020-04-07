@@ -9,7 +9,6 @@ grab_SE <- function(MOD, coef="Z") {
 
 
 
-
 #' Survey-weighted adjusted linear regression
 #'
 #' Use survey weight regression to reweight blocks to target unbiased ATE estimators.
@@ -22,8 +21,8 @@ grab_SE <- function(MOD, coef="Z") {
 #' @importFrom survey svydesign svyglm
 #' @importFrom stats gaussian
 #' @export
-
-weighted_linear_estimators <- function(formula, control_formula = NULL, siteID = NULL, data, scaled.weights = TRUE,
+weighted_linear_estimators <- function(formula, control_formula = NULL, siteID = NULL, data,
+                                       scaled.weights = TRUE,
                                        weight.method = c("survey", "precision")) {
   weight.method <- match.arg(weight.method)
   data <- make_canonical_data(formula, control_formula, siteID, data)

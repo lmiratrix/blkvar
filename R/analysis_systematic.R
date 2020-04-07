@@ -4,6 +4,7 @@
 #' @param df Dataframe to analyze.
 #' @importFrom arm se.coef
 #' @export
+
 analysis_systematic <- function(df) {
   M0 <- lme4::lmer(Yobs ~ 1 + Z * X + (1|sid), data = df)
   tstat <- lme4::fixef(M0) / arm::se.coef(M0)$fixef

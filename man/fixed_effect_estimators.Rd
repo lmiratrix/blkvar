@@ -25,9 +25,11 @@ fixed_effect_estimators(
 
 \item{data}{Dataframe of the data to analyse.}
 
-\item{block.stats}{Table of precomputed block-level statistics (optional, for speed concerns; this gets precomputed in compare_methods).}
+\item{block.stats}{Table of precomputed block-level statistics (optional, for
+speed concerns; this gets precomputed in compare_methods).}
 
-\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1
++ X2 + ... + XN. (nothing on left hand side of ~)}
 }
 \value{
 Dataframe of results for different estimators.

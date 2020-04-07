@@ -4,8 +4,11 @@
 #' @inheritParams estimate_ATE_FIRC
 #' @importFrom lme4 lmer VarCorr
 # #' @export
-estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_testing = TRUE, control_formula = NULL) {
-  if (!is.null(control_formula)) {
+estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL,
+                                   REML = FALSE, include_testing = TRUE,
+                                   control_formula = NULL) {
+
+  if (!is.null(control.formula)) {
     stopifnot(!is.null( data ))
     stopifnot(!missing("Yobs"))
   }

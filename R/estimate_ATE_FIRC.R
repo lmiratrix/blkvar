@@ -4,22 +4,32 @@
 #' Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
 #' treatment variation.
 #'
-#' Acknowledgement: Unpooled version taken and adapted from Catherine's weiss.tau() method.
+#' Acknowledgement: Unpooled version taken and adapted from Catherine's
+#' weiss.tau() method.
 #'
 #' @param anova Use the anova() method to do the test for significance between
 #'   the models.  FALSE means do the modified chi-squared test.
-#' @param pool  TRUE means tx and co have same reBual variance. FALSE gives seperate estimates for each (recommended, default).
+#' @param pool  TRUE means tx and co have same reBual variance. FALSE gives
+#'   seperate estimates for each (recommended, default).
 #' @param B Name of the block indicator.
-#' @param siteID Character name of the ID variable of site (blocks are conBered nested in site).  If omitted, then blocks are considered sites (the default).
+#' @param siteID Character name of the ID variable of site (blocks are conBered
+#'   nested in site).  If omitted, then blocks are considered sites (the
+#'   default).
 #' @param Yobs Name of outcome variable (assumed to exist in data)
 #' @param Z vector of assignment indicators (1==treated)
-#' @param REML Logical, Restricted maximum likelihood or maximum likelihood estimation.
+#' @param REML Logical, Restricted maximum likelihood or maximum likelihood
+#'   estimation.
 #' @param siteID If not null, name of siteID that has randomization blocks
-#' @param control_formula The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param include_testing Logical Include likelihood ratio test for cross-site treatment variation.
-#'@param data Dataframe with all needed variables.
+#' @param control_formula The control_formula argument must be of the form ~ X1
+#'   + X2 + ... + XN. (nothing on left hand side of ~)
+#' @param include_testing Logical Include likelihood ratio test for cross-site
+#'   treatment variation.
+#' @param data Dataframe with all needed variables.
 #' @export
-estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL, control_formula = NULL, data = NULL, REML = FALSE, include_testing = TRUE, anova = FALSE, pool = FALSE) {
+estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
+                              control_formula = NULL, data = NULL, REML = FALSE,
+                              include_testing = TRUE, anova = FALSE, pool = FALSE) {
+
   stopifnot(!(include_testing && REML))
   if (!is.null(control_formula)) {
     stopifnot(!is.null(data))

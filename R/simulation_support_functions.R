@@ -16,7 +16,8 @@
 #' @param ATE Average Tx
 #' @param d Interaction effect term.
 #' @export
-make_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65), a = 0, b = 0, ATE = 0.2, d = 0) {
+make_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 45, 55, 60, 65),
+                            a = 0, b = 0, ATE = 0.2, d = 0) {
   X.sd <- round((X - mean(X)) / sd(X), digits = 1)
   # Quadratic relationship, OLS no help
   # Y0 = a + b*X^2 + rnorm( length(X), 0, 1 )
@@ -30,7 +31,9 @@ make_data_linear = function(X = c(0, 2, 3, 19, 20, 21, 24, 31, 32, 40, 41, 43, 4
 }
 
 
-#' Given potential outcomes schedule, randomize within block and generate
+#' Randomize and calculate observed outcome
+#'
+#' Given a passed potential outcomes schedule, randomize within block and generate
 #' observed potential outcomes and add them to the schedule.
 #'
 #' @param dat Dataframe with a named Y0, Y1, and block column
@@ -80,7 +83,7 @@ if ( FALSE ) {
     add_obs_data( dat, p=0.2 )
 }
 
-#' Function to generate individual-level data from a list of block sizes and
+#' Generate individual-level data from a list of block sizes and
 #' block characteristics.
 #'
 #' This generates potential outcomes by sampling from the specified bivariate
@@ -96,7 +99,8 @@ if ( FALSE ) {
 #'   exactly.  False means pull from bivariate normal.
 #' @return Matrix of the potential outcomes and block ids.
 #' @export
-generate_individuals_from_blocks <- function(n_k, alpha = 0, beta = 0, sigma_c = 1, sigma_t = 1, corr = 1, exact = FALSE) {
+generate_individuals_from_blocks <- function(n_k, alpha = 0, beta = 0,
+                                             sigma_c = 1, sigma_t = 1, corr = 1, exact = FALSE) {
   K <- length(n_k)
   if (length(alpha) == 1) {
     alpha <- rep(alpha, K)
@@ -218,15 +222,60 @@ make_obs_data = function(n_k = c(2, 3, 4, 8), p = 0.5, ... ) {
 }
 
 
-#' Rescaled variance
-#'
-#' This is the residual sum of squares
+
+
+#' Calculate residual sum of squares
 #'
 #' Function that calculates scaled variance to help with bias calculation.
+#'
 #' @param Y  vector of potential outcomes
 #' @importFrom stats aggregate lm quantile rnorm sd var
-#' @export
+#'
+#' @noRd
 within_blk_var <- function(Y) {
   sum((Y - mean(Y)) ^ 2)
+}
+
+
+
+
+#' Cut continuous covariate into similar-valued blocks
+#'
+#' Make blocks out of a continuous covariate by cutting it into pieces that are
+#' ideally relatively homogenous. This will create a bunch of blocks based on
+#' passed covariate and return a factor vector of those blocks.
+#'
+#' @param X covariate vector to block on
+#' @param method How to block.
+#' @param num.blocks If method is small, how many blocks to attempt to make
+#' @return Vector with one element per element of `X`
+#' @export
+
+form_blocks_from_continuous <- function(X, method = c("small", "pair", "big", "none"), num.blocks) {
+    method <- match.arg(method)
+    X.orig = X
+    X.order <- rank(X, ties.method = "first")
+    X <- sort(X)
+    if (method == "small") {
+        dels <- diff(X)
+        dels <- jitter(dels)
+        N <- length(X)
+        if (!missing(num.blocks)) {
+            ct <- sort(dels, decreasing = TRUE)[num.blocks - 1]
+        } else {
+            ct <- quantile(dels, 2 / 3 + 1 / N)
+        }
+        cuts <- (dels >= ct) & (c(dels[-1], Inf) < ct) & (c(Inf, dels[ - (N - 1)]) < ct)
+        cuts <- 1 + cumsum(cuts)
+        B <- paste("B", c(1, cuts), sep = "")
+    } else if (method == "pair") {
+        B <- paste("B", rep(1:(length(X) / 2), each = 2), sep = "")
+    } else if (method == "big") {
+        minB <- trunc(length(X) / 4)
+        B <- cut(X, quantile(X, seq(0, 1, length.out = minB + 1)), include.lowest = TRUE)
+    } else {
+        B <- paste("B", rep(1, length(X)), sep = "")
+    }
+    B[X.order]
 }
 

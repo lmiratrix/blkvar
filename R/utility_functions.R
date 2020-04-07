@@ -8,20 +8,19 @@ scat = function( str, ... ) {
 }
 
 
-
 ##### Functions to help process control functions  ####
 
 
-# #' Make a canonical fixed effect formula, possibly with control variables.
-# #'
-# #' @param Yobs Name of outcome variable (assumed to exist in data)
-# #' @param Z Name of treatment variable (assumed to exist in data)
-# #' @param B Name of blocking variable (assumed to exist in data)
-# #' @param control_formula What variables to control for, in the form of "~ X1 + X2".
-# #' @param data Dataframe holding all variables to be used in formula.
-# #'
-# #' @return Something like "Yobs ~ 1 + Z" or "Yobs ~ 1 + Z + X1 + X2"
-
+#' Make a canonical fixed effect formula, possibly with control variables.
+#'
+#' @param Yobs Name of outcome variable (assumed to exist in data)
+#' @param Z Name of treatment variable (assumed to exist in data)
+#' @param B Name of blocking variable (assumed to exist in data)
+#' @param control_formula What variables to control for, in the form of "~ X1 + X2".
+#' @param data Dataframe holding all variables to be used in formula.
+#'
+#' @return Something like "Yobs ~ 1 + Z" or "Yobs ~ 1 + Z + X1 + X2"
+#' @noRd
 make_base_formula = function( Yobs = "Yobs", Z = "Z", control_formula = NULL, data = NULL) {
   if (is.null(control_formula)) {
     new.form <- sprintf( "%s ~ 1 + %s ", Yobs, Z )
@@ -44,12 +43,12 @@ make_base_formula = function( Yobs = "Yobs", Z = "Z", control_formula = NULL, da
   return(as.formula( new.form ))
 }
 
-# #' Make a canonical fixed effect formula, possibly with control variables.
-# #'
-# #' @inheritParams make_base_formula
-# #'
-# #' @return Something like "Yobs ~ 0 + Z + B" or "Yobs ~ 0 + Z + B + X"
-
+#' Make a canonical fixed effect formula, possibly with control variables.
+#'
+#' @inheritParams make_base_formula
+#'
+#' @return Something like "Yobs ~ 0 + Z + B" or "Yobs ~ 0 + Z + B + X"
+#' @noRd
 make_FE_formula <- function(Yobs = "Yobs", Z = "Z", B = "B", control_formula = NULL, data = NULL) {
   if ( is.null( control_formula)) {
     new.form <- sprintf( "%s ~ 0 + %s + %s", Yobs, Z, B)
@@ -96,13 +95,14 @@ make_FE_int_formula <- function(Yobs = "Yobs", Z = "Z", B = "B", control_formula
   return(as.formula(new.form))
 }
 
-# #' Check formula and control_formula for syntax
-# #'
-# #' Checks syntax and also presence of variables in the dataframe.
-# #'
-# #' Then makes the outcome, treatment and block variables have canonical "Yobs", "Z", and "B" names.
-# #'
-# #' @return Dataset with now-canonical variable names
+#' Check formula and control_formula for syntax
+#'
+#' Checks syntax and also presence of variables in the dataframe.
+#'
+#' Then makes the outcome, treatment and block variables have canonical "Yobs", "Z", and "B" names.
+#'
+#' @return Dataset with now-canonical variable names
+#' @noRd
 make_canonical_data <- function(formula, control_formula = NULL, siteID = NULL, data) {
    # Figure out the covariates we are using
     if (length(formula.tools::lhs.vars(formula)) != 1 | length(formula.tools::rhs.vars(formula)) != 2) {

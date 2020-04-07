@@ -99,7 +99,7 @@ calc_summary_stats_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL, Z = 
 #' Function that helps calculate bias by caculating the true variance of treatment effects.
 #' @param tau_vec  vector of treatment effects
 #' @importFrom stats aggregate lm quantile rnorm sd var
-#' @export
+#' @noRd
 s_tc_func <- function(tau_vec) {
     s.tc<-var(tau_vec)
     return(s.tc)
@@ -107,9 +107,10 @@ s_tc_func <- function(tau_vec) {
 
 
 
-
-#' Function to compare estimators using the true values (i.e., whole science
-#' table).  This is for simulaton studies where we know all the potential
+#' Compare estimators using the true values (i.e., full schedule of potential outcomes)
+#'
+#'
+#' This method is for simulaton studies where we know all the potential
 #' outcomes.
 #'
 #' Function that returns some variance function estimates based on all potential

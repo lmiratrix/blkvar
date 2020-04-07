@@ -34,13 +34,17 @@ estimate_ATE_RIRC(
 
 \item{data}{Dataframe with all needed variables.}
 
-\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood estimation.}
+\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood
+estimation.}
 
-\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1
++ X2 + ... + XN. (nothing on left hand side of ~)}
 
-\item{include_testing}{Logical Include likelihood ratio test for cross-site treatment variation.}
+\item{include_testing}{Logical Include likelihood ratio test for cross-site
+treatment variation.}
 
-\item{pool}{TRUE means tx and co have same reBual variance. FALSE gives seperate estimates for each (recommended, default).}
+\item{pool}{TRUE means tx and co have same reBual variance. FALSE gives
+seperate estimates for each (recommended, default).}
 }
 \description{
 This model has a single treatment coefficient, and a random intercept for the

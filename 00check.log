@@ -3,10 +3,10 @@
 * using session charset: UTF-8
 * using option ‘--as-cran’
 * checking for file ‘blkvar/DESCRIPTION’ ... OK
-* this is package ‘blkvar’ version ‘0.0.1.4’
+* this is package ‘blkvar’ version ‘0.0.1.5’
 * package encoding: UTF-8
 * checking CRAN incoming feasibility ... NOTE
-Maintainer: ‘Nicole Pashley <npashley@g.harvard.edu>’
+Maintainer: ‘Luke Miratrix <lmiratrix@stat.harvard.edu>’
 
 New submission
 * checking package namespace information ... OK
@@ -24,7 +24,9 @@ New submission
 * checking for future file timestamps ... OK
 * checking ‘build’ directory ... OK
 * checking DESCRIPTION meta-information ... OK
-* checking top-level files ... OK
+* checking top-level files ... NOTE
+Non-standard file/directory found at top level:
+  ‘extra_code’
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
@@ -55,10 +57,10 @@ New submission
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... OK
-  Running ‘testthat.R’ [13s/14s]
+  Running ‘testthat.R’ [13s/13s]
 * checking for unstated dependencies in vignettes ... OK
 * checking package vignettes in ‘inst/doc’ ... OK
 * checking re-building of vignette outputs ... OK
 * checking PDF version of manual ... OK
 * DONE
-Status: 1 NOTE
+Status: 2 NOTEs

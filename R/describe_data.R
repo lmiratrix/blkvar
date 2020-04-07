@@ -8,6 +8,7 @@
 #' @param Z vector that indicates if outcome is under treatment or control
 #' @param sid block ids
 #' @export
+
 describe_data <- function(data, Y0 = "Y0", Y1 = "Y1", Z = "Z", sid = "sid") {
   # old param list: Y0, Y1, Z, sid, data = NULL
   data <- dplyr::rename(data,

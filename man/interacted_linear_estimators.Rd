@@ -24,7 +24,8 @@ interacted_linear_estimators(
 
 \item{data}{Dataframe of the data to analyse.}
 
-\item{control_formula}{The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the form ~ X1
++ X2 + ... + XN. (nothing on left hand side of ~)}
 }
 \value{
 Dataframe of the different versions of this estimator (person and

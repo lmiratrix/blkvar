@@ -5,6 +5,7 @@
 #' @inheritParams calc_power
 #' @return MDESSD for given scenario.
 #' @seealso calc_power
+#' @noRd
 calc_MDESSD <- function(J, n.bar, p.tx = 0.5, ICC = 0.5, K = 0, R2.X = 0, alpha=0.05) {
   df.num <- J - 1
   df.denom <- J * (n.bar - 2) - K

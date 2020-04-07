@@ -11,6 +11,7 @@
 #' @param alpha The level of the test.  The CI will be a 1-2alpha confidence interval.
 #' @param calc.CI Logical
 #' @export
+
 analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL, alpha = 0.05, calc.CI = FALSE) {
   # This code block takes the parameters of
   # Yobs, Z, B, siteID = NULL, data=NULL, ...

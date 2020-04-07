@@ -20,6 +20,7 @@
 #' @return dataframe with calculated impacts and standard errors.
 #' @importFrom magrittr "%>%"
 #' @export
+
 estimate_ATE_design_based_from_stats <- function(sum_tab,
                                                  siteID = NULL,
                                                  method = c( "finite", "superpop", "superpop.original"),

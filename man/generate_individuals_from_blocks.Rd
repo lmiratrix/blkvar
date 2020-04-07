@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulation_support_functions.R
 \name{generate_individuals_from_blocks}
 \alias{generate_individuals_from_blocks}
-\title{Function to generate individual-level data from a list of block sizes and
+\title{Generate individual-level data from a list of block sizes and
 block characteristics.}
 \usage{
 generate_individuals_from_blocks(
