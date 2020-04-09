@@ -42,3 +42,10 @@ Calculate standard errors in a variety of ways.
 For the club sandwich estimation ("Club"), see code proposed at
 https://www.jepusto.com/handmade-clubsandwich/
 }
+\seealso{
+Other linear model estimators: 
+\code{\link{interacted_linear_estimators}()},
+\code{\link{linear_model_estimators}()},
+\code{\link{weighted_linear_estimators}()}
+}
+\concept{linear model estimators}

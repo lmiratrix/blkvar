@@ -1,25 +1,55 @@
 Package: blkvar
-Title: ATE and Treatment Variation Estimation for Blocked and Multisite RCTs
+Title: ATE and Treatment Variation Estimation for Blocked and
+    Multisite RCTs
 Version: 0.0.1.5
-Authors@R: c(
-    person("Nicole", "Pashley", email = "npashley@g.harvard.edu", role = "aut"),
-    person("Luke", "Miratrix", email = "lmiratrix@stat.harvard.edu", role = "cre"))
-Description: Calculates variance estimates for treatment effect estimator under block randomized design.
-Depends: R (>= 3.3.2),
-    lme4,
-    dplyr,
+Authors@R: 
+    c(person(given = "Nicole",
+             family = "Pashley",
+             role = "aut",
+             email = "npashley@g.harvard.edu"),
+      person(given = "Luke",
+             family = "Miratrix",
+             role = c("aut", "cre"),
+             email = "lmiratrix@stat.harvard.edu"))
+Description: This package contains code for four primary
+    purposes: (1) estimating average treatment effects (ATEs) in
+    block-randomized experiments, even those with singleton treated or
+    control units, (2) estimating ATEs for multisite trials, (3)
+    estimating cross-site variation in site-level ATEs using a variety of
+    methods, and (4) providing code for conducting simulations of blocked
+    or multisite randomized trials.  There is also some additional code
+    implementing power calculation functions for these contexts. See
+    Pashley & Miratrix, 2020 <arXiv:1710.10342> for further details on
+    (1).
 License: GPL-3
+Depends: 
+    dplyr,
+    lme4,
+    R (>= 3.3.2)
+Imports: 
+    formula.tools,
+    ggplot2,
+    lmtest,
+    magrittr,
+    MASS,
+    nlme,
+    purrr,
+    rlang,
+    sandwich,
+    survey,
+    tibble,
+    tidyr
+Suggests: 
+    arm,
+    datapasta,
+    knitr,
+    msm,
+    randomizationInference,
+    rmarkdown,
+    rstudioapi,
+    testthat (>= 2.1.0)
+VignetteBuilder: 
+    knitr
 Encoding: UTF-8
 LazyData: true
-Suggests: 
-    testthat (>= 2.1.0),
-    knitr,
-    rmarkdown
-Imports: arm, msm, sandwich,
-    randomizationInference,
-    survey, magrittr, MASS, datapasta,
-    formula.tools, lmtest, nlme,
-    purrr, rlang, rstudioapi,
-    tibble, tidyr, ggplot2, tidyverse,
 RoxygenNote: 7.1.0
-VignetteBuilder: knitr

@@ -4,23 +4,36 @@
 #' of the blocked designs.
 #'
 #' @param Yobs vector observed outcomes (or column name in data)
-#' @param Z vector of assignment indicators (1==treated) (or column name in data)
+#' @param Z vector of assignment indicators (1==treated) (or column name in
+#'   data)
 #' @param B vector of block ids (or column name in data)
-#' @param siteID site ids (variable name as string if data frame passed) (if randomization blocks are nested in site).
-#' @param data frame holding Y, Z, B and (possibly a column with name specified by siteID).
+#' @param siteID site ids (variable name as string if data frame passed) (if
+#'   randomization blocks are nested in site).
+#' @param data frame holding Y, Z, B and (possibly a column with name specified
+#'   by siteID).
 #' @param include_MLM Include MLM estimators
-#' @param include_DB Include Design-Based estimators (taken from RCTYes documentation and prior literature).
+#' @param include_DB Include Design-Based estimators (taken from RCTYes
+#'   documentation and prior literature).
 #' @param include_LM Include Linear Model-based estimators (including
 #'   Huber-White SEs, etc.)
-#' @param include_DBBlended Include DB estimators applied to small block
-#'   and classic Neyman to large blocks.
-#' @param weight_LM_method Argument passed to weight.method of weighted_linear_estimators
-#' @param weight_LM_scale_weights Argument passed to sclae.weights of weighted_linear_estimators
-#' @param control_formula What variables to control for, in the form of "~ X1 + X2".
+#' @param include_DBBlended Include DB estimators applied to small block and
+#'   classic Neyman to large blocks.
+#' @param weight_LM_method Argument passed to weight.method of
+#'   weighted_linear_estimators
+#' @param weight_LM_scale_weights Argument passed to sclae.weights of
+#'   weighted_linear_estimators
+#' @param control_formula What variables to control for, in the form of "~ X1 +
+#'   X2".
 #' @param include_block Include the Pashley blocking variants.
-#' @param include_method_characteristics Include details of the methods (target estimands and sampling framework assumed).
+#' @param include_method_characteristics Include details of the methods (target
+#'   estimands and sampling framework assumed).
 #'
-#' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor cov filter model.matrix na.exclude pf pnorm predict qchisq qf qnorm rbinom reshape resid runif vcov weighted.mean
+#' @return Dataframe of point estimates and standard errors for each method
+#'   considered. If \code{include_method_characteristics=TRUE} also add some
+#'   features of the methods as additional columns.
+#' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor cov
+#'   filter model.matrix na.exclude pf pnorm predict qchisq qf qnorm rbinom
+#'   reshape resid runif vcov weighted.mean
 #' @export
 compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
                             include_block = TRUE, include_MLM = TRUE, include_DB = TRUE,
