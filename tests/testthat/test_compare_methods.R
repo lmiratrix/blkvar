@@ -108,8 +108,20 @@ test_that("Check for asking for different parts", {
     rs
     # Three MLM methods
     expect_equal( nrow( rs ), 3 )
+    expect_true( names(rs)[[1]] == "method" )
 
-    rs =  compare_methods( Yobs, Z, sid, data=dat, include_block = FALSE, include_LM = FALSE, include_DB = FALSE, include_MLM = FALSE )
+    rs =  compare_methods( Yobs, Z, sid, data=dat, include_block = FALSE, include_LM = TRUE, include_DB = FALSE,
+                           include_MLM = FALSE)
+    rs
+    expect_true( names(rs)[[1]] == "method" )
+
+    rs =  compare_methods( Yobs, Z, sid, data=dat, include_block = FALSE,
+                           include_MLM = FALSE)
+    rs
+    expect_true( names(rs)[[1]] == "method" )
+
+    rs =  compare_methods( Yobs, Z, sid, data=dat, include_block = FALSE,
+                           include_LM = FALSE, include_DB = FALSE, include_MLM = FALSE )
     expect_equal( nrow( rs ), 0 )
 
 })

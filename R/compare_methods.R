@@ -100,7 +100,8 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
       })
       SE_estimates <- fits[2, ]
       tau_estimates <- fits[1, ]
-      summary_table <- data.frame(method = methods_list, tau = tau_estimates, SE = SE_estimates, stringsAsFactors = FALSE)
+      summary_table <- data.frame(method = methods_list, tau = tau_estimates,
+                                  SE = SE_estimates, stringsAsFactors = FALSE)
   } else {
     summary_table <- data.frame()
   }
@@ -111,38 +112,53 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   }
 
   if (include_DB) {
-    if (is.null(control_formula)) {
-      # Design based methods
-      DB.fi <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="finite", weight="individual" )
-      DB.fs <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="finite", weight="site" )
-      DB.si <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="superpop", weight="individual" )
-      DB.ss <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID, method="superpop", weight="site" )
-      DB <- dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
-      DB$method <- c( "DB-FP-Persons", "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites")
+      if (is.null(control_formula)) {
+          # Design based methods
+          DB.fi <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID,
+                                                         method="finite", weight="individual" )
+          DB.fs <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID,
+                                                         method="finite", weight="site" )
+          DB.si <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID,
+                                                         method="superpop", weight="individual" )
+          DB.ss <- estimate_ATE_design_based_from_stats( summary_stats, siteID=siteID,
+                                                         method="superpop", weight="site" )
+          DB <- dplyr::bind_rows( DB.fi, DB.fs, DB.si, DB.ss )
+          DB$method <- c( "DB-FP-Persons", "DB-FP-Sites", "DB-SP-Persons", "DB-SP-Sites")
+      } else {
+          # Design based methods with covariate adjustment
+          DB.fi <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID,
+                                                      method = "finite", weight = "individual",
+                                                      control_formula = control_formula )
+          DB.fs <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID,
+                                                      method = "finite", weight = "site",
+                                                      control_formula = control_formula )
+          DB.si <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID,
+                                                      method = "superpop", weight = "individual",
+                                                      control_formula = control_formula)
+          DB.ss <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID,
+                                                      method = "superpop", weight = "site",
+                                                      control_formula = control_formula )
+          DB <- dplyr::bind_rows(DB.fi, DB.fs, DB.si, DB.ss)
+          DB$method <- c( "DB-FP-Persons-adj", "DB-FP-Sites-adj", "DB-SP-Persons-adj", "DB-SP-Sites-adj")
+      }
       DB$weight <- NULL
       names(DB)[1] <- "tau"
       summary_table <- dplyr::bind_rows(summary_table, DB)
-    } else {
-      # Design based methods with covariate adjustment
-      DB.fi <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "finite", weight = "individual", control_formula = control_formula )
-      DB.fs <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "finite", weight = "site", control_formula = control_formula )
-      DB.si <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "superpop", weight = "individual", control_formula = control_formula)
-      DB.ss <- estimate_ATE_design_based_adjusted(Yobs ~ Z * B, data = data, siteID = siteID, method = "superpop", weight = "site", control_formula = control_formula )
-      DB <- dplyr::bind_rows(DB.fi, DB.fs, DB.si, DB.ss)
-      DB$method <- c( "DB-FP-Persons-adj", "DB-FP-Sites-adj", "DB-SP-Persons-adj", "DB-SP-Sites-adj")
-      DB$weight <- NULL
-      names(DB)[1] <- "tau"
-      summary_table <- dplyr::bind_rows(summary_table, DB)
-    }
+      # ensure canonical ordering of method name first
+      summary_table = dplyr::select( summary_table, method, everything() )
   }
 
   if (include_LM) {
-    lms <- linear_model_estimators(Yobs, Z, B, data = data, siteID = siteID, block.stats = summary_stats, control_formula = control_formula, weight_LM_method = weight_LM_method,
+    lms <- linear_model_estimators(Yobs, Z, B, data = data, siteID = siteID,
+                                   block.stats = summary_stats,
+                                   control_formula = control_formula,
+                                   weight_LM_method = weight_LM_method,
       weight_LM_scale_weights = weight_LM_scale_weights)
     summary_table = dplyr::bind_rows(summary_table, lms)
   }
   if (include_MLM) {
-    mlms <- compare_MLM_methods(Yobs, Z, B, data = data, siteID = siteID, control_formula = control_formula)
+    mlms <- compare_MLM_methods(Yobs, Z, B, data = data, siteID = siteID,
+                                control_formula = control_formula)
     summary_table <- dplyr::bind_rows( summary_table, mlms )
   }
 
