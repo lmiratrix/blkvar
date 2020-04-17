@@ -18,13 +18,15 @@ compare_methods_variation(
 \arguments{
 \item{Yobs}{vector observed outcomes (or column name in data)}
 
-\item{Z}{vector of assignment indicators (1==treated) (or column name in data)}
+\item{Z}{vector of assignment indicators (1==treated) (or column name in
+data)}
 
 \item{B}{vector of block ids (or column name in data)}
 
 \item{siteID}{if blocks B nested in sites, then pass the site indicator.}
 
-\item{data}{frame holding Y, Z, B and (possibly a column with name specified by siteID).}
+\item{data}{frame holding Y, Z, B and (possibly a column with name specified
+by siteID).}
 
 \item{include_testing}{Include tests for null of no cross site variation.}
 

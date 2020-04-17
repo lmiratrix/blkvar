@@ -12,6 +12,13 @@ test_that("Nicole block estimators provide reasonable answers", {
     rs <- calc_summary_stats( dat$Yobs, dat$Z, dat$B, add.neyman = TRUE)
     rs
 
+    dat2 = dat
+    head( dat )
+    dat2 = dplyr::rename( dat2, BBB=B )
+    rs2 <- calc_summary_stats( Yobs, Z, BBB, data=dat2, add.neyman = TRUE)
+    rs2
+    expect_equal( rs, rs2 )
+
     f1 = block_estimator( Yobs, Z, B, data=dat )
 
     f2 = block_estimator_tabulated( rs )

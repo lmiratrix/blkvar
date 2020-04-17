@@ -1,32 +1,49 @@
 
-
+#' Describe an oracle (simulated) dataset.
 #'
-#' #' Summarise simulation data by block (where we know both Y0 and Y1)
-#' #' @param data Dataframe with defined Y0, Y1, and B variables.
-#' #' @param Y0 name of Y0 column
-#' #' @param Y1 name of Y1 column
-#' #' @param Z vector that indicates if outcome is under treatment or control
-#' #' @param B block ids
-#' #' @return dataframe with summary statistics by block
-#' #'
-#' #' @export
-# calc_summary_stats_oracle_retired <- function (data, Y0 = "Y0", Y1 = "Y1", Z = "Z", B = "B") {
-#     data <- dplyr::rename(data,
-#                           Y0 = !!rlang::sym(Y0),
-#                           Y1 = !!rlang::sym(Y1),
-#                           Z = !!rlang::sym(Z),
-#                           B = !!rlang::sym(B))
-#     sdat <- data %>%
-#         dplyr::group_by( B ) %>%
-#         dplyr::summarise(n = n(),
-#                          mu0 = mean(Y0),
-#                          mu1 = mean(Y1),
-#                          tau = mu1 - mu0,
-#                          sd0 = sd(Y0),
-#                          sd1 = sd(Y1),
-#                          corr = cor(Y0, Y1))
-#     as.data.frame(sdat)
-# }
+#' This utility function gives various summary statistics (at the block level)
+#' for a dataset with all potential outcomes given.
+#'
+#' @param data Dataframe with defined Y0, Y1 (the potential outcomes), Z (sample
+#'   treatment assignment vector), and sid (a categorical blocking variable).
+#' @param Y0 name of Y0 column
+#' @param Y1 name of Y1 column
+#' @param Z example vector of treatment assignment that allows for calculation
+#'   of proportion treated and so forth.
+#' @param sid Name of the block ID column in the dataframe.
+#' @return (invisible) the summary stats by block.  Side effect of printing to
+#'   screen the description of the data.
+#' @export
+
+describe_data <- function(data, Y0 = "Y0", Y1 = "Y1", Z = "Z", sid = "sid") {
+    # old param list: Y0, Y1, Z, sid, data = NULL
+    data <- dplyr::rename(data,
+                          Y0 = !!rlang::sym(Y0),
+                          Y1 = !!rlang::sym(Y1),
+                          Z = !!rlang::sym(Z),
+                          sid = !!rlang::sym(sid))
+    sites <- data %>% group_by(!!rlang::sym(sid)) %>%
+        dplyr::summarise(Y0.bar = mean(Y0),
+                         Y1.bar = mean(Y1),
+                         beta = Y1.bar - Y0.bar,
+                         n = n(),
+                         p.Tx = mean(Z))
+
+    site.var = sd(sites$beta)
+    scat( "\n\nDescription of site distribution:" )
+    scat( "\n\tsite average variation:\tsd(Y0.bar) = %.3f\tsd(Y1.bar) = %.3f",
+          sd(sites$Y0.bar), sd(sites$Y1.bar))
+    scat( "\n\tmarginal variation:\tsd(Y0) = %.3f\t\tsd(Y1) = %.3f\t\tcor(Y0,Y1) = %.3f",
+          sd(data$Y0), sd(data$Y1), cor(data$Y0, data$Y1))
+    scat( "\n\tsd( beta ) = %.3f\n\tcorr( Y0.bar, Y1.bar ) = %.3f\tcov = %.3f",
+          site.var, cor(sites$Y0.bar, sites$Y1.bar), cov( sites$Y0.bar, sites$Y1.bar))
+    scat( "\n\tcor( Y0.bar, beta ) = %.3f", cor(sites$Y0.bar, sites$beta))
+    scat( "\n\tmean( n ) = %.3f\tsd( n ) = %.3f", mean(sites$n), sd( sites$n))
+    scat( "\n\tmean( Z.bar ) = %.3f\t(%.3f)\n", mean(sites$p.Tx), sd(sites$p.Tx))
+    invisible(sites)
+}
+
+
 
 
 
@@ -35,6 +52,7 @@
 #' Function that returns a summary of block level true values for simulations
 #' (so works with full schedule of potential outcomes).
 #'
+#'
 #' @inheritParams compare_methods_oracle
 #' @param Z Instead of passing pre-computed p_mat, one can pass an example
 #'   treatment assignment vector Z of 0s and 1s. In this case method will
@@ -42,55 +60,55 @@
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @export
 calc_summary_stats_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL, Z = NULL) {
+
     if (!is.null(data)) {
         Y0 <- eval(substitute(Y0), data)
         Y1 <- eval(substitute(Y1), data)
         B <- eval(substitute(B), data)
         Z <- eval(substitute(Z), data)
     }
+    B <- as.character( B )
 
     stopifnot( is.null( p_mat ) || is.null(Z) )
 
     if ( !is.null( Z ) ) {
         stopifnot( sum( Z == 0 ) + sum( Z == 1 ) == length( Y0 ) )
         p_mat = aggregate( list( p=Z ), list( B=B ), mean )
+        p_mat$B = as.character(p_mat$B)
     }
 
+    if ( !is.null( p_mat ) ) {
+        stopifnot( nrow( p_mat ) == length( unique( B ) ) )
+        stopifnot( ncol( p_mat ) == 2 )
+        names( p_mat ) = c("B","p" )
+    }
     stopifnot( length(Y0) == length(Y1) )
     stopifnot( length(Y0) == length(B) )
 
-    Y = c( Y1, Y0 )
-    Z  = rep( c(1,0), each= length(Y0) )
-    B = c( B, B )
+    # Use aggregation to simplify and keep the B name right
+    data <- data.frame( Y0 = Y0,
+                        Y1 = Y1,
+                        B = B )
 
-    n <- length(Y)
+    sdat <- data %>% dplyr::group_by( B ) %>%
+        dplyr::summarise(n = n(),
+                         Ybar1 = mean(Y1),
+                         Ybar0 = mean(Y0),
+                         tau = Ybar1 - Ybar0,
+                         var1 = var(Y1),
+                         var0 = var(Y0),
+                         corr = cor(Y0, Y1) )
 
-    #First convert block ids into numbers
-    B <- as.numeric( factor(B) )
-    p_mat$B <- as.numeric( factor(p_mat[,1]) )
-    p_mat$p = p_mat[,2]
+    sdat = merge( sdat, p_mat, by="B", all=TRUE )
 
-    #Get number of units assigned to each treatment
-    #In each block
-    n_matrix <- aggregate(list(n_k = B), list(B = B), FUN = length)
-    n_matrix$n_k <- n_matrix$n_k / 2
-    n_ctk_matrix <- merge(n_matrix, p_mat, by = "B")
-    n_ctk_matrix$n1 <- n_ctk_matrix$n_k * n_ctk_matrix$p
-    n_ctk_matrix$n0 <- n_ctk_matrix$n_k - n_ctk_matrix$n1
-    treated_mat <- cbind(Y[Z == 1], B[Z == 1])
-    control_mat <- cbind(Y[Z == 0], B[Z == 0])
-    Y1_matrix <- aggregate(list(Ybar1 = treated_mat[, 1]), list(B = treated_mat[, 2]), FUN = mean)
-    Y0_matrix <- aggregate(list(Ybar0 = control_mat[, 1]), list(B = control_mat[, 2]), FUN = mean)
-    Ybar_matrix <- merge(Y1_matrix, Y0_matrix, by = "B")
-    var1_matrix <- aggregate(list(var1 = treated_mat[, 1]), list(B = treated_mat[, 2]), FUN = var)
-    var0_matrix <- aggregate(list(var0 = control_mat[, 1]), list(B = control_mat[, 2]), FUN = var)
-    var_matrix <- merge(var1_matrix, var0_matrix, by = "B")
-    overall_mat <- merge(n_ctk_matrix, Ybar_matrix, by = "B")
-    overall_mat <- merge(overall_mat, var_matrix, by = "B")
-    overall_mat$se_ney <- sqrt(overall_mat$var1 / overall_mat$n1 + overall_mat$var0 / overall_mat$n0)
-    drops <- c("n_k", "p")
-    overall_mat <- overall_mat[ , !(names(overall_mat) %in% drops)]
-    return(overall_mat)
+    sdat = dplyr::mutate(sdat,
+                         n0 = round( n * (1-p) ),
+                         n1 = round( n * p ),
+                         se_ney = sqrt( var0 / n0 + var1 / n1 ) )
+    stopifnot( all( sdat$n0 + sdat$n1 == sdat$n ) )
+    sdat$B = as.character( sdat$B )
+
+    return( sdat )
 }
 
 
@@ -107,7 +125,8 @@ s_tc_func <- function(tau_vec) {
 
 
 
-#' Compare estimators using the true values (i.e., full schedule of potential outcomes)
+#' Compare estimators using the true values (i.e., full schedule of potential
+#' outcomes)
 #'
 #'
 #' This method is for simulaton studies where we know all the potential
@@ -122,9 +141,9 @@ s_tc_func <- function(tau_vec) {
 #'   holding same).
 #' @param B block ids  (or name of column in data holding same).
 #' @param data alternatively is matrix of Y,Z,B
-#' @param p_mat  matrix with two columns, one row per block.  First column is
-#'   the categorical covariate denoting blocks, with same levels as in B, above.
-#'   Second column is proportion treated in that block.
+#' @param p_mat  Data.frame with exactly two columns, and one row per block.
+#'   First column is the categorical covariate denoting blocks, with same levels
+#'   as in B, above. Second column is proportion treated in that block.
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @importFrom msm deltamethod
 #' @export
@@ -154,7 +173,7 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
 
 
     # Total number of blocks
-    K <- max(data_table$B)
+    K <- length( unique( data_table$B) )
 
     #Split into big and small blocks
     data.big <- data_table[data_table$n1 > 1 & data_table$n0 > 1, ]
@@ -183,9 +202,8 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
     M0 <- lm(Y ~ Z + as.factor(B))
     tau_est_lm <- summary(M0)$coefficients[2, 1]
     var_est_lm <- sandwich::vcovHC(M0, type = "HC1")[2, 2]
-    blk.id <- as.numeric(as.factor(B))
-    num.c.vec <- data_table[match(blk.id,data_table$B), ]$nk / data_table[match(blk.id, data_table$B), ]$n0
-    num.t.vec <- data_table[match(blk.id,data_table$B), ]$nk / data_table[match(blk.id, data_table$B), ]$n1
+    num.c.vec <- data_table[match(B,data_table$B), ]$nk / data_table[match(B, data_table$B), ]$n0
+    num.t.vec <- data_table[match(B,data_table$B), ]$nk / data_table[match(B, data_table$B), ]$n1
     weight.vec <- num.c.vec * (1 - Z) + num.t.vec * (Z)
     p.overall <- sum(data_table$n1) / sum(data_table$n1 + data_table$n0)
     weight.vec <- num.c.vec * (1 - Z) * (1 - p.overall) + num.t.vec * (Z) * p.overall
@@ -195,7 +213,7 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
     tau_est_weighted_fixed <- summary(M1)$coefficients[2, 1]
     var_est_weighted_fixed <- summary(M1)$coefficients[2, 2] ^ 2
 
-    # Aggregate into summary table
+    # Aggregate results into summary table
     methods_list <- c("hybrid_m", "hybrid_p", "plug_in_big", "fixed effects-no int", "weighted regression-fixed effects")
     var_estimates <- c(hybrid_m_est, hybrid_p_est, plug_in_big_est, var_est_lm, var_est_weighted_fixed)
     tau_estimates <- c(rep(tau_est, 3), tau_est_lm, tau_est_weighted_fixed)

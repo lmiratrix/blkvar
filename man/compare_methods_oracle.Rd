@@ -2,7 +2,8 @@
 % Please edit documentation in R/compare_methods_oracle.R
 \name{compare_methods_oracle}
 \alias{compare_methods_oracle}
-\title{Compare estimators using the true values (i.e., full schedule of potential outcomes)}
+\title{Compare estimators using the true values (i.e., full schedule of potential
+outcomes)}
 \usage{
 compare_methods_oracle(Y0, Y1, B, data = NULL, p_mat = NULL)
 }
@@ -17,9 +18,9 @@ holding same).}
 
 \item{data}{alternatively is matrix of Y,Z,B}
 
-\item{p_mat}{matrix with two columns, one row per block.  First column is
-the categorical covariate denoting blocks, with same levels as in B, above.
-Second column is proportion treated in that block.}
+\item{p_mat}{Data.frame with exactly two columns, and one row per block.
+First column is the categorical covariate denoting blocks, with same levels
+as in B, above. Second column is proportion treated in that block.}
 }
 \description{
 This method is for simulaton studies where we know all the potential

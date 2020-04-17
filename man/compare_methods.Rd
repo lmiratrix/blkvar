@@ -24,33 +24,46 @@ compare_methods(
 \arguments{
 \item{Yobs}{vector observed outcomes (or column name in data)}
 
-\item{Z}{vector of assignment indicators (1==treated) (or column name in data)}
+\item{Z}{vector of assignment indicators (1==treated) (or column name in
+data)}
 
 \item{B}{vector of block ids (or column name in data)}
 
-\item{siteID}{site ids (variable name as string if data frame passed) (if randomization blocks are nested in site).}
+\item{siteID}{site ids (variable name as string if data frame passed) (if
+randomization blocks are nested in site).}
 
-\item{data}{frame holding Y, Z, B and (possibly a column with name specified by siteID).}
+\item{data}{frame holding Y, Z, B and (possibly a column with name specified
+by siteID).}
 
 \item{include_block}{Include the Pashley blocking variants.}
 
 \item{include_MLM}{Include MLM estimators}
 
-\item{include_DB}{Include Design-Based estimators (taken from RCTYes documentation and prior literature).}
+\item{include_DB}{Include Design-Based estimators (taken from RCTYes
+documentation and prior literature).}
 
 \item{include_LM}{Include Linear Model-based estimators (including
 Huber-White SEs, etc.)}
 
-\item{include_DBBlended}{Include DB estimators applied to small block
-and classic Neyman to large blocks.}
+\item{include_DBBlended}{Include DB estimators applied to small block and
+classic Neyman to large blocks.}
 
-\item{include_method_characteristics}{Include details of the methods (target estimands and sampling framework assumed).}
+\item{include_method_characteristics}{Include details of the methods (target
+estimands and sampling framework assumed).}
 
-\item{weight_LM_method}{Argument passed to weight.method of weighted_linear_estimators}
+\item{weight_LM_method}{Argument passed to weight.method of
+weighted_linear_estimators}
 
-\item{weight_LM_scale_weights}{Argument passed to sclae.weights of weighted_linear_estimators}
+\item{weight_LM_scale_weights}{Argument passed to sclae.weights of
+weighted_linear_estimators}
 
-\item{control_formula}{What variables to control for, in the form of "~ X1 + X2".}
+\item{control_formula}{What variables to control for, in the form of "~ X1 +
+X2".}
+}
+\value{
+Dataframe of point estimates and standard errors for each method
+  considered. If \code{include_method_characteristics=TRUE} also add some
+  features of the methods as additional columns.
 }
 \description{
 This function calculates the point estimates and SE estimates for a variety

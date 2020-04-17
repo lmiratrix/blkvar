@@ -7,8 +7,10 @@
 #' @param Z vector that indicates if outcome is under treatment or control
 #' @param B block ids
 #' @param data Dataframe with defined Yobs, Z, and B variables.
-#' @param siteID If not null, name of siteID that has randomization blocks nested inside.
-#' @param add.neyman If TRUE, add block-specific SEs using Neyman formula of $s^2_T/n_t + s^2_C/n_c$ as column in output.
+#' @param siteID If not null, name of siteID that has randomization blocks
+#'   nested inside.
+#' @param add.neyman If TRUE, add block-specific SEs using Neyman formula of
+#'   $s^2_T/n_t + s^2_C/n_c$ as column in output.
 #' @param data Dataframe with defined Yobs, Z, and B variables.
 #' @family calc_summary_stats
 #'
@@ -32,7 +34,9 @@ calc_summary_stats <- function(Yobs, Z, B, data = NULL, siteID = NULL, add.neyma
     if (missing( "Z")) {
       stopifnot(all(c("Yobs", "Z", "B") %in% names(data)))
     } else {
-      data <- data.frame(Yobs = eval(substitute(Yobs), data), Z = eval(substitute(Z), data), B = eval(substitute(B), data))
+      data <- data.frame(Yobs = eval(substitute(Yobs), data),
+                         Z = eval(substitute(Z), data),
+                         B = eval(substitute(B), data))
     }
   }
   dat <- data

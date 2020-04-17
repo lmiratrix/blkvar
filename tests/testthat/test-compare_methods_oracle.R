@@ -15,15 +15,20 @@ test_that( "calc_summary_stats_oracle works", {
     dt = calc_summary_stats_oracle( Y0, Y1, blk, data=dat, p_mat = p_mat )
     dt
     expect_equal( nrow( dt ), 5 )
+    expect_equal( sum( dt$n1 + dt$n0 ), nrow( dat ) )
+    expect_equal( sum( dt$n ), nrow( dat ) )
+    expect_equal( dt$B, sort( unique( as.character( dat$blk ) ) ) )
 
     dt2 = calc_summary_stats_oracle( dat$Y0, dat$Y1, dat$blk, p_mat = p_mat )
+    dt2
     expect_equal( dt, dt2 )
 
     dt3 = calc_summary_stats_oracle( Y0, Y1, blk, data=dat, Z=Tx )
-    dt$blk = NULL
     expect_equal( dt, dt3 )
 
 })
+
+
 
 
 test_that("compare_methods_oracle works", {
@@ -40,6 +45,9 @@ test_that("compare_methods_oracle works", {
     datBig = bind_rows( dat, dat )
     head( datBig )
     table( datBig$blk )
+
+    stats = calc_summary_stats_oracle( datBig$Y0, datBig$Y1, datBig$blk, p_mat=p_mat )
+    stats
 
     v1 <- compare_methods_oracle( Y0, Y1, blk, data=datBig, p_mat = p_mat )
     v1
