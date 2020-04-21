@@ -56,7 +56,8 @@ estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL,
 
   # Cross site variation
   tau_hat <- sqrt( VarCorr(M0.full)$B[2, 2])
-  res <- list(ATE = a[[1]], SE.ATE = a[[2]], tau_hat = tau_hat, SE_tau = NA)
+  res <- list(ATE_hat = a[[1]], SE_ATE = a[[2]],
+              tau_hat = ATE_hat, SE_tau = NA)
   if (include_testing) {
     res$p_variation <- pv
     res$deviance <- td

@@ -52,7 +52,7 @@ re.mod <- nlme::lme(Yobs ~ 0 + Z + sid,
 
 # Estimated average treatment impact (with SEs)
 ATE = nlme::fixef( re.mod )[[1]]
-SE.ATE = sqrt( vcov( re.mod )[1,1] )
+SE_ATE = sqrt( vcov( re.mod )[1,1] )
 
 # Estimated cross site variation.
 vc <- nlme::VarCorr(re.mod)

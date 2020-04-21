@@ -15,7 +15,7 @@ test_that("interacted regression runs on balanced data", {
     rs = blkvar:::interacted_linear_estimators( Yobs, Z, B, data=dat )
 
     rs
-    expect_equal( rs$tau[[1]], rs$tau[[2]] )
+    expect_equal( rs$ATE_hat[[1]], rs$ATE_hat[[2]] )
     expect_equal( rs$SE[[1]], rs$SE[[2]] )
 
 })
@@ -31,7 +31,7 @@ test_that("Weighted regression matches db", {
     dat = generate_blocked_data_obs_linear( method="small")
     #dat = generate_blocked_data_obs( method="small")
     head( dat )
-
+    table( dat$B )
     sdat = calc_summary_stats( dat )
     sdat
 
@@ -39,12 +39,13 @@ test_that("Weighted regression matches db", {
     b = estimate_ATE_design_based_from_stats( sdat, weight="site", method="finite" )
     a
     b
+    expect_true( is.na( b$SE ) )
 
     head( dat )
     r = blkvar:::weighted_linear_estimators( Yobs ~ Z*B, data=dat )
     r
-    expect_equal( a$tau_hat, r$tau[[1]] )
-    expect_equal( b$tau_hat, r$tau[[2]] )
+    expect_equal( a$ATE_hat, r$ATE_hat[[1]] )
+    expect_equal( b$ATE_hat, r$ATE_hat[[2]] )
 
 
 })
@@ -74,10 +75,10 @@ test_that("Different Weighted regression flags work", {
     C
     D
 
-    expect_equal( A$tau, B$tau )
-    expect_equal( C$tau, D$tau )
+    expect_equal( A$ATE_hat, B$ATE_hat )
+    expect_equal( C$ATE_hat, D$ATE_hat )
 
-    expect_equal( A$tau, C$tau )
+    expect_equal( A$ATE_hat, C$ATE_hat )
 
 
 

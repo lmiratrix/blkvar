@@ -157,27 +157,34 @@ if ( FALSE ) {
 #' can be controlled so the variances are exact using the `exact` flag.
 #'
 #' @param n_k Vector of block sizes. Let K be length of this vector.
-#' @param sigma_alpha Standard deviation of the separation of the block mean Y0
-#' @param sigma_tau Standard deviation of the separation of the block mean
-#'   treatment effects (Y1-Y0)
-#' @param tau Cross site VARIANCE of site-level ATEs.
+#' @param sigma_alpha Standard deviation of the block mean Y0s.
+#' @param sigma_beta Standard deviation of the block mean treatment effects
+#'   (Y1-Y0)s.
+#' @param beta Block Average ATE.
 #' @param sigma_0 Standard deviation of residual Y0 added to block means (can be
-#'   vector for individual variances per block)
+#'   vector for individual variances per block).
 #' @param sigma_1 As `sigma_0` but for Y1s.
 #' @param corr Correlation of Y0, Y1 within a block (can be vector of length K
-#'   for different blocks)
+#'   for different blocks).
 #' @param exact Passed to mvrnorm to control how block means are generated.
 #'
 #' @return Dataframe with block indicators, Y0, and Y1.
 #'
 #' @export
-generate_blocked_data <- function(n_k, sigma_alpha = 1, sigma_tau = 0, tau = 5, sigma_0 = 1, sigma_1 = 1, corr = 0.5, exact = FALSE) {
+generate_blocked_data <- function(n_k, sigma_alpha = 1, sigma_beta = 0,
+                                  beta = 5, sigma_0 = 1,
+                                  sigma_1 = 1, corr = 0.5, exact = FALSE) {
   K <- length(n_k)
   percents <- seq(from = (1 - 1 / (K + 1)), to = 1 / (K + 1), by = -1 /(K + 1))
   alpha <- qnorm(percents, 0, sigma_alpha)
-  beta <- qnorm(percents, tau, sigma_tau)
-  generate_individuals_from_blocks(n_k, alpha, beta = beta, sigma_c = sigma_0, sigma_t = sigma_1, corr = corr, exact = exact)
+  beta <- qnorm(percents, beta, sigma_beta)
+  generate_individuals_from_blocks(n_k = n_k,
+                                   alpha = alpha, beta = beta,
+                                   sigma_c = sigma_0, sigma_t = sigma_1, corr = corr,
+                                   exact = exact)
 }
+
+
 
 #' Make a random simulated dataset from a linear model.
 #'

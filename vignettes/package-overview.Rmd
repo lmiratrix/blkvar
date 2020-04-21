@@ -92,7 +92,7 @@ knitr::kable( rs )
 
 # Estimating cross site variation
 
-We can estimate cross site variation using some of the multilevel modeling methods. See Weiss et al. (2017) for good discussion of the methods discussed. The `estimate_ATE_FIRC` method, for example, provides `tau_hat`, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).
+We can estimate cross site variation using some of the multilevel modeling methods. See Weiss et al. (2017) for good discussion of the methods discussed. The `estimate_ATE_FIRC` method, for example, provides `ATE_hat`, the estimate of cross site variation. To call the method, list the outcome, the treatment assignment (as a 0-1 vector, and a site identifier).
 
 ```{r}
 ests <- estimate_ATE_FIRC( Yobs, Z, sid, data=df )

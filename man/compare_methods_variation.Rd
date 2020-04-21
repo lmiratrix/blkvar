@@ -30,12 +30,14 @@ by siteID).}
 
 \item{include_testing}{Include tests for null of no cross site variation.}
 
-\item{include_Q_estimate}{Include a estimate for tau_hat from Q method (involves calculating the full confidence interval so potentially time intensive).}
+\item{include_Q_estimate}{Include a estimate for ATE_hat from Q method
+(involves calculating the full confidence interval so potentially time
+intensive).}
 
 \item{long_results}{TRUE means each estimator gets a line in a data.frame.
 FALSE gives all as columns in a 1-row dataframe.}
 }
 \description{
-Given a dataframe, use the different methods to pull out point estimates for cross site variation and
-(if desired) pvalues and return them all.
+Given a dataframe, use the different methods to pull out point estimates for
+cross site variation and (if desired) pvalues and return them all.
 }

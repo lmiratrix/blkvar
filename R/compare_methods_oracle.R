@@ -115,11 +115,11 @@ calc_summary_stats_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL, Z = 
 #' Calculates variance of treatment effects.
 #'
 #' Function that helps calculate bias by caculating the true variance of treatment effects.
-#' @param tau_vec  vector of treatment effects
+#' @param ATE_vec  vector of treatment effects
 #' @importFrom stats aggregate lm quantile rnorm sd var
 #' @noRd
-s_tc_func <- function(tau_vec) {
-    s.tc<-var(tau_vec)
+s_tc_func <- function(ATE_vec) {
+    s.tc<-var(ATE_vec)
     return(s.tc)
 }
 
@@ -195,12 +195,12 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
         plug_in_big_est <- plug_in_big(data.small, data.big) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big
     }
     #Get trt effect estimates and aggregate
-    tau_vec <- data_table$Ybar1 - data_table$Ybar0
-    tau_est <- sum(tau_vec * data_table$nk) / n
+    ATE_vec <- data_table$Ybar1 - data_table$Ybar0
+    ATE_hat <- sum(ATE_vec * data_table$nk) / n
 
     #Get linear model estimates (sandwich)
     M0 <- lm(Y ~ Z + as.factor(B))
-    tau_est_lm <- summary(M0)$coefficients[2, 1]
+    ATE_hat_lm <- summary(M0)$coefficients[2, 1]
     var_est_lm <- sandwich::vcovHC(M0, type = "HC1")[2, 2]
     num.c.vec <- data_table[match(B,data_table$B), ]$nk / data_table[match(B, data_table$B), ]$n0
     num.t.vec <- data_table[match(B,data_table$B), ]$nk / data_table[match(B, data_table$B), ]$n1
@@ -210,13 +210,13 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
 
     # Get linear model estimates (Weighted OLS)
     M1 <- lm(Y ~ Z + as.factor(B), weights = weight.vec)
-    tau_est_weighted_fixed <- summary(M1)$coefficients[2, 1]
+    ATE_hat_weighted_fixed <- summary(M1)$coefficients[2, 1]
     var_est_weighted_fixed <- summary(M1)$coefficients[2, 2] ^ 2
 
     # Aggregate results into summary table
     methods_list <- c("hybrid_m", "hybrid_p", "plug_in_big", "fixed effects-no int", "weighted regression-fixed effects")
     var_estimates <- c(hybrid_m_est, hybrid_p_est, plug_in_big_est, var_est_lm, var_est_weighted_fixed)
-    tau_estimates <- c(rep(tau_est, 3), tau_est_lm, tau_est_weighted_fixed)
-    summary_table <- data.frame(Methods = methods_list, tau = tau_estimates, SE = sqrt(var_estimates))
+    ATE_estimates <- c(rep(ATE_hat, 3), ATE_hat_lm, ATE_hat_weighted_fixed)
+    summary_table <- data.frame(Methods = methods_list, tau = ATE_estimates, SE = sqrt(var_estimates))
     return(summary_table)
 }

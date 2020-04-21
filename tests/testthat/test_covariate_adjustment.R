@@ -20,9 +20,9 @@ test_that("Check compare_methods with covariate adjustment", {
 
     if ( FALSE ) {
         head( rs )
-        qplot( rs$tau, rs2$tau )
-        rs2$tau.adj = rs$tau
-        rs2 = mutate( rs2, delta = tau - tau.adj )
+        qplot( rs$ATE_hat, rs2$ATE_hat )
+        rs2$ATE_hat.adj = rs$ATE_hat
+        rs2 = mutate( rs2, delta = ATE_hat - ATE_hat.adj )
         rs2
 
     }
@@ -53,9 +53,9 @@ test_that( "Covariate adjusted Design based works through compare_methods", {
                             control_formula = ~ X1 + X2)
     rsA
 
-    rsA$tau[ rsA$method == "DB-FP-Persons-adj" ]
+    rsA$ATE_hat[ rsA$method == "DB-FP-Persons-adj" ]
     ATE
-    expect_false( rsA$tau[ rsA$method == "DB-FP-Persons-adj" ] == ATE )
+    expect_false( rsA$ATE_hat[ rsA$method == "DB-FP-Persons-adj" ] == ATE )
 
     expect_true( is.data.frame(rsA) )
 

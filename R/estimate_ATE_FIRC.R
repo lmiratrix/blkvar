@@ -108,8 +108,8 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
   }
 
     # get ATE and SE
-  ATE <- nlme::fixef(re.mod)[[1]]
-  SE.ATE <- sqrt(vcov(re.mod)[1, 1])
+  ATE_hat <- nlme::fixef(re.mod)[[1]]
+  SE_ATE <- sqrt(vcov(re.mod)[1, 1])
 
   # extract tau (estimated cross site variation)
   vc <- nlme::VarCorr(re.mod)
@@ -131,5 +131,7 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
     #use delta method from msm package
     SE_tau <- msm::deltamethod(~ exp(x1) ^ 2, par, var)
   }
-  return(list(ATE = ATE, SE.ATE = SE.ATE, tau_hat = tau_hat, SE_tau=SE_tau, p_variation = p_variation, deviance = td ))
+  return(list(ATE_hat = ATE_hat, SE_ATE = SE_ATE,
+              tau_hat = tau_hat, SE_tau=SE_tau,
+              p_variation = p_variation, deviance = td ))
 }

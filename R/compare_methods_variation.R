@@ -1,13 +1,15 @@
 #' Compare different estimates of cross site variation.
 #'
-#' Given a dataframe, use the different methods to pull out point estimates for cross site variation and
-#' (if desired) pvalues and return them all.
+#' Given a dataframe, use the different methods to pull out point estimates for
+#' cross site variation and (if desired) pvalues and return them all.
 #'
 #' @inheritParams compare_methods
 #' @param long_results TRUE means each estimator gets a line in a data.frame.
-#'                FALSE gives all as columns in a 1-row dataframe.
+#'   FALSE gives all as columns in a 1-row dataframe.
 #' @param include_testing Include tests for null of no cross site variation.
-#' @param include_Q_estimate Include a estimate for tau_hat from Q method (involves calculating the full confidence interval so potentially time intensive).
+#' @param include_Q_estimate Include a estimate for ATE_hat from Q method
+#'   (involves calculating the full confidence interval so potentially time
+#'   intensive).
 #' @param siteID if blocks B nested in sites, then pass the site indicator.
 #'
 #' @export
@@ -82,11 +84,11 @@ compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL,
                                data = data, calc.CI = include_Q_estimate )
 
   # collect results
-  res <- data.frame(tau_hat_FIRC = FIRC$tau_hat,
-                    tau_hat_RIRC = RIRC$tau_hat,
-                    tau_hat_FIRC_pool = FIRC_pool$tau_hat,
-                    tau_hat_RIRC_pool = RIRC_pool$tau_hat,
-                    tau_hat_Q = Qstat$tau_hat )
+  res <- data.frame(ATE_hat_FIRC = FIRC$ATE_hat,
+                    ATE_hat_RIRC = RIRC$ATE_hat,
+                    ATE_hat_FIRC_pool = FIRC_pool$ATE_hat,
+                    ATE_hat_RIRC_pool = RIRC_pool$ATE_hat,
+                    ATE_hat_Q = Qstat$ATE_hat )
 
   if (include_testing) {
   	res$pv_FIRC <- FIRC$p_variation
@@ -99,11 +101,11 @@ compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   if (long_results) {
     if (include_testing) {
       res <- data.frame( method = c("FIRC", "RIRC", "FIRC_pool", "RIRC_pool", "Q"),
-                         tau_hat = c( as.numeric( res[1:5] ) ),
+                         ATE_hat = c( as.numeric( res[1:5] ) ),
                          pv = as.numeric(res[6:10]))
     } else {
       res = data.frame( method = c("FIRC", "RIRC", "FIRC_pool", "RIRC_pool", "Q"),
-                        tau_hat = as.numeric(c(res[1:5])))
+                        ATE_hat = as.numeric(c(res[1:5])))
     }
   }
   res

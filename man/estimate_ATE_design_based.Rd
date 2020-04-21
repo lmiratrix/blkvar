@@ -2,27 +2,38 @@
 % Please edit documentation in R/design_based_method.R
 \name{estimate_ATE_design_based}
 \alias{estimate_ATE_design_based}
+\alias{estimate_ATE_design_based_adjusted}
 \title{Implementation of the formula found in RCT-YES documentation.}
 \usage{
 estimate_ATE_design_based(
   formula,
   control_formula = NULL,
-  siteID = NULL,
   data,
+  siteID = NULL,
   method = c("finite", "superpop", "superpop.original"),
+  weight = c("individual", "site", "tx")
+)
+
+estimate_ATE_design_based_adjusted(
+  formula,
+  control_formula,
+  data,
+  siteID = NULL,
+  method = c("finite", "superpop", "superpop.adj"),
   weight = c("individual", "site", "tx")
 )
 }
 \arguments{
 \item{formula}{Input formula for analysis}
 
-\item{control_formula}{What variables to control for, in the form of "~ X1 + X2".}
+\item{control_formula}{What variables to control for, in the form of "~ X1 +
+X2".}
+
+\item{data}{Dataframe with defined Yobs, Z, and B variables.}
 
 \item{siteID}{Vector of site IDs if there are randomization blocks nested in
 site that should be aggregated (will change results for site weighting
 only).}
-
-\item{data}{Dataframe with defined Yobs, Z, and B variables.}
 
 \item{method}{finite, superpop, or superpop2 to give SEs that either capture
 uncertainty due to targeting a superpopulation quantity or not.}
@@ -36,8 +47,16 @@ This can handle a superpopulation model, non-clustered but blocked.
 \details{
 Taken from page 83 of Shochet RCT-YES paper (eq 6.25).
 
+The adjusted version, i.e., if control formula is passed, also uses
+formula from the Schochet RCT Yes technical document.
+
 The `superpop` variant is a modification of the original 'superpop.original',
 pulling the weights from inside the squared term to outside. This method was
 suggested in personal correspondance with Schochet.  If the weights are not
 all 1, this can make a difference.
 }
+\section{Functions}{
+\itemize{
+\item \code{estimate_ATE_design_based_adjusted}: This directly implements the adjusted.  The main method will dispatch to this one if control_formula is not NULL.
+}}
+

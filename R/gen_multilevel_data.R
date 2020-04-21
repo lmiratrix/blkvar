@@ -2,10 +2,11 @@
 
 
 # This global variable is a hack so if the 'finite.model' flag in
-# generate_multilevel_data_model() is set to TRUE, that method will save the first randomly
-# generated units in this variable and then, in subsequent calls to
-# generate_multilevel_data_model() simply rerandomize these units. (generate_multilevel_data_model will check if J
-# has changed and reset if the parameter J is different).
+# generate_multilevel_data_model() is set to TRUE, that method will save the
+# first randomly generated units in this variable and then, in subsequent calls
+# to generate_multilevel_data_model() simply rerandomize these units.
+# (generate_multilevel_data_model will check if J has changed and reset if the
+# parameter J is different).
 .MULTISITE_CANONICAL = NULL
 
 
@@ -13,7 +14,9 @@
 
 #' Generate site sizes for simulation of multisite data
 #'
-# Generate piecewise uniform distribution with a mean of n.bar and a 'size.ratio' that controls the variance of site sizes.
+#' Generate piecewise uniform distribution with a mean of n.bar and a
+#' 'size.ratio' that controls the variance of site sizes.
+#'
 #' @param J number of sites to generate.
 #' @param n.bar Average site size.
 #' @param size.ratio Index of
@@ -90,15 +93,23 @@ rerandomize_data <- function(dat) {
 #' @return Dataframe of individual level data (unless return.sites=TRUE)!  Dataframe has treatment column, outcome column, covariates, and block IDs.
 #' @importFrom magrittr '%>%'
 #' @export
-generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00, gamma.01, gamma.10, gamma.11, tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
-                          beta.X = NULL, sigma2.mean.X = 0, variable.n = TRUE, variable.p = FALSE, cluster.rand = FALSE, return.sites = FALSE, finite.model = FALSE,
-                          size.impact.correlate = 0, proptx.impact.correlate = 0, correlate.strength = 0.75, size.ratio = 1 / 3, verbose = FALSE) {
+generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
+                                           gamma.00, gamma.01, gamma.10, gamma.11,
+                                           tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
+                                           beta.X = NULL, sigma2.mean.X = 0,
+                                           variable.n = TRUE, variable.p = FALSE,
+                                           cluster.rand = FALSE, return.sites = FALSE,
+                                           finite.model = FALSE,
+                                           size.impact.correlate = 0, proptx.impact.correlate = 0,
+                                           correlate.strength = 0.75, size.ratio = 1 / 3, verbose = FALSE) {
 
     stopifnot(size.impact.correlate %in% c(-1, 0, 1))
     stopifnot(proptx.impact.correlate %in% c(-1, 0, 1))
     if (verbose) {
-        scat( "gammas:\t%.2f\t%.2f (%.2f)\n\t%.2f\t%.2f (%.2f)\n", gamma.00, gamma.01, gamma.01 ^ 2, gamma.10, gamma.11, gamma.11 ^ 2)
-        scat( "taus:\t%.2f\t%.2f\tsd=%.2f\n\t%.2f\t%.2f\tsd=%.2f\tcor=%.2f\n", tau.00, tau.01, sqrt(tau.00), tau.01, tau.11, sqrt(tau.11), tau.01 / sqrt(tau.00 * tau.11))
+        scat( "gammas:\t%.2f\t%.2f (%.2f)\n\t%.2f\t%.2f (%.2f)\n",
+              gamma.00, gamma.01, gamma.01 ^ 2, gamma.10, gamma.11, gamma.11 ^ 2)
+        scat( "taus:\t%.2f\t%.2f\tsd=%.2f\n\t%.2f\t%.2f\tsd=%.2f\tcor=%.2f\n",
+              tau.00, tau.01, sqrt(tau.00), tau.01, tau.11, sqrt(tau.11), tau.01 / sqrt(tau.00 * tau.11))
         scat( "beta.X:\t%.2f\n", beta.X)
     }
 
@@ -258,7 +269,10 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5, gamma.00
 #'   of the treatment group 1, Default: FALSE
 #' @param ... Further parameters passed to generate_multilevel_data_model()
 #' @export
-generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5, tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE, zero.corr = FALSE, ... ) {
+generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5,
+                                     tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7,
+                                     gamma.00 = 0, gamma.10 = 0.2,
+                                     verbose = FALSE, zero.corr = FALSE, ... ) {
     sigma2.W <- 1
     gamma.01 <- sqrt(rho2.0W * ICC / sigma2.W)
     gamma.11 <- sqrt(rho2.1W * tau.11.star)

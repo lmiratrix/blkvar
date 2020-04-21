@@ -60,12 +60,14 @@ estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_tes
 
   # get ATE and SE
   ATE <- nlme::fixef(re.mod)[[2]]
-  SE.ATE <- sqrt(vcov(re.mod)[2, 2])
+  SE_ATE <- sqrt(vcov(re.mod)[2, 2])
 
   #cextract tau
   vc <- nlme::VarCorr(re.mod)
   suppressWarnings(storage.mode(vc) <- "numeric")
   tau_hat <- vc["Z", "StdDev"]
 
-  return(list(ATE = ATE, SE.ATE = SE.ATE, tau_hat = tau_hat, SE_tau = NA, p_variation = p_variation, deviance = td))
+  return(list(ATE_hat = ATE, SE_ATE = SE_ATE,
+              tau_hat = tau_hat, SE_tau = NA,
+              p_variation = p_variation, deviance = td))
 }

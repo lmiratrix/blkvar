@@ -32,6 +32,8 @@ test_that("FIRC functions work", {
 
 
 
+
+
 test_that("RIRC functions work", {
     set.seed( 1019 )
 

@@ -36,11 +36,17 @@ estimate_ATE_RICC <- function(Yobs, Z, B, data = NULL, REML = FALSE, control_for
   method <- ifelse( REML, "REML", "ML")
   formula <- make_base_formula(control_formula = control_formula, data = data)
 
-  re.mod <- nlme::lme(formula, data = data, random = ~ 1 | B, weights = nlme::varIdent(form = ~ 1 | Z), na.action = stats::na.exclude, method = method,
-    control = nlme::lmeControl(opt="optim", returnObject = TRUE))
+  re.mod <- nlme::lme(formula, data = data, random = ~ 1 | B,
+                      weights = nlme::varIdent(form = ~ 1 | Z),
+                      na.action = stats::na.exclude,
+                      method = method,
+                      control = nlme::lmeControl(opt="optim", returnObject = TRUE))
 
   # get ATE and SE
-  ATE <- nlme::fixef(re.mod)[[2]]
-  SE.ATE <- sqrt(vcov(re.mod)[2, 2])
-  return(list(ATE = ATE, SE.ATE = SE.ATE, tau_hat = NA, SE_tau = NA, p_variation = NA, deviance = NA))
+  ATE_hat <- nlme::fixef(re.mod)[[2]]
+  SE_ATE <- sqrt(vcov(re.mod)[2, 2])
+
+  return(list(ATE_hat = ATE_hat, SE_ATE = SE_ATE,
+              tau_hat = NA, SE_tau = NA,
+              p_variation = NA, deviance = NA))
 }

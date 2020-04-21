@@ -28,7 +28,7 @@ test_that("compare functions doesn't crash when called on big blocks", {
 
     res <- compare_methods( dat$Yobs, dat$Z, dat$B, include_MLM = FALSE )
     res
-    expect_true( sd( res$tau ) <= 0.0001 )
+    expect_true( sd( res$ATE_hat ) <= 0.000001 )
 })
 
 
@@ -73,7 +73,7 @@ test_that( "further tests of output, etc", {
     expect_equal( class( method.hybrid.p ), "var_dat" )
 
     # We can pull out whatever we want
-    expect_true( !is.na( method.hybrid.p$tau_est ) )
+    expect_true( !is.na( method.hybrid.p$ATE_hat ) )
 
     expect_true( !is.na( method.hybrid.p$se_est ) )
 

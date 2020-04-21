@@ -34,7 +34,7 @@ estimate_ATE_design_based_from_stats <- function(sum_tab,
                                                  method = c( "finite", "superpop", "superpop.original"),
                                                  weight = c("individual", "site", "tx", "passed"),
                                                  weight_col = NULL ) {
-    tau_hat <- NA
+    ATE_hat <- NA
     stopifnot(is.data.frame(sum_tab))
     stopifnot(all(c("Ybar0","Ybar1","n", "var1","var0", "n1","n0" ) %in% names( sum_tab)))
     method <- match.arg(method)
@@ -60,11 +60,11 @@ estimate_ATE_design_based_from_stats <- function(sum_tab,
     }
 
     # calculate individual block treatment impact estimates
-    sum_tab <- mutate( sum_tab, tau_hat_b = Ybar1 - Ybar0)
+    sum_tab <- mutate( sum_tab, ATE_hat_b = Ybar1 - Ybar0)
 
     # calculate overall ATE estimate by taking a weighted average of the
     # individual
-    tau_hat <- with(sum_tab, sum(tau_hat_b * .weight) / sum(.weight))
+    ATE_hat <- with(sum_tab, sum(ATE_hat_b * .weight) / sum(.weight))
     # Now do the SEs.
     if (method == "finite") {
         # finite pop (Neyman)
@@ -78,7 +78,7 @@ estimate_ATE_design_based_from_stats <- function(sum_tab,
         # First aggregate to get sites, if needed
         if (!is.null(siteID)) {
             sum_tab <- sum_tab %>% group_by(!!as.name(siteID)) %>%
-                dplyr::summarise(tau_hat_b = sum(.data$tau_hat_b * .data$.weight) / sum(.data$.weight),
+                dplyr::summarise(ATE_hat_b = sum(.data$ATE_hat_b * .data$.weight) / sum(.data$.weight),
                                  .weight = sum(.data$.weight))
             h <- nrow( sum_tab )
         }
@@ -86,14 +86,14 @@ estimate_ATE_design_based_from_stats <- function(sum_tab,
         wbar <- mean(sum_tab$.weight)
         if (method == "superpop.original") {
             # This is the formula 6.25
-            asyVar <- sum((sum_tab$.weight * sum_tab$tau_hat_b - wbar * tau_hat) ^ 2) / ((h - 1) * h * wbar ^ 2)
+            asyVar <- sum((sum_tab$.weight * sum_tab$ATE_hat_b - wbar * ATE_hat) ^ 2) / ((h - 1) * h * wbar ^ 2)
         } else if (method == "superpop") {
             # This is based on the email chain with Weiss, Pashley, etc.
-            asyVar <- sum(sum_tab$.weight ^ 2 * (sum_tab$tau_hat_b - tau_hat) ^ 2) / ((h -1 ) * h * wbar ^ 2)
+            asyVar <- sum(sum_tab$.weight ^ 2 * (sum_tab$ATE_hat_b - ATE_hat) ^ 2) / ((h -1 ) * h * wbar ^ 2)
         }
         SE <- sqrt(asyVar)
     }
-    data.frame(tau_hat = tau_hat, SE = SE, weight = weight, method = method, stringsAsFactors = FALSE)
+    data.frame(ATE_hat = ATE_hat, SE = SE, weight = weight, method = method, stringsAsFactors = FALSE)
 }
 
 
@@ -194,7 +194,7 @@ estimate_ATE_design_based_adjusted <- function(formula,
     stopifnot(length(unique(data$B)) == nrow(sum_tab))
 
     # Copy over our block-level impact estimates
-    sum_tab$tau_hat_b <- coef(M0)[(h + v + 1):(2 * h + v)]
+    sum_tab$ATE_hat_b <- coef(M0)[(h + v + 1):(2 * h + v)]
 
     # Get our block weights depending on target estimand
     if (weight == "tx" ) {
@@ -212,12 +212,12 @@ estimate_ATE_design_based_adjusted <- function(formula,
         }
     }
 
-    tau_hat <- NA
+    ATE_hat <- NA
     SE <- NA
 
     # calculate overall ATE estimate by taking a weighted average of the
     # estimated block effects.
-    tau_hat <- sum( sum_tab$tau_hat_b * sum_tab$.weight ) / sum( sum_tab$.weight )
+    ATE_hat <- sum( sum_tab$ATE_hat_b * sum_tab$.weight ) / sum( sum_tab$.weight )
 
     if (method == "finite") {
         # Finite population SE calculation
@@ -239,31 +239,31 @@ estimate_ATE_design_based_adjusted <- function(formula,
             sum_tab = mutate(sum_tab, X1c = X1.bar - X.w, X2c = X2.bar - X2.w)
 
             # Our second stage regression
-            M.sp <- lm( tau_hat_b ~ 1 + X1c + X2c, weights = .weight, data = sum_tab)
-            # The intercept of this model should be our tau_hat
-            stopifnot(abs(coef(M.sp)[[1]] - tau_hat) < 0.00001)
+            M.sp <- lm( ATE_hat_b ~ 1 + X1c + X2c, weights = .weight, data = sum_tab)
+            # The intercept of this model should be our ATE_hat
+            stopifnot(abs(coef(M.sp)[[1]] - ATE_hat) < 0.00001)
 
             # Now calculate the Superpopoulation SE
-            sum_tab$tau.pred <- predict(M.sp)
+            sum_tab$ATE.pred <- predict(M.sp)
 
             # Equation 6.28, page 86 (using the residuals)
             w.bar <- mean(sum_tab$.weight)
-            SE.SP <- sum(sum_tab$.weight ^ 2 * (sum_tab$tau_hat_b - sum_tab$tau.pred) ^ 2) / ((h - v - 1) * h * w.bar ^ 2)
+            SE.SP <- sum(sum_tab$.weight ^ 2 * (sum_tab$ATE_hat_b - sum_tab$ATE.pred) ^ 2) / ((h - v - 1) * h * w.bar ^ 2)
             SE <- sqrt(SE.SP)
         } else {
             # First aggregate to get sites, if needed
             if (!is.null(siteID)) {
                 sum_tab <- sum_tab %>% group_by(!!as.name(siteID)) %>%
-                    dplyr::summarise( tau_hat_b = sum(.data$tau_hat_b * .data$.weight) / sum(.data$.weight),
+                    dplyr::summarise( ATE_hat_b = sum(.data$ATE_hat_b * .data$.weight) / sum(.data$.weight),
                                       .weight = sum(.data$.weight))
                 h <- nrow(sum_tab)
             }
             w.bar <- mean(sum_tab$.weight)
-            SE.SP <- sum(sum_tab$.weight ^ 2 * (sum_tab$tau_hat_b - tau_hat) ^ 2) / ((h - 1) * h * w.bar ^ 2)
+            SE.SP <- sum(sum_tab$.weight ^ 2 * (sum_tab$ATE_hat_b - ATE_hat) ^ 2) / ((h - 1) * h * w.bar ^ 2)
             SE <- sqrt(SE.SP)
         }
     }
-    data.frame(tau_hat = tau_hat, SE = SE, weight = weight, method = method, stringsAsFactors = FALSE)
+    data.frame(ATE_hat = ATE_hat, SE = SE, weight = weight, method = method, stringsAsFactors = FALSE)
 } # end estimator function
 
 
@@ -299,7 +299,7 @@ estimate_ATE_design_based_adjusted <- function(formula,
 
 all_adjusted_estimators <- function(formula, control_formula, data) {
 
-  est <- tau_hat <- NA
+  est <- ATE_hat <- NA
   ests <- expand.grid(method = c("finite", "superpop" ), #, "superpop.adj" ),
     weight = c( "individual", "site" ), stringsAsFactors = FALSE )
   ests <- tibble::as_tibble(ests)
@@ -311,7 +311,7 @@ all_adjusted_estimators <- function(formula, control_formula, data) {
   ests$weight <- NULL
   ests <- tidyr::unnest( ests, cols = est)
   ests$method <- paste0( "DBadj-", ests$method, "-", ests$weight )
-  ests <- dplyr::rename( ests, tau = tau_hat )
+  ests <- dplyr::rename( ests, ATE_hat = ATE_hat )
   ests
 }
 

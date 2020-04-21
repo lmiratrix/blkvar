@@ -146,7 +146,7 @@ test_that( "Comparing variation methods works", {
     rs =  compare_methods_variation( Yobs, Z, sid, data=dat, long_results = TRUE )
     rs
     expect_equal( nrow( rs ), 5 )
-    expect_true( all( !is.na( rs$tau_hat ) ) )
+    expect_true( all( !is.na( rs$ATE_hat ) ) )
     expect_true( all( !is.na( rs$pv ) ) )
 
     rs2 = compare_methods_variation( dat$Yobs, dat$Z, dat$sid, long_results = TRUE )
@@ -182,10 +182,10 @@ test_that( "Comparing variation with site and block works", {
     rsA2 =  compare_methods_variation( Yobs, Z, sid, data=dat )
     rsA2
 
-    expect_equal( rsA$tau_hat.RIRC, rsA2$tau_hat.RIRC )
+    expect_equal( rsA$ATE_hat.RIRC, rsA2$ATE_hat.RIRC )
     expect_equal( ncol( rsA ), ncol( rsA2 ) )
-    expect_true( rsA$tau_hat_FIRC != rsA2$tau_hat_FIRC )
-    expect_true( rsA$tau_hat_FIRC_pool != rsA2$tau_hat_FIRC_pool )
+    expect_true( rsA$ATE_hat_FIRC != rsA2$ATE_hat_FIRC )
+    expect_true( rsA$ATE_hat_FIRC_pool != rsA2$ATE_hat_FIRC_pool )
 
 })
 
@@ -212,9 +212,9 @@ test_that( "Design based works through compare_methods", {
                             include_block = FALSE )
     rsA
 
-    rsA$tau[ rsA$method == "DB-FP-Persons" ]
+    rsA$ATE_hat[ rsA$method == "DB-FP-Persons" ]
     ATE
-    expect_equal( rsA$tau[ rsA$method == "DB-FP-Persons" ], ATE )
+    expect_equal( rsA$ATE_hat[ rsA$method == "DB-FP-Persons" ], ATE )
 
     sdat = calc_summary_stats( Yobs, Z, sid, data=dat )
     sdat
@@ -223,7 +223,7 @@ test_that( "Design based works through compare_methods", {
     a = estimate_ATE_design_based_from_stats( sdat, weight="individual",
                                               method="finite" )
     a
-    expect_equal( a$tau_hat, ATE )
+    expect_equal( a$ATE_hat, ATE )
 
     expect_true( is.data.frame(rsA) )
 

@@ -91,7 +91,7 @@ analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL, alpha = 
     pval.low <- pchisq(q_invert, df = s - 1, lower.tail = TRUE)
     pvals <- 2 * pmin(pval.hi, pval.low)
     mx <- which.max(pvals)
-    tau_hat <- tau_test[[mx]]
+    ATE_hat <- tau_test[[mx]]
 
     if (length(tau_test[CI_95 == 1]) == 0) {
       CI_low <- NA
@@ -102,10 +102,10 @@ analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL, alpha = 
     }
 
   } else {
-    tau_hat = NA
+    ATE_hat = NA
     CI_low = NULL
     CI_high = NULL
   }
 
-  return(list(tau_hat = tau_hat, p.value = pval, reject = reject, Q = q, CI_low = CI_low, CI_high = CI_high))
+  return(list(ATE_hat = ATE_hat, p.value = pval, reject = reject, Q = q, CI_low = CI_low, CI_high = CI_high))
 }

@@ -11,9 +11,9 @@ scat = function( str, ... ) {
 
 
 # See https://www.jepusto.com/handmade-clubsandwich/
-clubsandwich_variance <- function(w, tau_hat_b, tau_hat) {
+clubsandwich_variance <- function(w, ATE_hat_b, ATE_hat) {
   W <- sum(w)
-  V <- (1 / W ^ 2) * sum((w ^ 2 * (tau_hat_b - tau_hat) ^ 2) / (1 - w / W))
+  V <- (1 / W ^ 2) * sum((w ^ 2 * (ATE_hat_b - ATE_hat) ^ 2) / (1 - w / W))
   df.inv <- sum(w ^ 2 / (W - w) ^ 2) - (2 / W) * sum(w ^ 3 / (W - w) ^ 2) + (1 / W ^ 2) * sum(w ^ 2 / (W - w)) ^ 2
   list(var.hat = V, df = 1 / df.inv)
 }
@@ -152,7 +152,7 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     ids <- grep( "Z:", names(coef(M0.int)))
     stopifnot(length(ids) == J)
     VC <- vcov(M0.int)
-    tau_hats <- coef(M0.int)[ids]
+    ATE_hats <- coef(M0.int)[ids]
 
     # site weighting
     if (!is.null( siteID)) {
@@ -163,7 +163,7 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
         # some checks to make sure we are matching RA blocks and sites to the
         # right things
         stopifnot( nrow( wts ) == J )
-        nms <- gsub( "Z:B", "", names(tau_hats))
+        nms <- gsub( "Z:B", "", names(ATE_hats))
         stopifnot(all(nms == wts$B))
         wts <- wts$wts / sum(wts$wts)
     } else {
@@ -171,20 +171,20 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     }
 
     # the block SEs from our linear model
-    SE.hat <- diag(VC)[ids]
-    tau.site <- weighted.mean(tau_hats, wts)
-    # Calculate SE for tau.site
-    SE.site <- sqrt(sum(wts ^ 2 * SE.hat))
+    SE_hat <- diag(VC)[ids]
+    ATE_hat_site <- weighted.mean(ATE_hats, wts)
+    # Calculate SE for ATE_hat_site
+    SE_site <- sqrt(sum(wts ^ 2 * SE_hat))
     wts.indiv <- nj / n
-    tau.indiv <- weighted.mean(tau_hats, wts.indiv)
-    SE.indiv <- sqrt(sum(wts.indiv ^ 2 * SE.hat))
+    ATE_hat_indiv <- weighted.mean(ATE_hats, wts.indiv)
+    SE_indiv <- sqrt(sum(wts.indiv ^ 2 * SE_hat))
 
     # This is the cautious way we don't need since we have 0s in the off diagonal
-    # SE.site = sqrt( t(wts) %*% VC %*% wts )
+    # SE_site = sqrt( t(wts) %*% VC %*% wts )
     # faster way---this should work easily.
     # sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
 
-    interactModels <- data.frame(method = c("FE-Int-Sites", "FE-Int-Persons"), tau = c(tau.site, tau.indiv), SE = c(SE.site, SE.indiv), stringsAsFactors = FALSE)
+    interactModels <- data.frame(method = c("FE-Int-Sites", "FE-Int-Persons"), ATE_hat = c(ATE_hat_site, ATE_hat_indiv), SE = c(SE_site, SE_indiv), stringsAsFactors = FALSE)
     if (!is.null(control_formula)) {
         interactModels$method <- paste0(interactModels$method, "-adj")
     }
@@ -253,20 +253,20 @@ weighted_linear_estimators <- function(formula, control_formula = NULL, siteID =
                         design=svydesign(ids = ~1, weights = ~weight, data=data ),
                         family = gaussian() )
 
-        M0w.site <- survey::svyglm(formula,
+        M0w_site <- survey::svyglm(formula,
                                    design = svydesign(ids = ~1, weights = ~weight.site, data = data),
                                    family = gaussian() )
     } else {
         M0w2 <- lm( formula, data=data, weights = data$weight)
-        M0w.site <- lm( formula, data=data, weights = data$weight.site)
+        M0w_site <- lm( formula, data=data, weights = data$weight.site)
     }
-    tau <- coef( M0w2 )[["Z"]]
-    SE.w2 <- grab_SE( M0w2 )
-    tau.w.site <- coef( M0w.site )[["Z"]]
-    SE.w.site <- grab_SE( M0w.site )
+    ATE_hat <- coef( M0w2 )[["Z"]]
+    SE_w2 <- grab_SE( M0w2 )
+    ATE_hat_w_site <- coef( M0w_site )[["Z"]]
+    SE_w_site <- grab_SE( M0w_site )
     weightModels <- data.frame( method=c("FE-IPTW", "FE-IPTW-Sites"),
-                                tau = c( coef( M0w2 )[["Z"]], coef( M0w.site )[["Z"]] ),
-                                SE = c( SE.w2, SE.w.site ),
+                                ATE_hat = c( coef( M0w2 )[["Z"]], coef( M0w_site )[["Z"]] ),
+                                SE = c( SE_w2, SE_w_site ),
                                 stringsAsFactors = FALSE )
     if (!scaled.weights) {
         weightModels$method <- paste0(weightModels$method, "(n)")
@@ -341,35 +341,35 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
 
   # simple linear model
   M0 <- lm( formula, data = data)
-  SE.lm <- summary(M0)$coeff["Z", 2]
+  SE_lm <- summary(M0)$coeff["Z", 2]
 
   # est ATE (precision weighted)
-  tau_hat <- coef(M0)[["Z"]]
+  ATE_hat <- coef(M0)[["Z"]]
 
   # Huber-White SEs
   vcov_sand <- sandwich::vcovHC(M0, type = "HC1")
-  SE.lm.sand <-sqrt( vcov_sand[1,1] )
+  SE_lm.sand <-sqrt( vcov_sand[1,1] )
 
   # Cluster robust SEs (clustering at site level)
   vcov_clust <- sandwich::vcovCL(M0, data$siteID)
-  SE.lm.clust <- sqrt(vcov_clust[1, 1])
+  SE_lm.clust <- sqrt(vcov_clust[1, 1])
 
   # Cluster robust SEs (clustering at site level using clubSandwich)
   # aggregate!
   if (is.null( block.stats)) {
     block.stats <- calc_summary_stats(Yobs, Z, B, data = data, siteID = siteID, add.neyman = FALSE)
   }
-  block.stats <- mutate(block.stats, tau_hat = Ybar1 - Ybar0, prec = n * (n0 / n) * (n1 / n))
+  block.stats <- mutate(block.stats, ATE_hat = Ybar1 - Ybar0, prec = n * (n0 / n) * (n1 / n))
   if (!is.null(siteID)) {
-    # aggregate blocks into sites and calculate site weights and tau_hats
+    # aggregate blocks into sites and calculate site weights and ATE_hats
     block.stats <- block.stats %>% group_by(siteID) %>%
-        dplyr::summarise(tau_hat = sum( prec * tau_hat ) / sum(prec), prec = sum(prec))
+        dplyr::summarise(ATE_hat = sum( prec * ATE_hat ) / sum(prec), prec = sum(prec))
   }
-  cs.var <- clubsandwich_variance(block.stats$prec, block.stats$tau_hat, tau_hat)
-  SE.lm.clust.club <- sqrt(cs.var$var.hat)
+  cs.var <- clubsandwich_variance(block.stats$prec, block.stats$ATE_hat, ATE_hat)
+  SE_lm.clust.club <- sqrt(cs.var$var.hat)
   FEmodels <- data.frame(method = c("FE", "FE-Het", "FE-CR", "FE-Club"),
-                         tau = rep(tau_hat, 4),
-                         SE = c(SE.lm, SE.lm.sand, SE.lm.clust, SE.lm.clust.club),
+                         ATE_hat = rep(ATE_hat, 4),
+                         SE = c(SE_lm, SE_lm.sand, SE_lm.clust, SE_lm.clust.club),
                          stringsAsFactors = FALSE)
   if (!is.null( control_formula)) {
     FEmodels$method <- paste0( FEmodels$method, "-adj")
@@ -383,15 +383,15 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
 # if ( FALSE ) {
 
     # M0w = lm( Yobs ~ Z + B, weights=dat$weight, data=dat )
-    # SE.w = summary( M0w )$coeff["Z",2]
+    # SE_w = summary( M0w )$coeff["Z",2]
 
     # M0w2 = lm( Yobs ~ Z + B, weights=dat$weight, data=dat )
-    # SE.w2 = summary( M0w2 )$coeff["Z",2]
+    # SE_w2 = summary( M0w2 )$coeff["Z",2]
 
     # # Site weighted regression models
-    # M0w.site = lm( Yobs ~ Z + B, weights=dat$weight.site, data=dat )
-    # tau.w.site = coef( M0w.site )[[2]]
-    # SE.w.site = summary( M0w.site )$coeff["Z",2]
+    # M0w_site = lm( Yobs ~ Z + B, weights=dat$weight.site, data=dat )
+    # ATE_hat_w_site = coef( M0w_site )[[2]]
+    # SE_w_site = summary( M0w_site )$coeff["Z",2]
 
 # }
 
@@ -458,8 +458,8 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     # debug( interacted_linear_estimators )
     # rs.adj = interacted_linear_estimators( Yobs, Z, sid, data=dat,
                                       # control_formula = ~X1 + X2)
-    # rs.adj$tau.adj = rs$tau
-    # rs.adj = mutate( rs.adj, delta = tau - tau.adj )
+    # rs.adj$ATE_hat_adj = rs$ATE_hat
+    # rs.adj = mutate( rs.adj, delta = ATE_hat - ATE_hat_adj )
     # rs.adj
 
 

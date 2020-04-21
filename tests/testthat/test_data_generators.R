@@ -77,11 +77,11 @@ test_that( "Block specific generator works", {
     head( dt )
 
     ss = calc_summary_stats_oracle( Y0, Y1, B, data=dt, Z=Z )
-    ss$tau = ss$Ybar1 - ss$Ybar0
+    ss$ATE_hat = ss$Ybar1 - ss$Ybar0
     expect_equal( ss$var0, c( 1, 1 ) )
     expect_equal( ss$var1, c( 1, 1 ) )
     #expect_equal( ss$corr, c( 1, 1 ) )
-    expect_equal( ss$tau, c( 0, 0 ) )
+    expect_equal( ss$ATE_hat, c( 0, 0 ) )
     expect_equal( ss$Ybar0, c( 0, 0 ) )
 
     dt = generate_individuals_from_blocks( c( 4, 8 ), c( 0, 10 ),  c( 10, 1 ), c(1, 3), c( 3, 1 ), c( 0, 1 ), TRUE )
@@ -92,23 +92,23 @@ test_that( "Block specific generator works", {
 
     dt = add_obs_data( dt )
     ss = calc_summary_stats_oracle( Y0, Y1, B, data=dt, Z=Z )
-    ss$tau = ss$Ybar1 - ss$Ybar0
+    ss$ATE_hat = ss$Ybar1 - ss$Ybar0
     ss
-    expect_equal( ss$tau, c( 10, 1 ) )
+    expect_equal( ss$ATE_hat, c( 10, 1 ) )
     expect_equal( ss$Ybar0, c( 0, 10 ) )
 
     dt = generate_individuals_from_blocks( c( 4, 8 ), c( 0, 10 ),c( 10, 1 ),  c(1, 3), c( 3, 1 ), c( 0, 1 ), FALSE )
     dt = add_obs_data( dt )
     ss = calc_summary_stats_oracle( Y0, Y1, B, data=dt, Z=Z )
-    ss$tau = ss$Ybar1 - ss$Ybar0
+    ss$ATE_hat = ss$Ybar1 - ss$Ybar0
     ss
-    expect_true( ss$tau[[1]] > ss$tau[[2]] )
+    expect_true( ss$ATE_hat[[1]] > ss$ATE_hat[[2]] )
 
 })
 
 
 test_that( "Block factors are factors and in increasing order even if we hit 10+ blocks", {
-    dat = generate_blocked_data( rep( c( 5, 10, 20, 40, 60 ), each=2 ), sigma_alpha = 2, sigma_tau=1 )
+    dat = generate_blocked_data( rep( c( 5, 10, 20, 40, 60 ), each=2 ), sigma_alpha = 2, sigma_beta=1 )
     head( dat )
     expect_true( is.factor( dat$B ) )
     expect_equal( nlevels( dat$B ), 10 )

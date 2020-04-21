@@ -23,8 +23,8 @@ scat = function( str, ... ) {
 
 paired_var <- function(data_table, weighted = TRUE) {
   #Vector of trt effect estimates
-  tau_vec <- data_table$Ybar1 - data_table$Ybar0
-  var_est <- sum((tau_vec - mean(tau_vec)) ^ 2) / ((length(tau_vec) - 1) * length(tau_vec))
+  ATE_vec <- data_table$Ybar1 - data_table$Ybar0
+  var_est <- sum((ATE_vec - mean(ATE_vec)) ^ 2) / ((length(ATE_vec) - 1) * length(ATE_vec))
   if (weighted){
     var_est <- var_est * sum(data_table$nk) ^ 2
   }
@@ -60,10 +60,10 @@ hybrid_p_small <- function(data.small) {
     return(NA)
   }
   #Vector of treatment effect estimates
-  tau_vec <- data.small$Ybar1 - data.small$Ybar0
+  ATE_vec <- data.small$Ybar1 - data.small$Ybar0
   #Constant that adjusts for varying block sizes
   constant <- data.small$nk ^ 2 / ((n - 2 * data.small$nk) * (n + sum(data.small$nk ^ 2 / (n - 2 * data.small$nk))))
-  var_est <- sum(constant * (tau_vec - sum(tau_vec * data.small$nk) / n) ^2 )
+  var_est <- sum(constant * (ATE_vec - sum(ATE_vec * data.small$nk) / n) ^2 )
   return(var_est)
 }
 
@@ -106,8 +106,8 @@ plug_in_big <- function(data.small, data.big) {
 print.var_dat <- function(x, ... ) {
   scat("Randomization Inference Treatment Estimate (method = %s)\n", x$method)
   SE <- sqrt(x$var_est)
-  scat("Estimate of tau: %.2f \t(SE: %.2f)\n", x$tau_est, SE)
-  scat("Nominal 95 Confidence Interval: %.2f - %.2f\n",  x$tau_est - 2 * SE, x$tau_est + 2 * SE)
+  scat("Estimate of ATE: %.2f \t(SE: %.2f)\n", x$ATE_hat, SE)
+  scat("Nominal 95 Confidence Interval: %.2f - %.2f\n",  x$ATE_hat - 2 * SE, x$ATE_hat + 2 * SE)
   cat(paste(x$percent_small_blocks, "% of units are in small blocks", sep=""), "\n")
   bsize <- x$block_sizes
   scat("\nBlock Sizes (%d blocks):", nrow(bsize))
@@ -180,8 +180,8 @@ block_estimator_tabulated <- function(summary_stats, method = c("hybrid_m", "hyb
         }
     }
     #Get trt effect estimates and aggregate
-    tau_vec <- summary_stats$Ybar1 - summary_stats$Ybar0
-    tau_est <- sum(tau_vec * summary_stats$nk) / n
+    ATE_vec <- summary_stats$Ybar1 - summary_stats$Ybar0
+    ATE_hat <- sum(ATE_vec * summary_stats$nk) / n
     #Get overall variance estimate
     if (method == "rct_yes_all") {
         var_est <- (estimate_ATE_design_based_from_stats(summary_stats,
@@ -195,8 +195,8 @@ block_estimator_tabulated <- function(summary_stats, method = c("hybrid_m", "hyb
     size_table <- summary_stats[, c("B", "n1", "n0")]
     #Percent of blocks that are small
     perc_small <- round(sum(data.small$nk) / n * 100, 2)
-    return_val<-list(tau_est, var_est, perc_small, size_table)
-    names(return_val) <- c("tau_est", "var_est", "percent_small_blocks", "block_sizes")
+    return_val<-list(ATE_hat, var_est, perc_small, size_table)
+    names(return_val) <- c("ATE_hat", "var_est", "percent_small_blocks", "block_sizes")
     return_val$method <- method
     return_val$se_est <- sqrt(var_est)
     class(return_val) <- "var_dat"

@@ -18,19 +18,19 @@ test_that("Design Based (RCT Yes) functions work", {
 
     a = estimate_ATE_design_based_from_stats( sdat, weight="individual", method="finite" )
     a2 = estimate_ATE_design_based_from_stats( sdat, weight="tx", method="finite" )
-    expect_equal( a$tau_hat, a2$tau_hat )
+    expect_equal( a$ATE_hat, a2$ATE_hat )
     b = estimate_ATE_design_based_from_stats( sdat, weight="site", method="finite" )
     c = estimate_ATE_design_based_from_stats( sdat, weight="individual", method="superpop" )
     d = estimate_ATE_design_based_from_stats( sdat, weight="site", method="superpop" )
 
-    expect_equal( a$tau_hat, c$tau_hat )
-    expect_equal( b$tau_hat, d$tau_hat )
+    expect_equal( a$ATE_hat, c$ATE_hat )
+    expect_equal( b$ATE_hat, d$ATE_hat )
 
     dat = generate_blocked_data_obs( n_k = c(6, 9, 12), p = c( 1/2, 1/3, 1/4 ) )
     sdat = calc_summary_stats( dat )
     a = estimate_ATE_design_based_from_stats( sdat, weight="individual", method="finite" )
     a2 = estimate_ATE_design_based_from_stats( sdat, weight="tx", method="finite" )
-    expect_true( a$tau_hat != a2$tau_hat )
+    expect_true( a$ATE_hat != a2$ATE_hat )
 
 })
 

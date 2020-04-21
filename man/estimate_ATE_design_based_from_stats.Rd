@@ -2,7 +2,7 @@
 % Please edit documentation in R/design_based_method.R
 \name{estimate_ATE_design_based_from_stats}
 \alias{estimate_ATE_design_based_from_stats}
-\title{Implementation of the formula found in RCT-YES documentation.}
+\title{Calculate ATE from block-level summary statistics.}
 \usage{
 estimate_ATE_design_based_from_stats(
   sum_tab,
@@ -36,12 +36,15 @@ name of what column has the weights to use).}
 dataframe with calculated impacts and standard errors.
 }
 \description{
-This can handle a superpopulation model, non-clustered but blocked.
+This method is an implementation of the formula found in RCT-YES
+documentation.
 }
 \details{
-Taken from page 83 of Shochet RCT-YES paper (eq 6.25). The `superpop` variant
-is a modification of the original 'superpop.original', pulling the weights
-from inside the squared term to outside. This method was suggested in
-personal correspondance with Schochet.  If the weights are not all 1, this
-can make a difference.
+This can handle a superpopulation model, non-clustered but blocked.
+
+Formula used is taken from page 83 of Shochet RCT-YES paper (eq 6.25). The
+`superpop` variant is a modification of the original 'superpop.original',
+pulling the weights from inside the squared term to outside. This method was
+suggested in personal correspondance with Schochet.  If the weights are not
+all 1, this can make a difference.
 }
