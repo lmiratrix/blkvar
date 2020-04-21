@@ -246,11 +246,18 @@ within_blk_var <- function(Y) {
 #' passed covariate and return a factor vector of those blocks.
 #'
 #' @param X covariate vector to block on
-#' @param method How to block.
+#' @param method How to block.  "small"  "pair" makes matched pairs. "big" makes as many
+#'   blocks of at least 4 as possible, trying to keep blocks small. "none" makes
+#'   a single block.
 #' @param num.blocks If method is small, how many blocks to attempt to make
 #' @return Vector with one element per element of `X`
 #' @export
-
+#' @examples
+#' table( form_blocks_from_continuous( 1:22, method="small" ) )
+#' table( form_blocks_from_continuous( 1:22, method="big", num.blocks=3 ) )
+#' table( form_blocks_from_continuous( 1:22, method="pair" ) )
+#' table( form_blocks_from_continuous( 1:22, method="none" ) )
+#' table( form_blocks_from_continuous( 1:22, method="big" ) )
 form_blocks_from_continuous <- function(X, method = c("small", "pair", "big", "none"), num.blocks) {
     method <- match.arg(method)
     X.orig = X
@@ -273,7 +280,7 @@ form_blocks_from_continuous <- function(X, method = c("small", "pair", "big", "n
     } else if (method == "big") {
         minB <- trunc(length(X) / 4)
         B <- cut(X, quantile(X, seq(0, 1, length.out = minB + 1)), include.lowest = TRUE)
-    } else {
+    } else {  # "none"
         B <- paste("B", rep(1, length(X)), sep = "")
     }
     B[X.order]
