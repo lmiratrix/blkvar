@@ -188,7 +188,7 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
     } else{
         # Otherwise calculate variance estimates for each method considered
         combine_table <- merge(s.tc.bk, data_table, by = "B")
-        mod.small <- combine_table[data_table$n1 == 1 | data_table$n0 == 1, ]
+        mod.small <- combine_table[combine_table$n1 == 1 | combine_table$n0 == 1, ]
         var_small <- sum((mod.small$se_ney ^ 2 - mod.small$s.tc.bk / mod.small$nk) * (mod.small$nk) ^ 2) / n ^ 2
         hybrid_m_est <- hybrid_m_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big + var_small
         hybrid_p_est <- hybrid_p_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big + var_small
