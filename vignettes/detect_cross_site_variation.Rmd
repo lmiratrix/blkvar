@@ -85,7 +85,7 @@ intervals( re.mod, which="var-cov" )
 Note the discrepancy of the CI not including 0, but the test failing to reject the null of no cross site variation.  Normal approximations are bad when up against boundaries.
 Also notice the completely bizzare upper bound.  The approximation is really quite awful here!
 
-Alternatively, we could use *profile confidence intervals*, but they are not implemented for the `nlme` package, apparently (which is needed to have separate variances for the treatment and control groups).
+Alternatively, we could in principle use *profile confidence intervals*, but they are not implemented for the `nlme` package, apparently (which is needed to have separate variances for the treatment and control groups).
 
 
 # The Meta-Analysis approach
@@ -163,13 +163,13 @@ for (i in 1:length(tau_test)){
 Let's plot our results
 ```{r}
 
-df = data.frame( tau = tau_test, q = q_invert, hit = CI_95 )
+rplt = data.frame( tau = tau_test, q = q_invert, hit = CI_95 )
 
 # For illustration
 lowlowbound <- qchisq(alpha/2,s-1)
 highhighbound <- qchisq(1 - alpha/2,df=(s-1))
 
-ggplot( df, aes( tau, q, col=hit ) ) +
+ggplot( rplt, aes( tau, q, col=hit ) ) +
     geom_point() +
     geom_hline(yintercept=c(lowbound,highbound, lowlowbound, highhighbound), 
                col=c("orange","blue", "grey", "grey")  )
@@ -192,16 +192,16 @@ CI_high
 
 Now let's get a point estimate.  For each $Q$ stat we can get a $p$-value:
 ```{r}
-pval.low <- pchisq(q_invert,df=(s-1),lower.tail=FALSE)
-pval.high <- pchisq(q_invert,df=(s-1),lower.tail=TRUE)
-df$pval = pmin( pval.low, pval.high )
-ggplot( df, aes( tau, pval ) ) +
+pval.low <- pchisq(q_invert, df=(s-1), lower.tail=FALSE)
+pval.high <- pchisq(q_invert, df=(s-1), lower.tail=TRUE)
+rplt$pval = pmin( pval.low, pval.high )
+ggplot( rplt, aes( tau, pval ) ) +
     geom_line() +
     geom_hline( yintercept = alpha )
 
-pos = which.max( df$pval )
+pos = which.max( rplt$pval )
 
-tau.hat.2 = df$tau[[ pos ]]
+tau.hat.2 = rplt$tau[[ pos ]]
 tau.hat.2
 ```
 
@@ -211,3 +211,17 @@ In the above figure, note how all the $\tau$ corresponding to $p$-values greater
 
 Also note this is a 90% confidence interval, not 95%. These align a bit better, I think, with the testing for treatment variation at the 0.05 level since that test is a one-sided test, and our interval's boundary should include or exclude 0 depending on our test.
 If we did a 95% confidence interval, our tails would only hold 2.5% and thus our interval would contain 0 in this case.  Note the grey lines that demark the thresholds for the $Q$ statistic for this more stringent test. Our highest $Q$ is less than our upper gray line, indicating we would not reject 0 at the 0.025 level, which we would need to do for our two-tailed 95% confidence interval.
+
+# Using the Package 
+
+All the above code is bundled in a method, of course:
+```{r}
+as.data.frame( analysis_Qstatistic( Yobs, Z, sid, data=df, alpha = 0.05, calc_CI = TRUE) )
+```
+
+We can also directly pass precomputed summary statistics to get similar effect.  E.g.,
+```{r}
+r2 = analysis_Qstatistic_stat( ATE_hat = bj, SE_hat = sqrt(vj), alpha = 0.05, calc_CI = TRUE )
+as.data.frame( r2 )
+```
+

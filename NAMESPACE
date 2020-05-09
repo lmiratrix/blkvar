@@ -2,6 +2,7 @@
 
 export(add_obs_data)
 export(analysis_Qstatistic)
+export(analysis_Qstatistic_stat)
 export(analysis_combination)
 export(analysis_idio)
 export(analysis_systematic)

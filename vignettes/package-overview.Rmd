@@ -120,7 +120,7 @@ These methods also have a `pool` option which uses a MLM with a single variance 
 We can also test for cross site variation using a $Q$-statistic approach:
 
 ```{r}
-ests.Qstat = analysis_Qstatistic( Yobs, Z, sid, data=df, alpha=0.05, calc.CI=TRUE )
+ests.Qstat = analysis_Qstatistic( Yobs, Z, sid, data=df, alpha=0.05, calc_CI=TRUE )
 t( ests.Qstat )
 ```
 

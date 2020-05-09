@@ -127,69 +127,6 @@ test_that("Check for asking for different parts", {
 })
 
 
-test_that( "Comparing variation methods works", {
-    set.seed( 1019 )
-    dat = generate_multilevel_data( n.bar = 30, J = 30 )
-    nrow( dat )
-    head( dat )
-
-    rsA =  compare_methods_variation( Yobs, Z, sid, data=dat )
-    rsA
-    expect_true( is.data.frame(rsA) )
-
-    rs =  compare_methods_variation( Yobs, Z, sid, data=dat, include_testing = FALSE )
-    rs
-    expect_true( all( !is.na( rs) ) )
-
-    expect_equal( ncol( rs ), 5 )
-
-    rs =  compare_methods_variation( Yobs, Z, sid, data=dat, long_results = TRUE )
-    rs
-    expect_equal( nrow( rs ), 5 )
-    expect_true( all( !is.na( rs$ATE_hat ) ) )
-    expect_true( all( !is.na( rs$pv ) ) )
-
-    rs2 = compare_methods_variation( dat$Yobs, dat$Z, dat$sid, long_results = TRUE )
-    expect_equal( rs, rs2 )
-
-    head( dat )
-    names( dat ) = c( "ID", "y.0", "y.1", "Tx", "outcome",  "W" )
-    d2 = dat
-    d2$y.0 = d2$y.1 = d2$W = NULL
-    head( d2 )
-    rs2 = compare_methods_variation( outcome, Tx, B=ID, data=dat, long_results = TRUE )
-    expect_equal( rs, rs2 )
-
-})
-
-
-
-
-
-
-
-test_that( "Comparing variation with site and block works", {
-    set.seed( 1019 )
-    dat = generate_multilevel_data( n.bar = 30, J = 30 )
-    nrow( dat )
-    head( dat )
-    dat$siteNo = as.factor( round( as.numeric( dat$sid ) / 4 ) )
-
-    rsA =  compare_methods_variation( Yobs, Z, sid, siteID = "siteNo", data=dat )
-    rsA
-    expect_true( is.data.frame(rsA) )
-
-    rsA2 =  compare_methods_variation( Yobs, Z, sid, data=dat )
-    rsA2
-
-    expect_equal( rsA$ATE_hat.RIRC, rsA2$ATE_hat.RIRC )
-    expect_equal( ncol( rsA ), ncol( rsA2 ) )
-    expect_true( rsA$ATE_hat_FIRC != rsA2$ATE_hat_FIRC )
-    expect_true( rsA$ATE_hat_FIRC_pool != rsA2$ATE_hat_FIRC_pool )
-
-})
-
-
 
 
 

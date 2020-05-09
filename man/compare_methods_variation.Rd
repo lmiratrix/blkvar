@@ -30,7 +30,7 @@ by siteID).}
 
 \item{include_testing}{Include tests for null of no cross site variation.}
 
-\item{include_Q_estimate}{Include a estimate for ATE_hat from Q method
+\item{include_Q_estimate}{Include a estimate for tau_hat from Q method
 (involves calculating the full confidence interval so potentially time
 intensive).}
 
