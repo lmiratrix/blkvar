@@ -54,3 +54,6 @@ The first simply calculates ATE_hat and SE_hat, and then calls the second.
 
 Code taken from prior work of Catherine Armstrong.
 }
+\examples{
+analysis_Qstatistic_stat( rnorm(30, sd=0.1), rep(0.1,30), calc_CI = TRUE )
+}
