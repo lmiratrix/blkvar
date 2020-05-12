@@ -112,18 +112,6 @@ calc_summary_stats_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL, Z = 
 }
 
 
-#' Calculates variance of treatment effects.
-#'
-#' Function that helps calculate bias by caculating the true variance of treatment effects.
-#' @param ATE_vec  vector of treatment effects
-#' @importFrom stats aggregate lm quantile rnorm sd var
-#' @noRd
-s_tc_func <- function(ATE_vec) {
-    s.tc<-var(ATE_vec)
-    return(s.tc)
-}
-
-
 
 #' Compare estimators using the true values (i.e., full schedule of potential
 #' outcomes)
@@ -160,7 +148,7 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
 
     data_table <- calc_summary_stats_oracle(Y0, Y1, B, p_mat = p_mat)
 
-    s.tc.bk <- aggregate(list(s.tc.bk = Y1 - Y0), list(B = B), FUN = s_tc_func)
+    s.tc.bk <- aggregate(list(s.tc.bk = Y1 - Y0), list(B = B), FUN = var)
 
     n <- sum(data_table$n1) + sum(data_table$n0)
     data_table$nk <- data_table$n1 + data_table$n0
@@ -187,8 +175,7 @@ compare_methods_oracle <- function(Y0, Y1, B, data = NULL, p_mat = NULL ) {
         plug_in_big_est <- var_big
     } else{
         # Otherwise calculate variance estimates for each method considered
-        combine_table <- merge(s.tc.bk, data_table, by = "B")
-        mod.small <- combine_table[combine_table$n1 == 1 | combine_table$n0 == 1, ]
+        mod.small <- merge(s.tc.bk, data.small, by = "B")
         var_small <- sum((mod.small$se_ney ^ 2 - mod.small$s.tc.bk / mod.small$nk) * (mod.small$nk) ^ 2) / n ^ 2
         hybrid_m_est <- hybrid_m_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big + var_small
         hybrid_p_est <- hybrid_p_small(data.small) * sum(data.small$nk) ^ 2 / n ^ 2 + var_big + var_small
