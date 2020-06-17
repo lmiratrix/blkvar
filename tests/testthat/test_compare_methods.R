@@ -2,7 +2,7 @@ library( testthat )
 library( blkvar )
 context("Checking compare methods all work")
 
-test_that("Check call options of the compare_methods", {
+test_that("Check different call options of the compare_methods", {
 
     set.seed( 1019 )
     dat = generate_multilevel_data( n.bar = 30, J = 30 )
@@ -11,6 +11,7 @@ test_that("Check call options of the compare_methods", {
 
     rs = compare_methods( Yobs, Z, sid, data=dat, include_MLM = FALSE )
     rs
+
     expect_true( all( rs$SE > 0 ) )
 
     rs2 = compare_methods( Y=dat$Yobs, Z=dat$Z, B=dat$sid, include_MLM = FALSE )

@@ -96,13 +96,15 @@ plug_in_big <- function(data.small, data.big) {
 }
 
 
-# #' Print method for block_estimator output
-# #'
-# #' Function that compares difference variance estimators for blocked designs.
-# #' @param x output from block_estimator (class=var_data)
-# #' @param ... further arguments to match print
-# #' @importFrom stats aggregate lm quantile rnorm sd var
-# #' @export
+#' Print method for block_estimator output
+#'
+#' Print out results from block_estimator() in a nice way.
+#'
+#' @param x output from block_estimator (class=var_data)
+#' @param ... further arguments to match print
+#' @importFrom stats aggregate lm quantile rnorm sd var
+#' @return None. Side effect of printing to console.
+#' @export
 print.var_dat <- function(x, ... ) {
   scat("Randomization Inference Treatment Estimate (method = %s)\n", x$method)
   SE <- sqrt(x$var_est)

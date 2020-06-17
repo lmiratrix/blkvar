@@ -6,7 +6,14 @@
 \title{Calculate confidence interval for cross site variation using Q-statistic test
 inversion.}
 \usage{
-analysis_Qstatistic_stat(ATE_hat, SE_hat, alpha = 0.05, calc_CI = FALSE)
+analysis_Qstatistic_stat(
+  ATE_hat,
+  SE_hat,
+  alpha = 0.05,
+  calc_CI = FALSE,
+  verbose = FALSE,
+  tolerance = 1e-05
+)
 
 analysis_Qstatistic(
   Yobs,
@@ -27,6 +34,12 @@ analysis_Qstatistic(
 interval.}
 
 \item{calc_CI}{Logical}
+
+\item{verbose}{Print out a few diagnostics as the CI is being calculated, for
+those curious.}
+
+\item{tolerance}{For optimization and search for CI endpoints, how close to
+optimal do we want?}
 
 \item{Yobs}{(outcome)}
 
@@ -52,7 +65,10 @@ that takes precalculated point estimates and standard errors.
 \details{
 The first simply calculates ATE_hat and SE_hat, and then calls the second.
 
-Code taken from prior work of Catherine Armstrong.
+Code based on prior work of Catherine Armstrong.  Augmented to do binary
+search for endpoints for the test inversion procedure to generate confidence
+intervals. Also calls optim() to find the point estimate by maximizing
+p-value.
 }
 \examples{
 analysis_Qstatistic_stat( rnorm(30, sd=0.1), rep(0.1,30), calc_CI = TRUE )

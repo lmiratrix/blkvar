@@ -239,5 +239,6 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     }
     summary_table <- merge( summary_table, mc, by = "method", all.x = TRUE, all.y = FALSE)
   }
+  summary_table = tibble::remove_rownames( summary_table )
   return(summary_table)
 }

@@ -44,7 +44,8 @@ test_that("All options of method for block_estimator_tabulated run without error
     f2 = block_estimator_tabulated( rs )
     f2
 
-    methods = list("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small")
+    methods = list("hybrid_m", "hybrid_p", "plug_in_big", "rct_yes_all", "rct_yes_small",
+                   "rct_yes_mod_all", "rct_yes_mod_small")
     grabs = lapply( methods, function( x ) {
         block_estimator_tabulated( rs, method=x ) } )
 
@@ -149,3 +150,17 @@ test_that("Dropping levels works", {
     expect_equal( nrow(rs), 3 )
 
 })
+
+
+
+
+test_that("Printing looks nice", {
+
+    set.seed( 101922 )
+    dat = generate_blocked_data_obs_linear( method="big")
+    head( dat )
+    rs = block_estimator( Yobs, Z, B, data=dat )
+    blkvar:::print.var_dat( rs )
+
+})
+
