@@ -12,7 +12,8 @@ analysis_Qstatistic_stat(
   alpha = 0.05,
   calc_CI = FALSE,
   verbose = FALSE,
-  tolerance = 1e-05
+  tolerance = 1e-05,
+  mean_method = c("weighted", "raw")
 )
 
 analysis_Qstatistic(
@@ -40,6 +41,10 @@ those curious.}
 
 \item{tolerance}{For optimization and search for CI endpoints, how close to
 optimal do we want?}
+
+\item{mean_method}{How to calculate the mean effect.  'weighted' is a
+precision weighted mean. 'raw' is the simple mean.  Or pass a number which
+will be used as the mean.}
 
 \item{Yobs}{(outcome)}
 

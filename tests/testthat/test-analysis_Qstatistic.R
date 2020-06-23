@@ -36,3 +36,38 @@ test_that("Q stat test inversion works", {
     expect_true( rs$CI_high == 0 )
 
 })
+
+
+
+
+test_that("Q stat weighting methods work", {
+
+
+
+    # Variation correlated with precision
+    N = 500
+    SE_hat = seq( 0.01, 0.4, length.out = N )
+    ATE_hat = sort( rnorm( N, mean = 1, sd = 0.2 ) ) + rnorm( N, sd=SE_hat )
+    #ATE_hat = rnorm( N, mean = 1, sd = 0.2 ) + rnorm( N, sd=SE_hat )
+
+    rs = analysis_Qstatistic_stat( ATE_hat, SE_hat, calc_CI = TRUE ) #, verbose = TRUE )
+    rs
+    rs$ATE_hat = weighted.mean( ATE_hat, w=1/SE_hat^2 )
+
+    rs2 = analysis_Qstatistic_stat( ATE_hat, SE_hat, calc_CI = TRUE, mean_method = "raw" ) #, verbose = TRUE )
+    rs2
+    rs2$ATE_hat = mean(ATE_hat)
+
+
+    rs3 = analysis_Qstatistic_stat( ATE_hat, SE_hat, calc_CI = TRUE, mean_method = 1 ) #, verbose = TRUE )
+    rs3
+    rs3$ATE_hat = 1
+
+    alrs = bind_rows( as.data.frame( rs ), as.data.frame( rs2 ), as.data.frame( rs3 ) )
+    alrs
+
+    expect_true( nrow( alrs ) == 3 )
+
+
+
+})

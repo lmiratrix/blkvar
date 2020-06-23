@@ -11,14 +11,9 @@
 
 \item{...}{further arguments to match print}
 }
-<<<<<<< HEAD
 \value{
 None. Side effect of printing to console.
 }
 \description{
 Print out results from block_estimator() in a nice way.
-=======
-\description{
-Function that compares difference variance estimators for blocked designs.
->>>>>>> cd15541b78552d1ee5250a4c6638ad643f5f875e
 }

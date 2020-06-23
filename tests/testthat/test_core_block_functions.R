@@ -161,6 +161,6 @@ test_that("Printing looks nice", {
     head( dat )
     rs = block_estimator( Yobs, Z, B, data=dat )
     blkvar:::print.var_dat( rs )
-
+    expect_true( "var_dat" %in% class( rs ) )
 })
 

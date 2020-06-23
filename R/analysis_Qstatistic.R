@@ -92,9 +92,13 @@ find_CI_endpoint = function( resid2, vj, threshold, tau_start, tau,
 #'   those curious.
 #' @param tolerance For optimization and search for CI endpoints, how close to
 #'   optimal do we want?
+#' @param mean_method How to calculate the mean effect.  'weighted' is a
+#'   precision weighted mean. 'raw' is the simple mean.  Or pass a number which
+#'   will be used as the mean.
 #' @return List of several estimated quantities: cross-site variation, p-value
 #'   for any variation, whether the p-value is less than passed alpha, the Q
 #'   statistic itself, and the confidence interval range.
+#'
 #' @export
 #' @rdname analysis_Qstatistic
 #' @examples
@@ -102,14 +106,30 @@ find_CI_endpoint = function( resid2, vj, threshold, tau_start, tau,
 analysis_Qstatistic_stat <- function( ATE_hat, SE_hat, alpha = 0.05,
                                       calc_CI = FALSE,
                                       verbose = FALSE,
-                                      tolerance = 0.00001) {
+                                      tolerance = 0.00001,
+                                      mean_method = c( "weighted", "raw" ) ) {
 
     bj = ATE_hat
     vj = SE_hat^2
     wj <- 1 / vj
     s <- length(ATE_hat)
 
-    bbar <- sum(wj * bj) / (sum(wj))
+    if ( !is.numeric( mean_method ) ) {
+        stopifnot( mean_method %in% c( "weighted", "raw" ) )
+
+        mean_method = match.arg(mean_method)
+        if ( mean_method == "weighted" ) {
+            bbar <- sum(wj * bj) / (sum(wj))
+        } else {
+            bbar = mean( bj )
+        }
+    } else {
+        bbar = mean_method
+    }
+
+
+
+
     q <- sum((bj - bbar) ^ 2 / vj)
     pval <- pchisq(q, df = (length(bj) - 1), lower.tail = FALSE)
     reject <- (pval < alpha)
