@@ -160,7 +160,10 @@ test_that("Printing looks nice", {
     dat = generate_blocked_data_obs_linear( method="big")
     head( dat )
     rs = block_estimator( Yobs, Z, B, data=dat )
-    blkvar:::print.var_dat( rs )
-    expect_true( "var_dat" %in% class( rs ) )
+    #verify_output( test_path(), blkvar:::print.var_dat( rs ) )
+    out = capture.output( blkvar:::print.var_dat( rs ) )
+    out
+    expect_true( out[[1]] == "Randomization Inference Treatment Estimate (method = hybrid_m)" )
+    expect_true( sum( grepl( "0%", out ) ) == 1 )
 })
 

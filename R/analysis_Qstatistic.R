@@ -191,7 +191,7 @@ analysis_Qstatistic_stat <- function( ATE_hat, SE_hat, alpha = 0.05,
         CI_high = NULL
     }
 
-    return(list(tau_hat = tau_hat, p.value = pval, reject = reject,
+    return(list( ATE_hat = bbar, tau_hat = tau_hat, p.value = pval, reject = reject,
                 Q = q, CI_low = CI_low, CI_high = CI_high))
 }
 
