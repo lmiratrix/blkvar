@@ -154,7 +154,7 @@ test_that("Dropping levels works", {
 
 
 
-test_that("Printing looks nice", {
+test_that("Printing looks nice and well formatted", {
 
     set.seed( 101922 )
     dat = generate_blocked_data_obs_linear( method="big")
