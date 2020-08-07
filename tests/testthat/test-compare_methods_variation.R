@@ -27,7 +27,7 @@ test_that( "component methods work", {
     rsA =  analysis_Qstatistic( Yobs, Z, sid, data=dat, calc_CI = TRUE )
     rsA
 
-    expect_true( all( !is.na( rsA ) ) )
+    expect_true( !all( is.na( rsA ) ) )
 
 })
 
