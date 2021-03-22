@@ -284,7 +284,24 @@ test_that( "Cluster randomization options work", {
     tb = table( df$Z, df$sid)
     expect_true( all( tb[1,] * tb[2,] != 0 ) )
 
+
+    dat = generate_multilevel_data_model( n.bar = 20, J = 4,
+                                          p = 0.5,
+                                          beta.X = 0.5,
+                                          tau.00 = 0.5,
+                                          tau.01 = 0,
+                                          tau.11 = 0.2,
+                                          sigma2.e = 1,
+                                          cluster.rand= TRUE,
+                                          gamma.00 = 0,
+                                          gamma.10 = 0.5,
+                                          gamma.01 = NULL,
+                                          gamma.11 = NULL )
+    expect_true( is.null( dat$W ) )
+
 } )
+
+
 
 
 

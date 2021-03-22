@@ -125,7 +125,7 @@ generate_individual_data = function( sdat, p = 0.5,
         Xbar <- rnorm(J, mean = 0, sd = sqrt(sigma2.mean.X))
         X <- rnorm(N, mean = Xbar[sid], sd = sqrt(1 - sigma2.mean.X))
         stopifnot(sigma2.e - beta.X ^ 2 > 0)
-        e <- rnorm(N, mean = 0, sd = sqrt(sigma2.e - beta.X ^ 2))
+        e <- rnorm(N, mean = 0, sd = sqrt(sigma2.e - beta.X^2))
         Y0 <- beta.0j[sid] + beta.X * X + e
     } else {
         e <- rnorm(N, mean = 0, sd = sqrt(sigma2.e))
@@ -215,12 +215,13 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
         nj <- rep(n.bar, J)
     }
 
-    if (!is.null( gamma.10 ) || !is.null(gamma.11)) {
+    include_W = !is.null( gamma.10 ) && !is.null(gamma.11)
+    if ( include_W ) {
         Wj <- rnorm(J, mean = 0, sd = sqrt(sigma2.W))
-        include_W <- TRUE
     } else {
-        Wj <- 0
-        include_W <- FALSE
+        Wj <- rep( 0, J )
+        gamma.01 = 0
+        gamma.11 = 0
     }
 
 
@@ -273,11 +274,11 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
         df <- data.frame(n = nj, W = Wj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2])
     }
 
-    if (return.sites) {
-        if (!include_W) {
-            df$W <- NULL
-        }
+    if (!include_W) {
+        df$W <- NULL
+    }
 
+    if (return.sites) {
         return( df )
     } else {
         df <- generate_individual_data( df, p = p, sigma2.e = sigma2.e, beta.X = beta.X,
