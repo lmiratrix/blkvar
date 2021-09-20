@@ -11,6 +11,7 @@ analysis_Qstatistic_stat(
   SE_hat,
   alpha = 0.05,
   calc_CI = FALSE,
+  calc_optim_pvalue = FALSE,
   verbose = FALSE,
   tolerance = 1e-05,
   mean_method = c("weighted", "raw")
@@ -34,7 +35,13 @@ analysis_Qstatistic(
 \item{alpha}{The level of the test.  The CI will be a 1-2alpha confidence
 interval.}
 
-\item{calc_CI}{Logical}
+\item{calc_CI}{Logical, TRUE means calculate the confidence interval using
+test-inversion.}
+
+\item{calc_optim_pvalue}{TRUE if estimate cross site variation by maximizing
+p-value (a type of Hodges-Lehman estimate).  FALSE means uses
+Konstantopoulos and Hedges direct formula. (TRUE requires calc_CI also be
+set to TRUE.)  Default of FALSE.  FALSE recommended.}
 
 \item{verbose}{Print out a few diagnostics as the CI is being calculated, for
 those curious.}
@@ -58,9 +65,10 @@ will be used as the mean.}
 by siteID).}
 }
 \value{
-List of several estimated quantities: cross-site variation, p-value
-  for any variation, whether the p-value is less than passed alpha, the Q
-  statistic itself, and the confidence interval range.
+List of several estimated quantities: cross-site variation (standard
+  deviation, not variance), p-value for presence of any variation, flag of
+  whether the p-value is less than passed alpha, the Q statistic itself, and
+  the confidence interval.
 }
 \description{
 Two versions of this, one that takes raw data (in which case a linear model
@@ -70,10 +78,16 @@ that takes precalculated point estimates and standard errors.
 \details{
 The first simply calculates ATE_hat and SE_hat, and then calls the second.
 
-Code based on prior work of Catherine Armstrong.  Augmented to do binary
-search for endpoints for the test inversion procedure to generate confidence
-intervals. Also calls optim() to find the point estimate by maximizing
-p-value.
+Cross site variation, by default, is estimated by method of moments technique
+of Konstantopoulos and Hedges). One can set an alternate method for
+estimating cross-site variation via using optim() to find the point estimate
+corresponding to maximizing the p-value (this differs slightly from direct
+method of moment); this latter approach requires calculating the confidence
+interval using test inversion as well.
+
+Code based on prior work of Catherine Armstrong, which was then augmented to
+do binary search for endpoints for the test inversion procedure to generate
+confidence intervals.
 }
 \examples{
 analysis_Qstatistic_stat( rnorm(30, sd=0.1), rep(0.1,30), calc_CI = TRUE )
