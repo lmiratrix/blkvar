@@ -158,9 +158,24 @@ estimate_ATE_design_based_adjusted <- function(formula,
     # Determine which of the 4 versions of estimator we are doing.
     method <- match.arg(method)
     weight <- match.arg(weight)
+
     data <- make_canonical_data(formula, control_formula, siteID, data)
-    # Get control variables
-    c.names <- formula.tools::rhs.vars(control_formula)
+
+    # Get control variables and expand control matrix with dummy variables, etc.
+    controls = model.matrix( control_formula, data )
+    stopifnot( colnames(controls)[1] == "(Intercept)" )
+    controls = controls[,-1]
+    can_names = c("Yobs", "Z", "siteID", "B")
+    nms = make.names( c( can_names, colnames(controls) ), unique=TRUE )
+    c.names = nms[ -(1:length(can_names))]
+    colnames(controls) = c.names
+
+    # Update dataframe to expanded controls
+    data = cbind( data[can_names], controls )
+
+    #c.names <- formula.tools::rhs.vars(control_formula)
+    control_formula = as.formula( paste0( "~ ", paste( c.names, collapse = " + " ) ) )
+
     # Count observations, etc.
     N <- nrow(data)  # number of observations
     h <- length( unique( data$B ) ) # number of sites/clusters
@@ -170,7 +185,9 @@ estimate_ATE_design_based_adjusted <- function(formula,
     center <- function(x) {
         x - mean(x)
     }
-    data <- data %>% dplyr::group_by(B) %>% dplyr::mutate_at(c.names, center) %>% dplyr::ungroup()
+    data <- data %>%
+        dplyr::group_by(B) %>%
+        dplyr::mutate_at(c.names, center) %>% dplyr::ungroup()
     new.form <- make_FE_int_formula( control_formula = control_formula, data = data)
     # Fit a linear model with indicators for each site, and each site by treatment
     # interaction.  Also have covariates entered in not interacted with treatment.

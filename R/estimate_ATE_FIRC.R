@@ -131,7 +131,11 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
     #use delta method from msm package
     SE_tau <- msm::deltamethod(~ exp(x1) ^ 2, par, var)
   }
-  return(list(ATE_hat = ATE_hat, SE_ATE = SE_ATE,
+  res <- list(ATE_hat = ATE_hat, SE_ATE = SE_ATE,
               tau_hat = tau_hat, SE_tau=SE_tau,
-              p_variation = p_variation, deviance = td ))
+              p_variation = p_variation, deviance = td )
+  class( res ) = "multisiteresult"
+  attr( res, "args" ) = list(  model = "FIRC" )
+
+  return( res )
 }

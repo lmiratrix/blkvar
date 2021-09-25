@@ -5,6 +5,7 @@
 #' @description These minimal methods test for cross-site variation using
 #'   multilevel models. They assume a passed dataframe with specifically named
 #'   columns.
+#'
 #' @name analysis_functions
 #' @param df Dataframe to analyze.  Columns of \code{Z}, \code{sid},
 #'   \code{Yobs}, and \code{X} assumed to exist, with those names.

@@ -95,7 +95,7 @@ compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     res$pv_RIRC <- RIRC$p_variation
     res$pv_FIRC_pool <- FIRC_pool$p_variation
     res$pv_RIRC_pool <- RIRC_pool$p_variation
-    res$pv_Qstat <- Qstat$p.value
+    res$pv_Qstat <- Qstat$p_variation
   }
 
   if (long_results) {

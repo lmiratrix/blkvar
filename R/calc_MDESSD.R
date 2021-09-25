@@ -1,6 +1,10 @@
+
+
+
 #' @title Calculate MDESSD for cross-site variation
-#' @description Calculate MDESSD (minimum detectable effect size for cross site standard deviation of effects
-#' assuming a ratio test.  This uses work and results found in Appendix A of Bloom and Spybrook
+#' @description Calculate MDESSD (minimum detectable effect size for cross site
+#'   standard deviation of effects assuming a ratio test.  This uses work and
+#'   results found in Appendix A of Bloom and Spybrook.
 #'
 #' @inheritParams calc_power
 #' @return MDESSD for given scenario.

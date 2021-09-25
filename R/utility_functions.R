@@ -91,7 +91,8 @@ make_FE_int_formula <- function(Yobs = "Yobs", Z = "Z", B = "B", control_formula
     }
   }
   c.names <- formula.tools::rhs.vars(control_formula)
-  new.form = sprintf( "%s ~ 0 + %s * %s - %s + %s", Yobs, Z, B, Z, paste( c.names, collapse =" + " ))
+  new.form = sprintf( "%s ~ 0 + %s * %s - %s + %s", Yobs, Z, B, Z,
+                      paste( c.names, collapse =" + " ))
   return(as.formula(new.form))
 }
 
@@ -99,12 +100,18 @@ make_FE_int_formula <- function(Yobs = "Yobs", Z = "Z", B = "B", control_formula
 #'
 #' Checks syntax and also presence of variables in the dataframe.
 #'
-#' Then makes the outcome, treatment and block variables have canonical "Yobs", "Z", and "B" names.
+#' Then makes the outcome, treatment and block variables have canonical "Yobs",
+#' "Z", and "B" names.
 #'
-#' @return Dataset with now-canonical variable names
+#' Expand any factors, etc., in the control formula and make the corresponding
+#' variables.
+#'
+#' @return Dataset with now-canonical variable names, and no extraneous
+#'   variables.
+#'
 #' @noRd
-make_canonical_data <- function(formula, control_formula = NULL, siteID = NULL, data) {
-   # Figure out the covariates we are using
+make_canonical_data <- function(formula, control_formula = NULL, siteID = NULL, data ) {
+    # Figure out the covariates we are using
     if (length(formula.tools::lhs.vars(formula)) != 1 | length(formula.tools::rhs.vars(formula)) != 2) {
       stop("The formula argument must be of the form outcome ~ treatment:block_id.")
     }
@@ -112,8 +119,12 @@ make_canonical_data <- function(formula, control_formula = NULL, siteID = NULL, 
     if (any(!(main.vars %in% colnames(data)))) {
       stop("Some variables in formula are not present in your data.")
     }
+
+    # Control variables?
+    control.vars = c()
     if (!is.null(control_formula)) {
-      if(length(formula.tools::lhs.vars(control_formula)) != 0 | length(formula.tools::rhs.vars(control_formula)) < 1) {
+      if(length(formula.tools::lhs.vars(control_formula)) != 0 |
+         length(formula.tools::rhs.vars(control_formula)) < 1) {
         stop("The control_formula argument must be of the form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)")
       }
       control.vars <- formula.tools::get.vars(control_formula, data = data)
@@ -121,6 +132,9 @@ make_canonical_data <- function(formula, control_formula = NULL, siteID = NULL, 
         stop("Some variables in control_formula are not present in your data.")
       }
     }
+
+
+    # Make canonical names for outcome, treatment, etc.
     out.name <- formula.tools::lhs.vars(formula)[[1]]
     main.name <- formula.tools::rhs.vars(formula)
 
@@ -128,18 +142,25 @@ make_canonical_data <- function(formula, control_formula = NULL, siteID = NULL, 
     data$Yobs <- data[[out.name]]
     data$Z <- data[[ main.name[[1]] ]]
 
+    # Check for valid treatment variable
     if ( length( unique( data$Z ) ) != 2 ) {
         stop( sprintf( "Identified treatment variable '%s' has more than two values. Did you swap treatment and block?",
                        main.name[[1]] ) )
     }
 
+    # Make blocking variable with canonical name
     data$B <- data[[ main.name[[2]] ]]
 
+    # Add site variable (same as block if no RA blocks in site).
     if (is.null(siteID)) {
       data$siteID <- data$B
     } else {
       data$siteID <- data[[siteID]]
     }
+
+   # drop extra variables
+   data = data[ c( c("Yobs", "Z", "siteID", "B"), control.vars ) ]
+
    return( data )
 }
 

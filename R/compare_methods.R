@@ -52,7 +52,7 @@ compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control
 
 
 
-# #### Testing and demo of this code ####
+# Testing and demo of this code #
 
 # if  (FALSE ) {
 # dat = generate_blocked_data_obs( n_k = 4:10, p = 0.2 )
@@ -82,17 +82,19 @@ compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control
 #'   documentation and prior literature).
 #' @param include_LM Include Linear Model-based estimators (including
 #'   Huber-White SEs, etc.)
-#' @param include_DBBlended Include DB estimators applied to small block and
-#'   classic Neyman to large blocks.
-#' @param weight_LM_method Argument passed to weight.method of
-#'   weighted_linear_estimators
-#' @param weight_LM_scale_weights Argument passed to sclae.weights of
+#' @param include_DBBlended Include DB estimators applied to small block (blocks
+#'   with singleton treatment or control units) and classic Neyman to large
+#'   blocks.
+#' @param weight_LM_method Passed to weight.method of
+#'   weighted_linear_estimators; specifies the weighting method.
+#' @param weight_LM_scale_weights This argument is passed to scale.weights of
 #'   weighted_linear_estimators
 #' @param control_formula What variables to control for, in the form of "~ X1 +
 #'   X2".
-#' @param include_block Include the Pashley blocking variants.
+#' @param include_block Include the standard error estimation found in Pashley
+#'   (in particular, these work for blocks with singleton units).
 #' @param include_method_characteristics Include details of the methods (target
-#'   estimands and sampling framework assumed).
+#'   estimands and sampling framework assumed) in the return value.
 #'
 #' @return Dataframe of point estimates and standard errors for each method
 #'   considered. If \code{include_method_characteristics=TRUE} also add some
@@ -102,7 +104,8 @@ compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control
 #'   reshape resid runif vcov weighted.mean
 #' @export
 compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
-                            include_block = TRUE, include_MLM = TRUE, include_DB = TRUE,
+                            include_block = TRUE, include_MLM = TRUE,
+                            include_DB = TRUE,
                             include_LM = TRUE, include_DBBlended = FALSE,
                             include_method_characteristics = FALSE,
                             weight_LM_method = "survey",
@@ -158,7 +161,9 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
       methods_list <- c("hybrid_m", "hybrid_p", "plug_in_big")
      }
      if (include_DBBlended) {
-       methods_list <- c( methods_list, "rct_yes_atll", "rct_yes_small", "rct_yes_mod_all", "rct_yes_mod_small")
+       methods_list <- c( methods_list,
+                          "rct_yes_atll", "rct_yes_small",
+                          "rct_yes_mod_all", "rct_yes_mod_small")
      }
      fits <- sapply( methods_list, function(m) {
        dd <- block_estimator_tabulated(summary_stats = summary_stats, method = m, throw.warnings = FALSE)
@@ -237,8 +242,13 @@ compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     if (!is.null(control_formula)) {
       mc$method <- paste0(mc$method, "-adj")
     }
-    summary_table <- merge( summary_table, mc, by = "method", all.x = TRUE, all.y = FALSE)
+    summary_table <- merge( summary_table, mc, by = "method",
+                            all.x = TRUE, all.y = FALSE)
   }
-  summary_table = tibble::remove_rownames( summary_table )
+  if ( nrow( summary_table ) > 0 ) {
+    summary_table = tibble::remove_rownames( summary_table ) %>%
+      arrange( method )
+  }
+
   return(summary_table)
 }

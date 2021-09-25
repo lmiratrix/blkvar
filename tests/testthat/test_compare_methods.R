@@ -121,8 +121,10 @@ test_that("Check for asking for different parts", {
     rs
     expect_true( names(rs)[[1]] == "method" )
 
+    # If you say give me nothing?
     rs =  compare_methods( Yobs, Z, sid, data=dat, include_block = FALSE,
-                           include_LM = FALSE, include_DB = FALSE, include_MLM = FALSE )
+                           include_LM = FALSE, include_DB = FALSE,
+                           include_MLM = FALSE )
     expect_equal( nrow( rs ), 0 )
 
 })

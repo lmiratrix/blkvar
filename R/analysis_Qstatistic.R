@@ -268,13 +268,14 @@ analysis_Qstatistic_stat <- function( ATE_hat, SE_hat, alpha = 0.05,
     }
 
     res <- list( ATE_hat = bbar, tau_hat = tau_hat,
-                 p.value = pval, reject = reject,
+                 p_variation = pval, reject = reject,
                  Q = q, CI_low = CI_low, CI_high = CI_high)
-    attr( res, "args" ) = list( alpha=alpha,
+    attr( res, "args" ) = list( model = "Q-statistic",
+                                alpha=alpha,
                                 calc_optim_pvalue = calc_optim_pvalue,
                                 tolerance = tolerance,
                                 mean_method = mean_method )
-    class( res ) = "qstatresult"
+    class( res ) = "multisiteresult"
     return( res )
 }
 
@@ -343,68 +344,5 @@ analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     analysis_Qstatistic_stat( ATE_hat, SE_hat, alpha=alpha, calc_CI = calc_CI)
 }
 
-
-
-
-scat = function( str, ... ) {
-    cat( sprintf( str, ... ) )
-}
-
-
-#' Pretty print result from Q-statistic call
-#'
-#' @export
-#' @param x A qstatresult object.
-#' @param ... No extra options passed.
-#' @family qstatresult
-print.qstatresult = function( x, ... ) {
-    args = attr( x, "args" )
-
-    cat( "Cross-site Q-statistic analysis\n" )
-    scat( "  Grand Average: %s\n", format( x$ATE_hat ) )
-    scat( "  Cross-site SD: %s",
-          format( x$tau_hat ) )
-    if ( is.null( x$CI_low ) && is.null( x$CI_high ) ) {
-        cat("\n" )
-    } else {
-        scat( " (%s%% CI %s--%s)\n",
-          format( 100*(1-args$alpha*2) ),
-          format( x$CI_low ), format( x$CI_high ) )
-    }
-    scat( "  Q = %s, p=%.4f\n", format( x$Q ), x$p.value )
-
-    est_method = ifelse( args$calc_optim_pvalue, "max p-value", "MoM" )
-    scat( "  [ tolerance = %s; mean method = %s; est method = %s ]\n",
-         format( args$tolerance, digits=2 ), args$mean_method,
-         est_method )
-
-    invisible( x )
-}
-
-
-
-#' Is object a qstatresult object?
-#'
-#' @export
-#' @aliases qstatresult
-#' @param x the object to check.
-#' @family qstatresult
-is.qstatresult = function( x ) {
-    inherits(x, "qstatresult")
-}
-
-
-
-
-#' Cast qstat result to data.frame
-#'
-#' @export
-#' @aliases qstatresult
-#' @param x the qstatresult object to covert
-#' @family qstatresult
-as.data.frame.qstatresult = function( x ) {
-    class(x) = "list"
-    as.data.frame( x )
-}
 
 

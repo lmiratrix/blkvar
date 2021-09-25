@@ -46,7 +46,12 @@ estimate_ATE_RICC <- function(Yobs, Z, B, data = NULL, REML = FALSE, control_for
   ATE_hat <- nlme::fixef(re.mod)[[2]]
   SE_ATE <- sqrt(vcov(re.mod)[2, 2])
 
-  return(list(ATE_hat = ATE_hat, SE_ATE = SE_ATE,
+  res <- list(ATE_hat = ATE_hat, SE_ATE = SE_ATE,
               tau_hat = NA, SE_tau = NA,
-              p_variation = NA, deviance = NA))
+              p_variation = NA, deviance = NA)
+  class( res ) = "multisiteresult"
+  attr( res, "args" ) = list( model = "RICC" )
+
+  return( res )
+
 }

@@ -35,7 +35,8 @@ randomization blocks are nested in site).}
 \item{data}{frame holding Y, Z, B and (possibly a column with name specified
 by siteID).}
 
-\item{include_block}{Include the Pashley blocking variants.}
+\item{include_block}{Include the standard error estimation found in Pashley
+(in particular, these work for blocks with singleton units).}
 
 \item{include_MLM}{Include MLM estimators}
 
@@ -45,16 +46,17 @@ documentation and prior literature).}
 \item{include_LM}{Include Linear Model-based estimators (including
 Huber-White SEs, etc.)}
 
-\item{include_DBBlended}{Include DB estimators applied to small block and
-classic Neyman to large blocks.}
+\item{include_DBBlended}{Include DB estimators applied to small block (blocks
+with singleton treatment or control units) and classic Neyman to large
+blocks.}
 
 \item{include_method_characteristics}{Include details of the methods (target
-estimands and sampling framework assumed).}
+estimands and sampling framework assumed) in the return value.}
 
-\item{weight_LM_method}{Argument passed to weight.method of
-weighted_linear_estimators}
+\item{weight_LM_method}{Passed to weight.method of
+weighted_linear_estimators; specifies the weighting method.}
 
-\item{weight_LM_scale_weights}{Argument passed to sclae.weights of
+\item{weight_LM_scale_weights}{This argument is passed to scale.weights of
 weighted_linear_estimators}
 
 \item{control_formula}{What variables to control for, in the form of "~ X1 +

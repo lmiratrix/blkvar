@@ -34,11 +34,18 @@ estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_tes
 
   formula <- make_base_formula(control_formula = control_formula, data = data)
   if (pool) {
-    re.mod <- nlme::lme(formula, data = data, random = ~ 1 + Z | B, na.action = stats::na.exclude, method = method,
-      control = nlme::lmeControl(opt="optim", returnObject = TRUE))
+    re.mod <- nlme::lme(formula, data = data, random = ~ 1 + Z | B,
+                        na.action = stats::na.exclude,
+                        method = method,
+                        control = nlme::lmeControl(opt="optim",
+                                                   returnObject = TRUE))
   } else {
-    re.mod <- nlme::lme(formula, data = data, random = ~ 1 + Z | B, weights = nlme::varIdent(form = ~ 1 | Z), na.action = stats::na.exclude,
-      method = method, control = nlme::lmeControl(opt="optim", returnObject = TRUE))
+    re.mod <- nlme::lme(formula, data = data, random = ~ 1 + Z | B,
+                        weights = nlme::varIdent(form = ~ 1 | Z),
+                        na.action = stats::na.exclude,
+                        method = method,
+                        control = nlme::lmeControl(opt="optim",
+                                                   returnObject = TRUE))
   }
 
   if (include_testing) {
@@ -67,7 +74,12 @@ estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_tes
   suppressWarnings(storage.mode(vc) <- "numeric")
   tau_hat <- vc["Z", "StdDev"]
 
-  return(list(ATE_hat = ATE, SE_ATE = SE_ATE,
+  res <- list(ATE_hat = ATE, SE_ATE = SE_ATE,
               tau_hat = tau_hat, SE_tau = NA,
-              p_variation = p_variation, deviance = td))
+              p_variation = p_variation, deviance = td)
+  class( res ) = "multisiteresult"
+  attr( res, "args" ) = list( model = "RIRC" )
+
+  return( res )
+
 }

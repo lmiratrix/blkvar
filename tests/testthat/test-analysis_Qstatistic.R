@@ -10,7 +10,7 @@ test_that("Q stat test inversion works", {
     rs = analysis_Qstatistic_stat( ATE_hat, SE_hat, calc_CI = TRUE )
     rs
     expect_true( rs$tau_hat > 0 )
-    expect_true( rs$p.value < 0.01 )
+    expect_true( rs$p_variation < 0.01 )
     expect_true( rs$CI_low <= 0.2 )
     expect_true( rs$CI_high >= 0.2 )
 
@@ -21,7 +21,7 @@ test_that("Q stat test inversion works", {
     rs
     expect_true( rs$tau_hat > 0 )
     expect_true( abs( rs$tau_hat - 0.01 ) < 0.01 )
-    expect_true( rs$p.value < 0.01 )
+    expect_true( rs$p_variation < 0.01 )
     expect_true( rs$CI_high >= 0.01 )
     expect_true( rs$CI_low <= 0.01 )
     expect_true( rs$CI_low > 0.01^2 )
@@ -33,7 +33,7 @@ test_that("Q stat test inversion works", {
     rs
     expect_true( rs$tau_hat == 0 )
     expect_true( rs$CI_low == 0 )
-    expect_true( rs$p.value > 0.05 )
+    expect_true( rs$p_variation > 0.05 )
 
     # Not much variation but lots and lots of thought to exist variation (so we
     # are sure there is no possible cross site variation).

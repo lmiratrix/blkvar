@@ -28,7 +28,7 @@ Power
 }
 \description{
 Calculate power for detecting cross site variation with a ratio
-  test.  This uses work and results in Appendix A of Bloom and Spybrook
+  test.  This uses work and results in Appendix A of Bloom and Spybrook.
 }
 \examples{
 # Example in the text
