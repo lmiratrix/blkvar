@@ -175,6 +175,8 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     ATE_hat_site <- weighted.mean(ATE_hats, wts)
     # Calculate SE for ATE_hat_site
     SE_site <- sqrt(sum(wts ^ 2 * SE_hat))
+
+
     wts.indiv <- nj / n
     ATE_hat_indiv <- weighted.mean(ATE_hats, wts.indiv)
     SE_indiv <- sqrt(sum(wts.indiv ^ 2 * SE_hat))
@@ -184,7 +186,9 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     # faster way---this should work easily.
     # sqrt( t(wts.indiv) %*% VC %*% wts.indiv )
 
-    interactModels <- data.frame(method = c("FE-Int-Sites", "FE-Int-Persons"), ATE_hat = c(ATE_hat_site, ATE_hat_indiv), SE = c(SE_site, SE_indiv), stringsAsFactors = FALSE)
+    interactModels <- data.frame(method = c("FE-Int-Sites", "FE-Int-Persons"),
+                                 ATE_hat = c(ATE_hat_site, ATE_hat_indiv),
+                                 SE = c(SE_site, SE_indiv), stringsAsFactors = FALSE)
     if (!is.null(control_formula)) {
         interactModels$method <- paste0(interactModels$method, "-adj")
     }
@@ -247,6 +251,7 @@ weighted_linear_estimators <- function(formula, control_formula = NULL, siteID =
                         weight = weight * ifelse( Z, Z.bar, (1-Z.bar) ),
                         weight.site = weight.site * ifelse( Z, Z.bar, (1-Z.bar) ) )
     }
+
     formula <- make_FE_formula("Yobs", "Z", "B", control_formula, data )
     if (weight.method == "survey") {
         M0w2 <- svyglm( formula,
@@ -260,6 +265,7 @@ weighted_linear_estimators <- function(formula, control_formula = NULL, siteID =
         M0w2 <- lm( formula, data=data, weights = data$weight)
         M0w_site <- lm( formula, data=data, weights = data$weight.site)
     }
+
     ATE_hat <- coef( M0w2 )[["Z"]]
     SE_w2 <- grab_SE( M0w2 )
     ATE_hat_w_site <- coef( M0w_site )[["Z"]]

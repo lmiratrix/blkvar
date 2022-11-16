@@ -64,44 +64,48 @@ compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control
 
 
 
-#' Block variance method comparison function
+#' Compare different estimators for multisite/blocked RCTs.
 #'
-#' This function calculates the point estimates and SE estimates for a variety
-#' of the blocked designs.
+#' This function calculates the point estimates and SE estimates for a
+#' variety of blocked designs implemented by this package. It is a
+#' wrapper for the many other individual methods available, and
+#' returns things in a tidy table.
 #'
 #' @param Yobs vector observed outcomes (or column name in data)
-#' @param Z vector of assignment indicators (1==treated) (or column name in
-#'   data)
+#' @param Z vector of assignment indicators (1==treated) (or column
+#'   name in data)
 #' @param B vector of block ids (or column name in data)
-#' @param siteID site ids (variable name as string if data frame passed) (if
-#'   randomization blocks are nested in site).
-#' @param data frame holding Y, Z, B and (possibly a column with name specified
-#'   by siteID).
+#' @param siteID site ids (variable name as string if data frame
+#'   passed) (if randomization blocks are nested in site).
+#' @param data frame holding Y, Z, B and (possibly a column with name
+#'   specified by siteID).
 #' @param include_MLM Include MLM estimators
-#' @param include_DB Include Design-Based estimators (taken from RCTYes
-#'   documentation and prior literature).
+#' @param include_DB Include Design-Based estimators (taken from
+#'   RCTYes documentation and prior literature).
 #' @param include_LM Include Linear Model-based estimators (including
 #'   Huber-White SEs, etc.)
-#' @param include_DBBlended Include DB estimators applied to small block (blocks
-#'   with singleton treatment or control units) and classic Neyman to large
-#'   blocks.
+#' @param include_DBBlended Include DB estimators applied to small
+#'   block (blocks with singleton treatment or control units) and
+#'   classic Neyman to large blocks.
 #' @param weight_LM_method Passed to weight.method of
 #'   weighted_linear_estimators; specifies the weighting method.
-#' @param weight_LM_scale_weights This argument is passed to scale.weights of
-#'   weighted_linear_estimators
-#' @param control_formula What variables to control for, in the form of "~ X1 +
-#'   X2".
-#' @param include_block Include the standard error estimation found in Pashley
-#'   (in particular, these work for blocks with singleton units).
-#' @param include_method_characteristics Include details of the methods (target
-#'   estimands and sampling framework assumed) in the return value.
+#' @param weight_LM_scale_weights This argument is passed to
+#'   scale.weights of weighted_linear_estimators
+#' @param control_formula What variables to control for, in the form
+#'   of "~ X1 + X2".
+#' @param include_block Include the standard error estimation found in
+#'   Pashley (in particular, these work for blocks with singleton
+#'   units).
+#' @param include_method_characteristics Include details of the
+#'   methods (target estimands and sampling framework assumed) in the
+#'   return value.
 #'
-#' @return Dataframe of point estimates and standard errors for each method
-#'   considered. If \code{include_method_characteristics=TRUE} also add some
-#'   features of the methods as additional columns.
-#' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor cov
-#'   filter model.matrix na.exclude pf pnorm predict qchisq qf qnorm rbinom
-#'   reshape resid runif vcov weighted.mean
+#' @return Dataframe of point estimates and standard errors for each
+#'   method considered. If \code{include_method_characteristics=TRUE}
+#'   also add some features of the methods as additional columns.
+#' @importFrom stats aggregate lm quantile rnorm sd var as.formula cor
+#'   cov filter model.matrix na.exclude pf pnorm predict qchisq qf
+#'   qnorm rbinom reshape resid runif vcov weighted.mean
 #' @export
 compare_methods <- function(Yobs, Z, B, siteID = NULL, data = NULL,
                             include_block = TRUE, include_MLM = TRUE,

@@ -9,6 +9,10 @@
 # parameter J is different).
 .MULTISITE_CANONICAL = NULL
 
+# TODO: BETTER VERSION - Make a "site seed" that gets passed instead.
+# Then get a new seed from the current setting, set the site seed and
+# generate the finite model, and then set and use the new seed for the
+# randomization.
 
 
 
@@ -55,18 +59,20 @@ rerandomize_data <- function(dat) {
 
 
 
-#' Generate individual data given a dataframe of site level characteristics.
+#' Generate individual data given a dataframe of site level
+#' characteristics.
 #'
 #' @param sdat Dataframe of site level characteristics
 #'
-#' @describeIn generate_multilevel_data_model Part of data generation that
-#'   generates individual level covariates.
+#' @describeIn generate_multilevel_data_model Part of data generation
+#'   that generates individual level covariates.
 #'
 #' @return Dataframe of indiivdual level data
 #' @export
 #'
 generate_individual_data = function( sdat, p = 0.5,
                                      sigma2.e = 1,
+                                     sigma2.X = 1,
                                      beta.X = NULL,
                                      variable.p = FALSE,
                                      cluster.rand = FALSE,
@@ -114,17 +120,18 @@ generate_individual_data = function( sdat, p = 0.5,
     if (cluster.rand) {
         dd$Z <- Zj[ dd$sid ]
     } else {
-        dd <- dd %>% group_by( sid ) %>% mutate(Z = as.numeric(sample(n()) <= n() * p))
+        dd <- dd %>% group_by( sid ) %>%
+            mutate(Z = as.numeric(sample(n()) <= n() * p))
     }
     Zij <- dd$Z
     dd$p <- NULL
 
     # individual covariates and residuals
     if (include_X) {
-        stopifnot(sigma2.mean.X < 1)
-        Xbar <- rnorm(J, mean = 0, sd = sqrt(sigma2.mean.X))
-        X <- rnorm(N, mean = Xbar[sid], sd = sqrt(1 - sigma2.mean.X))
+        stopifnot(sigma2.mean.X < sigma2.X)
         stopifnot(sigma2.e - beta.X ^ 2 > 0)
+        Xbar <- rnorm(J, mean = 0, sd = sqrt(sigma2.mean.X))
+        X <- Xbar[sid] + rnorm(N, mean = 0, sd = sqrt(sigma2.X - sigma2.mean.X))
         e <- rnorm(N, mean = 0, sd = sqrt(sigma2.e - beta.X^2))
         Y0 <- beta.0j[sid] + beta.X * X + e
     } else {
@@ -132,7 +139,9 @@ generate_individual_data = function( sdat, p = 0.5,
         Y0 <- beta.0j[sid] + e
     }
     Y1 <- Y0 + beta.1j[sid]
-    df <- data.frame(sid = as.factor(sid), Y0 = Y0, Y1 = Y1, Z = Zij, Yobs = ifelse(Zij, Y1, Y0))
+    df <- data.frame(sid = as.factor(sid),
+                     Y0 = Y0, Y1 = Y1, Z = Zij,
+                     Yobs = ifelse(Zij, Y1, Y0))
     if (include_X) {
         df$X <- X
     }
@@ -148,37 +157,54 @@ generate_individual_data = function( sdat, p = 0.5,
 #'
 #' @description Given a 2-level model, generate data to specifications
 #'
+#'   Model has site-level covariate W and individual-level covariate
+#'   X.
+#'
 #' @param n.bar average site size, Default: 10
 #' @param J number sites, Default: 30
 #' @param p prop treated, Default: 0.5
 #' @param gamma.00 The mean control outcome, Default: 0
 #' @param gamma.10 The ATE, Default: 0.2
-#' @param verbose Say stuff while maing data?, Default: FALSE
 #' @param gamma.01 Coefficient for W to site control mean
 #' @param gamma.11 Coefficient for W to treatment impact
 #' @param tau.00 Variance of site conrol means
-#' @param tau.01 Correlation of treatment impact and mean site outcome under control
+#' @param tau.01 Correlation of treatment impact and mean site outcome
+#'   under control
 #' @param tau.11 Treatment impact variance
 #' @param sigma2.e Residual standard error
-#' @param beta.X Coefficient for the individual-level X covariate.  NA means no covariate.
-#' @param sigma2.mean.X How much the individual-level X covariate means vary across site.
-#' @param variable.n Allow n to vary around n.bar, Default: TRUE
-#' @param return.sites Return sites, not individual students, Default: FALSE
-#' @param cluster.rand TRUE means cluster-randomized.  FALSE means randomized within site.
-#' @param size.impact.correlate    Takes values of -1, 0, or 1: Are site impacts
-#'   negatively correlated, uncorrelated, or positively correlated with site
-#'   size?
-#' @param proptx.impact.correlate  Takes values of -1, 0, or 1: Are proportion
-#'   of units treated negatively correlated, uncorrelated, or positively
-#'   correlated with site size?
-#' @param correlate.strength In [0,1], and describes how correlated the ranking
-#'   of site impacts will be with proptx and site size, if they are set to be
-#'   correlated.
-#' @param variable.p Should the proportion of units treated in each site vary?  Yes/No.
 #' @param sigma2.W The variation of the site-level covariate.
-#' @param finite.model If TRUE use a canonical set of random site effects.  When TRUE this method will save the multivariate normal draw and reuse it in subsequent calls to generate_multilevel_data_model until a call with a different J is made.  Recommended to use FALSE.
-#' @param size.ratio The degree to which the site sizes should vary, if they should vary.
-#' @return Dataframe of individual level data (unless return.sites=TRUE)!  Dataframe has treatment column, outcome column, covariates, and block IDs.
+#' @param beta.X Coefficient for the individual-level X covariate.  NA
+#'   means no covariate.
+#' @param sigma2.mean.X How much the individual-level X covariate
+#'   means vary across site.
+#' @param variable.n Allow n to vary around n.bar, Default: TRUE
+#' @param return.sites Return sites, not individual students, Default:
+#'   FALSE
+#' @param verbose Say stuff while making data?, Default: FALSE
+#' @param cluster.rand TRUE means cluster-randomized.  FALSE means
+#'   randomized within site.
+#' @param size.impact.correlate    Takes values of -1, 0, or 1: Are
+#'   site impacts negatively correlated, uncorrelated, or positively
+#'   correlated with site size?
+#' @param proptx.impact.correlate  Takes values of -1, 0, or 1: Are
+#'   proportion of units treated negatively correlated, uncorrelated,
+#'   or positively correlated with site size?
+#' @param correlate.strength In [0,1], and describes how correlated
+#'   the ranking of site impacts will be with proptx and site size, if
+#'   they are set to be correlated.
+#' @param variable.p Should the proportion of units treated in each
+#'   site vary?  Yes/No.
+#' @param finite.model If TRUE use a canonical set of random site
+#'   effects.  When TRUE this method will save the multivariate normal
+#'   draw and reuse it in subsequent calls to
+#'   generate_multilevel_data_model until a call with a different J is
+#'   made.  Recommended to use FALSE.
+#' @param size.ratio The degree to which the site sizes should vary,
+#'   if they should vary.
+#'
+#' @return Dataframe of individual level data (unless
+#'   return.sites=TRUE)!  Dataframe has treatment column, outcome
+#'   column, covariates, and block IDs.
 #' @importFrom magrittr '%>%'
 #' @export
 generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
@@ -269,9 +295,11 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
     }
 
     if (cluster.rand) {
-        df <- data.frame(n = nj, W = Wj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2], Zj = Zj)
+        df <- data.frame(n = nj, W = Wj, beta.0 = beta.0j, beta.1 = beta.1j,
+                         u0 = mv[,1], u1 = mv[,2], Zj = Zj)
     } else {
-        df <- data.frame(n = nj, W = Wj, beta.0 = beta.0j, beta.1 = beta.1j, u0 = mv[,1], u1 = mv[,2])
+        df <- data.frame(n = nj, W = Wj, beta.0 = beta.0j, beta.1 = beta.1j,
+                         u0 = mv[,1], u1 = mv[,2])
     }
 
     if (!include_W) {
@@ -299,21 +327,26 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 
 
 #' @title generate_multilevel_data
-#' @describeIn generate_multilevel_data_model Wrapper for generate_multilevel_data_model that rescales parameters to make standardization easier.
 #'
-#' @param tau.11.star Total amount of cross site treatment variation, both
-#'   explained by covariate and not, Default: 0.3
-#' @param rho2.0W Explanatory power of W for control outcomes, Default: 0.1
-#' @param rho2.1W Explanatory power of W for average treatment impact, Default:
-#'   0.5
+#' @describeIn generate_multilevel_data_model Wrapper for
+#'   generate_multilevel_data_model that rescales parameters to make
+#'   standardization easier.
+#'
+#' @param tau.11.star Total amount of cross site treatment variation,
+#'   both explained by covariate and not, Default: 0.3
+#' @param rho2.0W Explanatory power of W for control outcomes,
+#'   Default: 0.1
+#' @param rho2.1W Explanatory power of W for average treatment impact,
+#'   Default: 0.5
 #' @param ICC The ICC, Default: 0.7
 #' @param gamma.00 The mean control outcome, Default: 0
 #' @param gamma.10 The ATE, Default: 0.2
 #' @param verbose Say stuff while maing data?, Default: FALSE
-#' @param zero.corr TRUE means treatment impact and mean site outcome are not
-#'   correlated.  TRUE means they are negatively correlated to make the variance
-#'   of the treatment group 1, Default: FALSE
-#' @param ... Further parameters passed to generate_multilevel_data_model()
+#' @param zero.corr TRUE means treatment impact and mean site outcome
+#'   are not correlated.  TRUE means they are negatively correlated to
+#'   make the variance of the treatment group 1, Default: FALSE
+#' @param ... Further parameters passed to
+#'   generate_multilevel_data_model()
 #' @export
 generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5,
                                      tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7,

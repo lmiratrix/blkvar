@@ -49,7 +49,10 @@ make_base_formula = function( Yobs = "Yobs", Z = "Z", control_formula = NULL, da
 #'
 #' @return Something like "Yobs ~ 0 + Z + B" or "Yobs ~ 0 + Z + B + X"
 #' @noRd
-make_FE_formula <- function(Yobs = "Yobs", Z = "Z", B = "B", control_formula = NULL, data = NULL) {
+make_FE_formula <- function(Yobs = "Yobs", Z = "Z", B = "B",
+                            control_formula = NULL,
+                            data = NULL) {
+
   if ( is.null( control_formula)) {
     new.form <- sprintf( "%s ~ 0 + %s + %s", Yobs, Z, B)
     return( as.formula(new.form))
@@ -65,17 +68,19 @@ make_FE_formula <- function(Yobs = "Yobs", Z = "Z", B = "B", control_formula = N
       stop("Some variables in control_formula are not present in your data.")
     }
   }
+
   c.names <- formula.tools::rhs.vars(control_formula)
   new.form <- sprintf( "%s ~ 0 + %s + %s + %s", Yobs, Z, B, paste(c.names, collapse =" + " ))
   return(as.formula(new.form))
 }
 
-# #' Make a canonical fixed effect formula, possibly with control variables.
-# #'
-# #' @inheritParams make_base_formula
-# #'
-# #' @return Something like "Yobs ~ 0 + Z * B - Z" or "Yobs ~ 0 + Z * B - Z + X"
 
+#' Make a canonical fixed effect formula, possibly with control variables.
+#'
+#' @inheritParams make_base_formula
+#'
+#' @return Something like "Yobs ~ 0 + Z * B - Z" or "Yobs ~ 0 + Z * B - Z + X"
+#' @noRd
 make_FE_int_formula <- function(Yobs = "Yobs", Z = "Z", B = "B", control_formula = NULL, data = NULL) {
   if (is.null(control_formula)) {
     new.form <- sprintf( "%s ~ 0 + %s * %s - %s", Yobs, Z, B, Z)
