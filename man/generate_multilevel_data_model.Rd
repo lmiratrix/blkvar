@@ -5,12 +5,14 @@
 \alias{generate_multilevel_data_model}
 \alias{generate_multilevel_data}
 \alias{generate_multilevel_data_no_cov}
-\title{Generate individual data given a dataframe of site level characteristics.}
+\title{Generate individual data given a dataframe of site level
+characteristics.}
 \usage{
 generate_individual_data(
   sdat,
   p = 0.5,
   sigma2.e = 1,
+  sigma2.X = 1,
   beta.X = NULL,
   variable.p = FALSE,
   cluster.rand = FALSE,
@@ -82,17 +84,21 @@ generate_multilevel_data_no_cov(
 
 \item{sigma2.e}{Residual standard error}
 
-\item{beta.X}{Coefficient for the individual-level X covariate.  NA means no covariate.}
+\item{beta.X}{Coefficient for the individual-level X covariate.  NA
+means no covariate.}
 
-\item{variable.p}{Should the proportion of units treated in each site vary?  Yes/No.}
+\item{variable.p}{Should the proportion of units treated in each
+site vary?  Yes/No.}
 
-\item{cluster.rand}{TRUE means cluster-randomized.  FALSE means randomized within site.}
+\item{cluster.rand}{TRUE means cluster-randomized.  FALSE means
+randomized within site.}
 
-\item{sigma2.mean.X}{How much the individual-level X covariate means vary across site.}
+\item{sigma2.mean.X}{How much the individual-level X covariate
+means vary across site.}
 
-\item{proptx.impact.correlate}{Takes values of -1, 0, or 1: Are proportion
-of units treated negatively correlated, uncorrelated, or positively
-correlated with site size?}
+\item{proptx.impact.correlate}{Takes values of -1, 0, or 1: Are
+proportion of units treated negatively correlated, uncorrelated,
+or positively correlated with site size?}
 
 \item{verbose}{Say stuff while maing data?, Default: FALSE}
 
@@ -110,7 +116,8 @@ correlated with site size?}
 
 \item{tau.00}{Variance of site conrol means}
 
-\item{tau.01}{Correlation of treatment impact and mean site outcome under control}
+\item{tau.01}{Correlation of treatment impact and mean site outcome
+under control}
 
 \item{tau.11}{Treatment impact variance}
 
@@ -118,52 +125,67 @@ correlated with site size?}
 
 \item{variable.n}{Allow n to vary around n.bar, Default: TRUE}
 
-\item{return.sites}{Return sites, not individual students, Default: FALSE}
+\item{return.sites}{Return sites, not individual students, Default:
+FALSE}
 
-\item{finite.model}{If TRUE use a canonical set of random site effects.  When TRUE this method will save the multivariate normal draw and reuse it in subsequent calls to generate_multilevel_data_model until a call with a different J is made.  Recommended to use FALSE.}
+\item{finite.model}{If TRUE use a canonical set of random site
+effects.  When TRUE this method will save the multivariate normal
+draw and reuse it in subsequent calls to
+generate_multilevel_data_model until a call with a different J is
+made.  Recommended to use FALSE.}
 
-\item{size.impact.correlate}{Takes values of -1, 0, or 1: Are site impacts
-negatively correlated, uncorrelated, or positively correlated with site
-size?}
+\item{size.impact.correlate}{Takes values of -1, 0, or 1: Are
+site impacts negatively correlated, uncorrelated, or positively
+correlated with site size?}
 
-\item{correlate.strength}{In [0,1], and describes how correlated the ranking
-of site impacts will be with proptx and site size, if they are set to be
-correlated.}
+\item{correlate.strength}{In [0,1], and describes how correlated
+the ranking of site impacts will be with proptx and site size, if
+they are set to be correlated.}
 
-\item{size.ratio}{The degree to which the site sizes should vary, if they should vary.}
+\item{size.ratio}{The degree to which the site sizes should vary,
+if they should vary.}
 
 \item{tau.11.star}{Total amount of cross site treatment variation}
 
-\item{rho2.0W}{Explanatory power of W for control outcomes, Default: 0.1}
+\item{rho2.0W}{Explanatory power of W for control outcomes,
+Default: 0.1}
 
-\item{rho2.1W}{Explanatory power of W for average treatment impact, Default:
-0.5}
+\item{rho2.1W}{Explanatory power of W for average treatment impact,
+Default: 0.5}
 
 \item{ICC}{The ICC, Default: 0.7}
 
-\item{zero.corr}{TRUE means treatment impact and mean site outcome are not
-correlated.  TRUE means they are negatively correlated to make the variance
-of the treatment group 1, Default: FALSE}
+\item{zero.corr}{TRUE means treatment impact and mean site outcome
+are not correlated.  TRUE means they are negatively correlated to
+make the variance of the treatment group 1, Default: FALSE}
 
-\item{...}{Further parameters passed to generate_multilevel_data_model()}
+\item{...}{Further parameters passed to
+generate_multilevel_data_model()}
 
 \item{control.sd.Y1}{Make correlation of random intercept and random slope}
 }
 \value{
 Dataframe of indiivdual level data
 
-Dataframe of individual level data (unless return.sites=TRUE)!  Dataframe has treatment column, outcome column, covariates, and block IDs.
+Dataframe of individual level data (unless
+  return.sites=TRUE)!  Dataframe has treatment column, outcome
+  column, covariates, and block IDs.
 }
 \description{
 Given a 2-level model, generate data to specifications
+
+  Model has site-level covariate W and individual-level covariate
+  X.
 }
 \section{Functions}{
 \itemize{
-\item \code{generate_individual_data}: Part of data generation that
-generates individual level covariates.
+\item \code{generate_individual_data()}: Part of data generation
+that generates individual level covariates.
 
-\item \code{generate_multilevel_data}: Wrapper for generate_multilevel_data_model that rescales parameters to make standardization easier.
+\item \code{generate_multilevel_data()}: Wrapper for
+generate_multilevel_data_model that rescales parameters to make
+standardization easier.
 
-\item \code{generate_multilevel_data_no_cov}: Simplified version of generate_multilevel_data() with no W covariate.
+\item \code{generate_multilevel_data_no_cov()}: Simplified version of generate_multilevel_data() with no W covariate.
+
 }}
-

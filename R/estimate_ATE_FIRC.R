@@ -25,10 +25,12 @@
 #' @param include_testing Logical Include likelihood ratio test for cross-site
 #'   treatment variation.
 #' @param data Dataframe with all needed variables.
+#' @param keep_EB_estimates TRUE means returned object has EB estimates.  FALSE means do not keep them.
 #' @export
 estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
                               control_formula = NULL, data = NULL, REML = FALSE,
-                              include_testing = TRUE, anova = FALSE, pool = FALSE) {
+                              include_testing = TRUE, anova = FALSE, pool = FALSE,
+                              keep_EB_estimates = TRUE) {
 
   stopifnot(!(include_testing && REML))
   if (!is.null(control_formula)) {
@@ -69,6 +71,10 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
   stopifnot( length(unique(data$Z)) == 2)
   stopifnot(is.numeric(data$Yobs))
 
+  # ensure no weird numerical
+  data$B = droplevels( as.factor(data$B) )
+
+
   #fit multilevel model and extract tau
   method <- ifelse( REML, "REML", "ML" )
 
@@ -76,10 +82,13 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
   formula <- make_FE_formula("Yobs", "Z", "B", control_formula = control_formula, data = data)
 
   if (pool) {
-    re.mod <- nlme::lme(formula, data = data, random = ~ 0 + Z | siteID, method = method, control=nlme::lmeControl(opt="optim", returnObject = TRUE))
+    re.mod <- nlme::lme(formula, data = data, random = ~ 0 + Z | siteID, method = method,
+                        control=nlme::lmeControl(opt="optim", returnObject = TRUE))
   } else {
-    re.mod <- nlme::lme(formula, data = data, random = ~ 0 + Z | siteID, weights = nlme::varIdent(form = ~ 1 | Z), na.action=stats::na.exclude, method = method,
-      control=nlme::lmeControl(opt="optim",returnObject=TRUE))
+    re.mod <- nlme::lme(formula, data = data, random = ~ 0 + Z | siteID, method = method,
+                        weights = nlme::varIdent(form = ~ 1 | Z),
+                        na.action=stats::na.exclude,
+                        control=nlme::lmeControl(opt="optim",returnObject=TRUE))
   }
 
   if (include_testing) {
@@ -107,7 +116,7 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
     p_variation <- td <- NA
   }
 
-    # get ATE and SE
+  # get ATE and SE
   ATE_hat <- nlme::fixef(re.mod)[[1]]
   SE_ATE <- sqrt(vcov(re.mod)[1, 1])
 
@@ -137,5 +146,30 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
   class( res ) = "multisiteresult"
   attr( res, "args" ) = list(  model = "FIRC" )
 
+  if ( keep_EB_estimates ) {
+      site_ates = tibble( sid = rownames( coef(re.mod) ),
+                          beta_hat = coef( re.mod )$Z )
+
+      res$eb_estimates = site_ates
+  }
+
   return( res )
 }
+
+
+#' Get empirical Bayes estimates from fit FIRC model
+#'
+#' @param x A FIRC model multisiteresult object.
+#' @return Tibble with site IDs and estimated site average impacts.
+#' @export
+get_EB_estimates = function( x ) {
+    stopifnot( is.multisiteresult(x) )
+    return( x$eb_estimates )
+}
+
+
+
+
+
+
+

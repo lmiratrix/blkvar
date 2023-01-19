@@ -24,9 +24,9 @@ While planned for posting on CRAN, the current version is currently hosted on Gi
 development version.
 }
 \references{
-* Miratrix, L. W., Weiss, M. J., & Henderson, B. (2021). An applied researcher’s guide to estimating effects from multisite individually randomized trials: Estimands, estimators, and estimates. Journal of Research on Educational Effectiveness, 14(1), 270-308.
+Miratrix, L. W., Weiss, M. J., & Henderson, B. (2021). An applied researcher’s guide to estimating effects from multisite individually randomized trials: Estimands, estimators, and estimates. Journal of Research on Educational Effectiveness, 14(1), 270-308.
 
- Pashley, N. E., & Miratrix, L. W. (2021). Insights on variance estimation for blocked and matched pairs designs. Journal of Educational and Behavioral Statistics, 46(3), 271-296.
+Pashley, N. E., & Miratrix, L. W. (2021). Insights on variance estimation for blocked and matched pairs designs. Journal of Educational and Behavioral Statistics, 46(3), 271-296.
 
- Pashley, N. E., & Miratrix, L. W. (In press). Block what you can, except when you shouldn't. Journal of Educational and Behavioral Statistics
+Pashley, N. E., & Miratrix, L. W. (In press). Block what you can, except when you shouldn't. Journal of Educational and Behavioral Statistics
 }

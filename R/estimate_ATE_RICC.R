@@ -32,6 +32,8 @@ estimate_ATE_RICC <- function(Yobs, Z, B, data = NULL, REML = FALSE, control_for
   stopifnot(length(unique(data$Z)) == 2)
   stopifnot(is.numeric(data$Yobs))
 
+  data$B = droplevels( as.factor(data$B) )
+
   #fit multilevel model and extract tau
   method <- ifelse( REML, "REML", "ML")
   formula <- make_base_formula(control_formula = control_formula, data = data)

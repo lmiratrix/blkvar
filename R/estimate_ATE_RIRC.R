@@ -29,6 +29,9 @@ estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_tes
   stopifnot( length( unique( data$Z ) ) == 2 )
   stopifnot( is.numeric( data$Yobs ) )
 
+  data$B = droplevels( as.factor(data$B) )
+
+
   #fit multilevel model and extract tau
   method <- ifelse( REML, "REML", "ML" )
 

@@ -139,10 +139,12 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
         data <- data.frame(Yobs = Yobs, Z = Z, B = B)
         if (!is.null( siteID)) {
             data$siteID = siteID
+            data$siteID = droplevels( as.factor(data$siteID) )
         }
     }
 
-    data$B <- droplevels(as.factor(data$B))
+    data$B <- droplevels( as.factor(data$B) )
+
     J <- length(unique(data$B))
     nj <- table(data$B)
     n <- nrow(data)
@@ -337,10 +339,13 @@ fixed_effect_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     }
   }
 
+    data$B = droplevels( as.factor(data$B) )
+
   # make sites RA blocks if there are no sites.
   if (is.null(siteID)) {
     data$siteID = data$B
   }
+    data$siteID = droplevels( as.factor(data$siteID) )
 
   # Make control variable function
   formula <- make_FE_formula( "Yobs", "Z", "B", control_formula, data)

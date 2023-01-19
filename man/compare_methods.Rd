@@ -2,7 +2,7 @@
 % Please edit documentation in R/compare_methods.R
 \name{compare_methods}
 \alias{compare_methods}
-\title{Block variance method comparison function}
+\title{Compare different estimators for multisite/blocked RCTs.}
 \usage{
 compare_methods(
   Yobs,
@@ -24,50 +24,54 @@ compare_methods(
 \arguments{
 \item{Yobs}{vector observed outcomes (or column name in data)}
 
-\item{Z}{vector of assignment indicators (1==treated) (or column name in
-data)}
+\item{Z}{vector of assignment indicators (1==treated) (or column
+name in data)}
 
 \item{B}{vector of block ids (or column name in data)}
 
-\item{siteID}{site ids (variable name as string if data frame passed) (if
-randomization blocks are nested in site).}
+\item{siteID}{site ids (variable name as string if data frame
+passed) (if randomization blocks are nested in site).}
 
-\item{data}{frame holding Y, Z, B and (possibly a column with name specified
-by siteID).}
+\item{data}{frame holding Y, Z, B and (possibly a column with name
+specified by siteID).}
 
-\item{include_block}{Include the standard error estimation found in Pashley
-(in particular, these work for blocks with singleton units).}
+\item{include_block}{Include the standard error estimation found in
+Pashley (in particular, these work for blocks with singleton
+units).}
 
 \item{include_MLM}{Include MLM estimators}
 
-\item{include_DB}{Include Design-Based estimators (taken from RCTYes
-documentation and prior literature).}
+\item{include_DB}{Include Design-Based estimators (taken from
+RCTYes documentation and prior literature).}
 
 \item{include_LM}{Include Linear Model-based estimators (including
 Huber-White SEs, etc.)}
 
-\item{include_DBBlended}{Include DB estimators applied to small block (blocks
-with singleton treatment or control units) and classic Neyman to large
-blocks.}
+\item{include_DBBlended}{Include DB estimators applied to small
+block (blocks with singleton treatment or control units) and
+classic Neyman to large blocks.}
 
-\item{include_method_characteristics}{Include details of the methods (target
-estimands and sampling framework assumed) in the return value.}
+\item{include_method_characteristics}{Include details of the
+methods (target estimands and sampling framework assumed) in the
+return value.}
 
 \item{weight_LM_method}{Passed to weight.method of
 weighted_linear_estimators; specifies the weighting method.}
 
-\item{weight_LM_scale_weights}{This argument is passed to scale.weights of
-weighted_linear_estimators}
+\item{weight_LM_scale_weights}{This argument is passed to
+scale.weights of weighted_linear_estimators}
 
-\item{control_formula}{What variables to control for, in the form of "~ X1 +
-X2".}
+\item{control_formula}{What variables to control for, in the form
+of "~ X1 + X2".}
 }
 \value{
-Dataframe of point estimates and standard errors for each method
-  considered. If \code{include_method_characteristics=TRUE} also add some
-  features of the methods as additional columns.
+Dataframe of point estimates and standard errors for each
+  method considered. If \code{include_method_characteristics=TRUE}
+  also add some features of the methods as additional columns.
 }
 \description{
-This function calculates the point estimates and SE estimates for a variety
-of the blocked designs.
+This function calculates the point estimates and SE estimates for a
+variety of blocked designs implemented by this package. It is a
+wrapper for the many other individual methods available, and
+returns things in a tidy table.
 }

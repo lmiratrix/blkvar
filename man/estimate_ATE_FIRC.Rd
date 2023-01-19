@@ -15,7 +15,8 @@ estimate_ATE_FIRC(
   REML = FALSE,
   include_testing = TRUE,
   anova = FALSE,
-  pool = FALSE
+  pool = FALSE,
+  keep_EB_estimates = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ the models.  FALSE means do the modified chi-squared test.}
 
 \item{pool}{TRUE means tx and co have same reBual variance. FALSE gives
 seperate estimates for each (recommended, default).}
+
+\item{keep_EB_estimates}{TRUE means returned object has EB estimates.  FALSE means do not keep them.}
 }
 \description{
 Acknowledgement: Unpooled version taken and adapted from Catherine's

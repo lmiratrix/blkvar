@@ -39,6 +39,10 @@ estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL,
   }
   stopifnot(length(unique(data$Z)) == 2)
   stopifnot(is.numeric(data$Yobs))
+
+  data$B = droplevels( as.factor(data$B) )
+
+
   M0.full <- lme4::lmer( Yobs ~ 1 + Z + (1 + Z|B), data = data, REML = REML)
   if (include_testing) {
     M0.null <- lme4::lmer( Yobs ~ 1 + Z + (1|B), data = data, REML = REML)
