@@ -18,7 +18,11 @@ print.multisiteresult = function( x, ... ) {
 
     anal_type = args$model
 
-    scat( "Cross-site %s analysis\n", anal_type )
+    suff = ""
+    if ( !is.null( args$method ) ) {
+        suff = paste0( " (", args$method, ")" )
+    }
+    scat( "Cross-site %s analysis%s\n", anal_type, suff )
     scat( "  Grand ATE: %s", format( x$ATE_hat ) )
     if ( !is.null( x$SE_ATE ) ) {
         scat( " (%s)\n", format( x$SE_ATE ) )

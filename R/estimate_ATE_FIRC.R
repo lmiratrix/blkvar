@@ -162,7 +162,8 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
               tau_hat = tau_hat, SE_tau=SE_tau,
               p_variation = p_variation, deviance = td )
   class( res ) = "multisiteresult"
-  attr( res, "args" ) = list(  model = "FIRC" )
+  attr( res, "args" ) = list(  model = "FIRC",
+                               method = method )
 
   if ( keep_EB_estimates ) {
       site_ates = tibble( sid = rownames( coef(re.mod) ),

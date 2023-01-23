@@ -85,7 +85,8 @@ estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL,
               tau_hat = tau_hat, SE_tau = NA,
               p_variation = p_variation, deviance = td)
   class( res ) = "multisiteresult"
-  attr( res, "args" ) = list( model = "RIRC" )
+  attr( res, "args" ) = list(  model = "RIRC",
+                               method = method )
 
   return( res )
 

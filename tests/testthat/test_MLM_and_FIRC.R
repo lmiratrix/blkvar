@@ -42,7 +42,7 @@ test_that("RIRC functions work", {
                    tau.11.star = 0.3, return.sites=FALSE )
     head( sdf )
     pv = estimate_ATE_RIRC( Yobs, Z, sid, data=sdf )
-
+    pv
     pv = estimate_ATE_RIRC( Yobs, Z, sid, data=sdf, REML = TRUE, include_testing = FALSE )
 
     expect_error( pv = estimate_ATE_RIRC( Yobs, Z, sid, data=sdf, REML = TRUE, include_testing = TRUE ) )

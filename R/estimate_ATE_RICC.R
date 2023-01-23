@@ -53,7 +53,8 @@ estimate_ATE_RICC <- function(Yobs, Z, B, data = NULL, REML = TRUE,
               tau_hat = NA, SE_tau = NA,
               p_variation = NA, deviance = NA)
   class( res ) = "multisiteresult"
-  attr( res, "args" ) = list( model = "RICC" )
+  attr( res, "args" ) = list(  model = "RICC",
+                               method = method )
 
   return( res )
 
