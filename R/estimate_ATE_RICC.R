@@ -10,7 +10,8 @@
 #' @rdname estimate_ATE_RIRC
 #'
 #' @export
-estimate_ATE_RICC <- function(Yobs, Z, B, data = NULL, REML = FALSE, control_formula = NULL) {
+estimate_ATE_RICC <- function(Yobs, Z, B, data = NULL, REML = TRUE,
+                              control_formula = NULL) {
   if (!is.null(control_formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing("Yobs"))

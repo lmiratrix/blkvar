@@ -1,16 +1,20 @@
-#' Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC) Models
+
+#' Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC) Model
 #'
 #' @inheritParams estimate_ATE_FIRC
 #' @rdname estimate_ATE_RIRC
 #'@param data Dataframe with all needed variables.
 #' @export
-
-estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL, REML = FALSE, include_testing = TRUE, pool = FALSE, control_formula = NULL) {
-  stopifnot(!(include_testing && REML))
+estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL,
+                              include_testing = FALSE,  REML = !include_testing,
+                              pool = FALSE, control_formula = NULL) {
   if (!is.null( control_formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing("Yobs"))
   }
+    if ( include_testing && REML ) {
+        stop( "Cannot do likelihood ratio test when REML=TRUE" )
+    }
 
   if (!is.null(data)) {
     if (missing("Yobs")) {

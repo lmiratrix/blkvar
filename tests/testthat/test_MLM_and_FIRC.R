@@ -73,3 +73,4 @@ test_that("RICC functions work", {
     expect_equal( pv, pv2 )
 
 } )
+

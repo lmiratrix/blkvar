@@ -23,14 +23,16 @@ estimate_ATE_RIRC_pool(
 
 \item{data}{Dataframe with all needed variables.}
 
-\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood
-estimation.}
+\item{REML}{Logical, Restricted maximum likelihood or maximum
+likelihood estimation.  Default of TRUE if include_testing =
+FALSE and FALSE otherwise. Note that FIRC can fail badly in
+estimating cross-site variation when REML=FALSE.}
 
-\item{include_testing}{Logical Include likelihood ratio test for cross-site
-treatment variation.}
+\item{include_testing}{Logical Include likelihood ratio test for
+cross-site treatment variation.}
 
-\item{control_formula}{The control_formula argument must be of the form ~ X1
-+ X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the
+form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 }
 \description{
 This is a wrapper for a simpler lmer call.

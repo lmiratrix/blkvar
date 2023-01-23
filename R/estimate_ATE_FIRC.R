@@ -1,38 +1,56 @@
 ## ---------- Both pooled and unpooled FIRC method ------------
 
-
-#' Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
-#' treatment variation.
+#' Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC)
+#' Model
 #'
-#' Acknowledgement: Unpooled version taken and adapted from Catherine's
-#' weiss.tau() method.
+#' This method fits the FIRC model to estimate (1) ATE across sites
+#' and (2) cross site treatment variation.
 #'
-#' @param anova Use the anova() method to do the test for significance between
-#'   the models.  FALSE means do the modified chi-squared test.
-#' @param pool  TRUE means tx and co have same reBual variance. FALSE gives
-#'   seperate estimates for each (recommended, default).
+#' Warning: If you want to test for cross-site variation you need REML
+#' = FALSE to allow for likelihood ratio testing.  If you want to
+#' estimate this variation, REML = TRUE is recommended as the ML
+#' estimate tends to be wildly biased towards 0 when modest amounts of
+#' cross-site variation are present.
+#'
+#' Acknowledgement: Unpooled version taken and adapted from
+#' Catherine's weiss.tau() method.
+#'
+#'
+#' @param anova Use the anova() method to do the test for significance
+#'   between the models.  FALSE means do the modified chi-squared
+#'   test.
+#' @param pool  TRUE means tx and co have same reBual variance. FALSE
+#'   gives seperate estimates for each (recommended, default).
 #' @param B Name of the block indicator.
-#' @param siteID Character name of the ID variable of site (blocks are conBered
-#'   nested in site).  If omitted, then blocks are considered sites (the
-#'   default).
+#' @param siteID Character name of the ID variable of site (blocks are
+#'   conBered nested in site).  If omitted, then blocks are considered
+#'   sites (the default).
 #' @param Yobs Name of outcome variable (assumed to exist in data)
 #' @param Z vector of assignment indicators (1==treated)
-#' @param REML Logical, Restricted maximum likelihood or maximum likelihood
-#'   estimation.
-#' @param siteID If not null, name of siteID that has randomization blocks
-#' @param control_formula The control_formula argument must be of the form ~ X1
-#'   + X2 + ... + XN. (nothing on left hand side of ~)
-#' @param include_testing Logical Include likelihood ratio test for cross-site
-#'   treatment variation.
+#' @param REML Logical, Restricted maximum likelihood or maximum
+#'   likelihood estimation.  Default of TRUE if include_testing =
+#'   FALSE and FALSE otherwise. Note that FIRC can fail badly in
+#'   estimating cross-site variation when REML=FALSE.
+#' @param siteID If not null, name of siteID that has randomization
+#'   blocks
+#' @param control_formula The control_formula argument must be of the
+#'   form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)
+#' @param include_testing Logical Include likelihood ratio test for
+#'   cross-site treatment variation.
 #' @param data Dataframe with all needed variables.
-#' @param keep_EB_estimates TRUE means returned object has EB estimates.  FALSE means do not keep them.
+#' @param keep_EB_estimates TRUE means returned object has EB
+#'   estimates.  FALSE means do not keep them.
 #' @export
 estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
-                              control_formula = NULL, data = NULL, REML = FALSE,
-                              include_testing = TRUE, anova = FALSE, pool = FALSE,
+                              control_formula = NULL, data = NULL,
+                              include_testing = FALSE,  REML = !include_testing,
+                              anova = FALSE, pool = FALSE,
                               keep_EB_estimates = TRUE) {
 
-  stopifnot(!(include_testing && REML))
+  if ( include_testing && REML ) {
+      stop( "Cannot do likelihood ratio test when REML=TRUE" )
+  }
+
   if (!is.null(control_formula)) {
     stopifnot(!is.null(data))
     stopifnot(!missing( "Yobs"))

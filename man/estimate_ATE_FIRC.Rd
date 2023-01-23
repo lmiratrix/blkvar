@@ -2,8 +2,8 @@
 % Please edit documentation in R/estimate_ATE_FIRC.R
 \name{estimate_ATE_FIRC}
 \alias{estimate_ATE_FIRC}
-\title{Fit the FIRC model to estimate (1) ATE across sites and (2) cross site
-treatment variation.}
+\title{Estimate the ATE using Random-Intercept, Random-Coefficient (RIRC)
+Model}
 \usage{
 estimate_ATE_FIRC(
   Yobs,
@@ -12,8 +12,8 @@ estimate_ATE_FIRC(
   siteID = NULL,
   control_formula = NULL,
   data = NULL,
-  REML = FALSE,
-  include_testing = TRUE,
+  include_testing = FALSE,
+  REML = !include_testing,
   anova = FALSE,
   pool = FALSE,
   keep_EB_estimates = TRUE
@@ -26,28 +26,43 @@ estimate_ATE_FIRC(
 
 \item{B}{Name of the block indicator.}
 
-\item{siteID}{If not null, name of siteID that has randomization blocks}
+\item{siteID}{If not null, name of siteID that has randomization
+blocks}
 
-\item{control_formula}{The control_formula argument must be of the form ~ X1
-+ X2 + ... + XN. (nothing on left hand side of ~)}
+\item{control_formula}{The control_formula argument must be of the
+form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
 \item{data}{Dataframe with all needed variables.}
 
-\item{REML}{Logical, Restricted maximum likelihood or maximum likelihood
-estimation.}
+\item{include_testing}{Logical Include likelihood ratio test for
+cross-site treatment variation.}
 
-\item{include_testing}{Logical Include likelihood ratio test for cross-site
-treatment variation.}
+\item{REML}{Logical, Restricted maximum likelihood or maximum
+likelihood estimation.  Default of TRUE if include_testing =
+FALSE and FALSE otherwise. Note that FIRC can fail badly in
+estimating cross-site variation when REML=FALSE.}
 
-\item{anova}{Use the anova() method to do the test for significance between
-the models.  FALSE means do the modified chi-squared test.}
+\item{anova}{Use the anova() method to do the test for significance
+between the models.  FALSE means do the modified chi-squared
+test.}
 
-\item{pool}{TRUE means tx and co have same reBual variance. FALSE gives
-seperate estimates for each (recommended, default).}
+\item{pool}{TRUE means tx and co have same reBual variance. FALSE
+gives seperate estimates for each (recommended, default).}
 
-\item{keep_EB_estimates}{TRUE means returned object has EB estimates.  FALSE means do not keep them.}
+\item{keep_EB_estimates}{TRUE means returned object has EB
+estimates.  FALSE means do not keep them.}
 }
 \description{
-Acknowledgement: Unpooled version taken and adapted from Catherine's
-weiss.tau() method.
+This method fits the FIRC model to estimate (1) ATE across sites
+and (2) cross site treatment variation.
+}
+\details{
+Warning: If you want to test for cross-site variation you need REML
+= FALSE to allow for likelihood ratio testing.  If you want to
+estimate this variation, REML = TRUE is recommended as the ML
+estimate tends to be wildly biased towards 0 when modest amounts of
+cross-site variation are present.
+
+Acknowledgement: Unpooled version taken and adapted from
+Catherine's weiss.tau() method.
 }
