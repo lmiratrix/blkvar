@@ -201,6 +201,8 @@ generate_individual_data = function( sdat, p = 0.5,
 #'   made.  Recommended to use FALSE.
 #' @param size.ratio The degree to which the site sizes should vary,
 #'   if they should vary.
+#' @param site.sizes (Optional) vector of manually specified site sizes.
+#'   If not specified, use n.bar and variable.n to generate site sizes.
 #'
 #' @return Dataframe of individual level data (unless
 #'   return.sites=TRUE)!  Dataframe has treatment column, outcome
@@ -212,6 +214,7 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
                                            tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
                                            beta.X = NULL, sigma2.mean.X = 0,
                                            variable.n = TRUE, variable.p = FALSE,
+                                           site.sizes = NULL,
                                            cluster.rand = FALSE, return.sites = FALSE,
                                            finite.model = FALSE,
                                            size.impact.correlate = 0, proptx.impact.correlate = 0,
@@ -228,7 +231,8 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
     }
 
     # generate site sizes (all the same or different sizes)
-    if (variable.n) {
+    if (is.null(site.sizes)) {
+      if (variable.n) {
         stopifnot(n.bar > 4)
         # nj = rpois( J, n.bar)
         # nj = round( n.bar * runif( J, 0.25, 1.75 ) )
@@ -237,8 +241,14 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
         # if ( any( nj < 4 ) ) {
         #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
         #}
-    } else {
+      } else {
         nj <- rep(n.bar, J)
+      }
+    } else {
+      stopifnot(length(site.sizes) == J)
+      stopifnot(min(site.sizes) >= 4)
+
+      nj <- site.sizes
     }
 
     include_W = !is.null( gamma.10 ) && !is.null(gamma.11)
