@@ -245,8 +245,9 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
         nj <- rep(n.bar, J)
       }
     } else {
-      stopifnot(length(site.sizes) == J)
-      stopifnot(min(site.sizes) >= 4)
+      stopifnot(length(site.sizes) == J)                # specify size for each site
+      stopifnot(min(site.sizes) >= 4)                   # sites must all be large enough
+      stopifnot(all(round(site.sizes) == site.sizes))   # integer-valued site sizes
 
       nj <- site.sizes
     }
