@@ -115,9 +115,9 @@ or positively correlated with site size?}
 
 \item{gamma.11}{Coefficient for W to treatment impact}
 
-\item{tau.00}{Variance of site conrol means}
+\item{tau.00}{Variance of site control means}
 
-\item{tau.01}{Correlation of treatment impact and mean site outcome
+\item{tau.01}{Covariance of treatment impact and mean site outcome
 under control}
 
 \item{tau.11}{Treatment impact variance}

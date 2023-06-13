@@ -167,8 +167,8 @@ generate_individual_data = function( sdat, p = 0.5,
 #' @param gamma.10 The ATE, Default: 0.2
 #' @param gamma.01 Coefficient for W to site control mean
 #' @param gamma.11 Coefficient for W to treatment impact
-#' @param tau.00 Variance of site conrol means
-#' @param tau.01 Correlation of treatment impact and mean site outcome
+#' @param tau.00 Variance of site control means
+#' @param tau.01 Covariance of treatment impact and mean site outcome
 #'   under control
 #' @param tau.11 Treatment impact variance
 #' @param sigma2.e Residual standard error
