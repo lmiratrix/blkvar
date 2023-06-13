@@ -57,6 +57,6 @@ all 1, this can make a difference.
 }
 \section{Functions}{
 \itemize{
-\item \code{estimate_ATE_design_based_adjusted()}: This directly implements the adjusted.  The main method will dispatch to this one if control_formula is not NULL.
-
+\item \code{estimate_ATE_design_based_adjusted}: This directly implements the adjusted.  The main method will dispatch to this one if control_formula is not NULL.
 }}
+
