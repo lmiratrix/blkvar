@@ -30,19 +30,19 @@ These minimal methods test for cross-site variation using
 }
 \section{Functions}{
 \itemize{
-\item \code{analysis_idio()}: The idiosyncratic version tests for cross site variation using a liklihood
+\item \code{analysis_idio}: The idiosyncratic version tests for cross site variation using a liklihood
 ratio test vs. a model with no random slope (but random intercept). This is
 the RIRC version of such a test.
 
-\item \code{analysis_combination()}: This is a combination test: it uses a liklihood
+\item \code{analysis_combination}: This is a combination test: it uses a liklihood
 ratio test on model with both systematic and idiosyncratic variation
 
-\item \code{analysis_systematic()}: Test for cross site variation by testing for a
+\item \code{analysis_systematic}: Test for cross site variation by testing for a
 covariate predictive of variation. This version does not allow for random
 tx variation (random slope).
 
-\item \code{analysis_systematic_RTx()}: Systematic test with the random idiosyncratic
+\item \code{analysis_systematic_RTx}: Systematic test with the random idiosyncratic
 variation.  This tests for systematic variation, ignoring explicitly
 modeled random treatment variation.
-
 }}
+

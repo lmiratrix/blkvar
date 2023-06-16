@@ -38,6 +38,7 @@ generate_multilevel_data_model(
   sigma2.mean.X = 0,
   variable.n = TRUE,
   variable.p = FALSE,
+  site.sizes = NULL,
   cluster.rand = FALSE,
   return.sites = FALSE,
   finite.model = FALSE,
@@ -114,9 +115,9 @@ or positively correlated with site size?}
 
 \item{gamma.11}{Coefficient for W to treatment impact}
 
-\item{tau.00}{Variance of site conrol means}
+\item{tau.00}{Variance of site control means}
 
-\item{tau.01}{Correlation of treatment impact and mean site outcome
+\item{tau.01}{Covariance of treatment impact and mean site outcome
 under control}
 
 \item{tau.11}{Treatment impact variance}
@@ -124,6 +125,9 @@ under control}
 \item{sigma2.W}{The variation of the site-level covariate.}
 
 \item{variable.n}{Allow n to vary around n.bar, Default: TRUE}
+
+\item{site.sizes}{(Optional) vector of manually specified site sizes.
+If not specified, use n.bar and variable.n to generate site sizes.}
 
 \item{return.sites}{Return sites, not individual students, Default:
 FALSE}
@@ -179,13 +183,13 @@ Given a 2-level model, generate data to specifications
 }
 \section{Functions}{
 \itemize{
-\item \code{generate_individual_data()}: Part of data generation
+\item \code{generate_individual_data}: Part of data generation
 that generates individual level covariates.
 
-\item \code{generate_multilevel_data()}: Wrapper for
+\item \code{generate_multilevel_data}: Wrapper for
 generate_multilevel_data_model that rescales parameters to make
 standardization easier.
 
-\item \code{generate_multilevel_data_no_cov()}: Simplified version of generate_multilevel_data() with no W covariate.
-
+\item \code{generate_multilevel_data_no_cov}: Simplified version of generate_multilevel_data() with no W covariate.
 }}
+
