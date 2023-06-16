@@ -117,12 +117,14 @@ generate_individual_data = function( sdat, p = 0.5,
     } else if (proptx.impact.correlate != 0) {
         warning( "Can't have proportion treated correlated with impact if the proportion treated does not vary." )
     }
+
     if (cluster.rand) {
         dd$Z <- Zj[ dd$sid ]
     } else {
         dd <- dd %>% group_by( sid ) %>%
             mutate(Z = as.numeric(sample(n()) <= n() * p))
     }
+
     Zij <- dd$Z
     dd$p <- NULL
 

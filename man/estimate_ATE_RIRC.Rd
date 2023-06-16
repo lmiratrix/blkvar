@@ -14,6 +14,7 @@ estimate_ATE_RIRC(
   data = NULL,
   include_testing = FALSE,
   REML = !include_testing,
+  keep_EB_estimates = TRUE,
   pool = FALSE,
   control_formula = NULL
 )
@@ -37,6 +38,9 @@ form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}
 
 \item{include_testing}{Logical Include likelihood ratio test for
 cross-site treatment variation.}
+
+\item{keep_EB_estimates}{TRUE means returned object has EB
+estimates.  FALSE means do not keep them.}
 
 \item{pool}{TRUE means tx and co have same reBual variance. FALSE
 gives seperate estimates for each (recommended, default).}

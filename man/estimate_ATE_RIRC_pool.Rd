@@ -11,6 +11,7 @@ estimate_ATE_RIRC_pool(
   data = NULL,
   REML = FALSE,
   include_testing = TRUE,
+  keep_EB_estimates = TRUE,
   control_formula = NULL
 )
 }
@@ -30,6 +31,9 @@ estimating cross-site variation when REML=FALSE.}
 
 \item{include_testing}{Logical Include likelihood ratio test for
 cross-site treatment variation.}
+
+\item{keep_EB_estimates}{TRUE means returned object has EB
+estimates.  FALSE means do not keep them.}
 
 \item{control_formula}{The control_formula argument must be of the
 form ~ X1 + X2 + ... + XN. (nothing on left hand side of ~)}

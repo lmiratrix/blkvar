@@ -6,6 +6,7 @@
 # #' @export
 estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL,
                                    REML = FALSE, include_testing = TRUE,
+                                   keep_EB_estimates = TRUE,
                                    control_formula = NULL) {
 
   if (!is.null(control.formula)) {
@@ -66,5 +67,14 @@ estimate_ATE_RIRC_pool <- function(Yobs, Z, B, data = NULL,
     res$p_variation <- pv
     res$deviance <- td
   }
+
+
+  if ( keep_EB_estimates ) {
+      site_ates = tibble( sid = rownames( coef(M0.full) ),
+                          beta_hat = coef( M0.full )$Z )
+
+      res$eb_estimates = site_ates
+  }
+
   res
 }

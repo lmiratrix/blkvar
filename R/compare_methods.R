@@ -36,8 +36,10 @@ compare_MLM_methods <- function( Yobs, Z, B, siteID = NULL, data = NULL, control
     stopifnot(is.numeric(data$Yobs))
     RICC <- estimate_ATE_RICC(Yobs, Z, B, data = data, REML = TRUE, control_formula = control_formula )
     FIRC <- estimate_ATE_FIRC(Yobs, Z, B, data = data, siteID = siteID, REML = TRUE,
-                              include_testing = FALSE, control_formula = control_formula )
+                              include_testing = FALSE, control_formula = control_formula,
+                              keep_EB_estimates = FALSE )
     RIRC <- estimate_ATE_RIRC( Yobs, Z, B, data=data, REML = TRUE, include_testing = FALSE,
+                               keep_EB_estimates = FALSE,
                                control_formula = control_formula )
     mlms <- data.frame(method=c("RICC", "FIRC", "RIRC"),
                        ATE_hat = c( RICC$ATE_hat, FIRC$ATE_hat, RIRC$ATE_hat ),

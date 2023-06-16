@@ -65,18 +65,24 @@ compare_methods_variation <- function(Yobs, Z, B, siteID = NULL, data = NULL,
   }
 
   # FIRC model (separate variances)
-  FIRC <- estimate_ATE_FIRC(Yobs, Z, B, siteID = siteID, data = data, include_testing = include_testing)
+  FIRC <- estimate_ATE_FIRC(Yobs, Z, B, siteID = siteID, data = data,
+                            include_testing = include_testing,
+                            keep_EB_estimates = FALSE)
 
   # FIRC model (with pooled residual variances)
   FIRC_pool <- estimate_ATE_FIRC(Yobs, Z, B, siteID = siteID, data = data,
-                                 include_testing = include_testing, pool = TRUE)
+                                 include_testing = include_testing,
+                                 keep_EB_estimates = FALSE,
+                                 pool = TRUE)
 
   # the random-intercept, random-coefficient (RIRC) model
   RIRC <- estimate_ATE_RIRC(Yobs, Z, B, data,
+                            keep_EB_estimates = FALSE,
                             include_testing = include_testing)
 
   # the random-intercept, random-coefficient (RIRC) model
   RIRC_pool <- estimate_ATE_RIRC(Yobs, Z, B, data,
+                                 keep_EB_estimates = FALSE,
                                  include_testing = include_testing,
                                  pool = TRUE)
 

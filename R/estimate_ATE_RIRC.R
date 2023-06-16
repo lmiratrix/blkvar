@@ -7,6 +7,7 @@
 #' @export
 estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL,
                               include_testing = FALSE,  REML = !include_testing,
+                              keep_EB_estimates = TRUE,
                               pool = FALSE, control_formula = NULL) {
   if (!is.null( control_formula)) {
     stopifnot(!is.null(data))
@@ -87,6 +88,13 @@ estimate_ATE_RIRC <- function(Yobs, Z, B, data = NULL,
   class( res ) = "multisiteresult"
   attr( res, "args" ) = list(  model = "RIRC",
                                method = method )
+
+  if ( keep_EB_estimates ) {
+      site_ates = tibble( sid = rownames( coef(re.mod) ),
+                          beta_hat = coef( re.mod )$Z )
+
+      res$eb_estimates = site_ates
+  }
 
   return( res )
 
