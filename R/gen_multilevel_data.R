@@ -62,12 +62,14 @@ rerandomize_data <- function(dat) {
 #' Generate individual data given a dataframe of site level
 #' characteristics.
 #'
-#' @param sdat Dataframe of site level characteristics
+#' @param sdat Dataframe of site level characteristics to build full
+#'   data from.  Needs to have site size as a column, called 'n'.
 #'
-#' @describeIn generate_multilevel_data_model Part of data generation
-#'   that generates individual level covariates.
+#' @describeIn generate_multilevel_data_model
 #'
-#' @return Dataframe of indiivdual level data
+#'   Part of data generation that generates individual level
+#'   covariates.  Takes a school-level dataset and returns individual level dataset.
+#'
 #' @export
 #'
 generate_individual_data = function( sdat, p = 0.5,
@@ -220,7 +222,8 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
                                            cluster.rand = FALSE, return.sites = FALSE,
                                            finite.model = FALSE,
                                            size.impact.correlate = 0, proptx.impact.correlate = 0,
-                                           correlate.strength = 0.75, size.ratio = 1 / 3, verbose = FALSE) {
+                                           correlate.strength = 0.75, size.ratio = 1 / 3,
+                                           verbose = FALSE ) {
 
     stopifnot(size.impact.correlate %in% c(-1, 0, 1))
     stopifnot(proptx.impact.correlate %in% c(-1, 0, 1))
@@ -364,7 +367,14 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5,
                                      tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7,
                                      gamma.00 = 0, gamma.10 = 0.2,
+                                     variable.n = TRUE, variable.p = FALSE,
+                                     site.sizes = NULL,
+                                     cluster.rand = FALSE, return.sites = FALSE,
+                                     finite.model = FALSE,
+                                     size.impact.correlate = 0, proptx.impact.correlate = 0,
+                                     correlate.strength = 0.75, size.ratio = 1 / 3,
                                      verbose = FALSE, zero.corr = FALSE, ... ) {
+
     sigma2.W <- 1
     gamma.01 <- sqrt(rho2.0W * ICC / sigma2.W)
     gamma.11 <- sqrt(rho2.1W * tau.11.star)
@@ -376,16 +386,31 @@ generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5,
     }
     tau.11 <- (1 - rho2.1W) * tau.11.star
     sigma2.e <- 1 - ICC
+
     if (verbose) {
-        scat( "tau.11* <- %.2f\tICC <- %.2f\trho2.Ws <- %.2f, %.2f\n", tau.11.star, ICC, rho2.0W, rho2.1W)
+        scat( "tau.11* <- %.2f\tICC <- %.2f\trho2.Ws <- %.2f, %.2f\n",
+              tau.11.star, ICC, rho2.0W, rho2.1W)
         scat( "tau.00* <- %.2f\n", gamma.01 ^ 2 * sigma2.W + tau.00)
         scat( "tau.11* <- %.2f\n", gamma.11 ^ 2 * sigma2.W + tau.11)
         scat( "sigma2.e* <- %.2f\n", sigma2.e)
     }
+
     generate_multilevel_data_model(n.bar = n.bar, J = J, p = p,
-                                   gamma.00 = gamma.00, gamma.01 = gamma.01, gamma.10 = gamma.10, gamma.11 = gamma.11,
-                                   tau.00 = tau.00, tau.01 = tau.01, tau.11 = tau.11, sigma2.e = sigma2.e,
-                                   verbose = verbose, ...)
+                                   gamma.00 = gamma.00, gamma.01 = gamma.01,
+                                   gamma.10 = gamma.10, gamma.11 = gamma.11,
+                                   tau.00 = tau.00, tau.01 = tau.01,
+                                   tau.11 = tau.11, sigma2.e = sigma2.e,
+                                   variable.n = variable.n,
+                                   variable.p = variable.p,
+                                   site.sizes = site.sizes,
+                                   cluster.rand = cluster.rand,
+                                   return.sites = return.sites,
+                                   finite.model = finite.model,
+                                   size.impact.correlate = size.impact.correlate,
+                                   proptx.impact.correlate = proptx.impact.correlate,
+                                   correlate.strength = correlate.strength,
+                                   size.ratio = size.ratio,
+                                   verbose = verbose, ... )
 }
 
 

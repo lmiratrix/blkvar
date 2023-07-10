@@ -6,7 +6,7 @@
 \alias{analysis_combination}
 \alias{analysis_systematic}
 \alias{analysis_systematic_RTx}
-\title{Multilevel model based test for cross site variation}
+\title{Multilevel model based tests for cross site variation}
 \usage{
 analysis_idio(df)
 
@@ -24,9 +24,9 @@ analysis_systematic_RTx(df)
 P-value from the test.
 }
 \description{
-These minimal methods test for cross-site variation
-  using multilevel models. They assume a passed dataframe with
-  specifically named columns.
+These minimal methods test for cross-site variation in
+  a multi-site randomized trial using multilevel models. They
+  assume a passed dataframe with specifically named columns.
 
   In particular, Yobs is the outcome column, Z is the treatment
   column, W is a site-level covariate column, and sid is the site
@@ -34,19 +34,22 @@ These minimal methods test for cross-site variation
 }
 \section{Functions}{
 \itemize{
-\item \code{analysis_idio()}: The idiosyncratic version tests for cross site variation using a liklihood
+\item \code{analysis_idio()}: The idiosyncratic version tests for cross site variation using a likelihood
 ratio test vs. a model with no random slope (but random intercept). This is
 the RIRC version of such a test.
 
-\item \code{analysis_combination()}: This is a combination test: it uses a liklihood
-ratio test on model with both systematic and idiosyncratic variation.
+\item \code{analysis_combination()}: This is a combination test: it uses a liklihood ratio test on a
+model with both systematic and idiosyncratic variation (i.e., it
+has an interaction of the covariate and outcome, and also
+includes a random effect for treatment), comparing to a model
+which has neither.
 
-\item \code{analysis_systematic()}: Test for cross site variation by testing for a
-covariate predictive of variation. This version does not allow for random
+\item \code{analysis_systematic()}: Test for cross site variation by testing for a covariate
+predictive of variation. This version does not allow for random
 tx variation (random slope).
 
-\item \code{analysis_systematic_RTx()}: Systematic test with the random idiosyncratic
-variation.  This tests for systematic variation, ignoring explicitly
-modeled random treatment variation.
+\item \code{analysis_systematic_RTx()}: Systematic test with the random idiosyncratic variation.  This
+tests for systematic variation, ignoring any explicitly modeled
+random (idiosyncratic) treatment variation.
 
 }}
