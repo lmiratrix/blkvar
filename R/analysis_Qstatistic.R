@@ -331,6 +331,7 @@ analysis_Qstatistic <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     n <- nrow(data)
     s <- length(unique(data$B))
     s.site <- length(unique(data$siteID))
+
     # calculate Q-statistic
     # run ols model with no intercept and no "treatment intercept"
     ols <- nlme::gls(Yobs ~ 0 + Z + factor(B) + factor(siteID):Z - Z,

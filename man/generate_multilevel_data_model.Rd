@@ -183,13 +183,13 @@ Given a 2-level model, generate data to specifications
 }
 \section{Functions}{
 \itemize{
-\item \code{generate_individual_data}: Part of data generation
+\item \code{generate_individual_data()}: Part of data generation
 that generates individual level covariates.
 
-\item \code{generate_multilevel_data}: Wrapper for
+\item \code{generate_multilevel_data()}: Wrapper for
 generate_multilevel_data_model that rescales parameters to make
 standardization easier.
 
-\item \code{generate_multilevel_data_no_cov}: Simplified version of generate_multilevel_data() with no W covariate.
-}}
+\item \code{generate_multilevel_data_no_cov()}: Simplified version of generate_multilevel_data() with no W covariate.
 
+}}

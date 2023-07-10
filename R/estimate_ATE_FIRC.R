@@ -69,7 +69,10 @@ estimate_ATE_FIRC <- function(Yobs, Z, B, siteID = NULL,
       Yobs.n <- as.character(substitute(Yobs))
       Z.n <- as.character(substitute(Z))
       B.n <- as.character(substitute(B))
-      data <- dplyr::rename(data, Yobs = Yobs.n, Z = Z.n, B = B.n)
+      data <- dplyr::rename(data,
+                            Yobs = dplyr::all_of(Yobs.n),
+                            Z = dplyr::all_of(Z.n),
+                            B = dplyr::all_of(B.n) )
       if (!is.null(siteID)) {
         data$siteID <- data[[siteID]]
         stopifnot(!is.null(data$siteID))
