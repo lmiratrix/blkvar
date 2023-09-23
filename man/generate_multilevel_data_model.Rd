@@ -89,7 +89,8 @@ generate_multilevel_data_no_cov(
 )
 }
 \arguments{
-\item{sdat}{Dataframe of site level characteristics}
+\item{sdat}{Dataframe of site level characteristics to build full
+data from.  Needs to have site size as a column, called 'n'.}
 
 \item{p}{prop treated, Default: 0.5}
 
@@ -179,8 +180,6 @@ generate_multilevel_data_model()}
 \item{control.sd.Y1}{Make correlation of random intercept and random slope}
 }
 \value{
-Dataframe of indiivdual level data
-
 Dataframe of individual level data (unless
   return.sites=TRUE)!  Dataframe has treatment column, outcome
   column, covariates, and block IDs.
@@ -193,8 +192,8 @@ Given a 2-level model, generate data to specifications
 }
 \section{Functions}{
 \itemize{
-\item \code{generate_individual_data()}: Part of data generation
-that generates individual level covariates.
+\item \code{generate_individual_data()}: Part of data generation that generates individual level
+covariates.  Takes a school-level dataset and returns individual level dataset.
 
 \item \code{generate_multilevel_data()}: Wrapper for
 generate_multilevel_data_model that rescales parameters to make

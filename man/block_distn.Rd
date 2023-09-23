@@ -2,23 +2,30 @@
 % Please edit documentation in R/gen_multilevel_data.R
 \name{block_distn}
 \alias{block_distn}
-\title{Generate site sizes for simulation of multisite data}
+\title{Generate site sizes for simulation of multisite or blocked data}
 \usage{
-block_distn(J, n.bar, size.ratio)
+block_distn(J, n.bar, size.ratio, min.size = 1)
 }
 \arguments{
 \item{J}{number of sites to generate.}
 
 \item{n.bar}{Average site size.}
 
-\item{size.ratio}{Index of}
+\item{size.ratio}{Indexes how much variation in block size.
+size.ratio = 0 means no variation.  Higher numbers mean more
+variation.}
+
+\item{min.size}{Minimum size of each block.}
 }
 \value{
 Numeric vector of site sizes.
 }
 \description{
-Generate piecewise uniform distribution with a mean of n.bar and a
+Generate piecewise uniform distribution with a mean of (approximately, due to integer values) n.bar and a
 'size.ratio' that controls the variance of site sizes.
+}
+\details{
+The range of site sizes will be from 1 to n.bar * (1+3*size.ratio).
 }
 \examples{
 block_distn( 4, 10, 1 )

@@ -16,25 +16,36 @@
 
 
 
-#' Generate site sizes for simulation of multisite data
+#' Generate site sizes for simulation of multisite or blocked data
 #'
-#' Generate piecewise uniform distribution with a mean of n.bar and a
+#' Generate piecewise uniform distribution with a mean of (approximately, due to integer values) n.bar and a
 #' 'size.ratio' that controls the variance of site sizes.
+#'
+#' The range of site sizes will be from 1 to n.bar * (1+3*size.ratio).
 #'
 #' @param J number of sites to generate.
 #' @param n.bar Average site size.
-#' @param size.ratio Index of
+#' @param size.ratio Indexes how much variation in block size.
+#'   size.ratio = 0 means no variation.  Higher numbers mean more
+#'   variation.
+#' @param min.size Minimum size of each block.
 #' @return Numeric vector of site sizes.
 #' @examples
 #' block_distn( 4, 10, 1 )
 #' @export
-block_distn <- function(J, n.bar, size.ratio) {
+block_distn <- function(J, n.bar, size.ratio, min.size = 1) {
+    stopifnot( n.bar >= min.size )
+    stopifnot( (n.bar - min.size) > 1 || size.ratio == 0 )
+
+    n.bar = n.bar - min.size
+
     N <- 1 + 3 * size.ratio
     p <- (N - 1) / N
     small <- rbinom(J, 1, p)
     Y <- runif(J)
-    Y <- n.bar * ifelse(small, Y, Y * (N - 1) + 1)
-    round( Y )
+    Y <- n.bar * ifelse(small, Y, 1 + Y * (N - 1))
+
+    round( Y ) + min.size
 }
 
 
@@ -241,7 +252,7 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
         stopifnot(n.bar > 4)
         # nj = rpois( J, n.bar)
         # nj = round( n.bar * runif( J, 0.25, 1.75 ) )
-        nj <- 4 + block_distn(J, n.bar - 4, size.ratio)
+        nj <- block_distn(J, n.bar, size.ratio, min.size = 4)
         nj[ nj < 4 ] <- 4
         # if ( any( nj < 4 ) ) {
         #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
