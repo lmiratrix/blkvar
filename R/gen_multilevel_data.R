@@ -280,6 +280,12 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 
 
     # Generate average control outcome and average ATE for all sites
+
+    # No cross covariance term if variance is zero for intercept or impact.
+    if ( tau.00 == 0 || tau.11 == 0 ) {
+        tau.01 = 0
+    }
+
     Sigma <- matrix(c(tau.00, tau.01, tau.01, tau.11), nrow = 2)
     if (finite.model) {
         # Make a canonical set of site charactaristics and then never change

@@ -150,11 +150,12 @@ interacted_linear_estimators <- function(Yobs, Z, B, siteID = NULL, data = NULL,
     n <- nrow(data)
 
     formula <- make_FE_int_formula("Yobs", "Z", "B", control_formula, data)
-        M0.int <- lm(formula, data = data)
-        ids <- grep( "Z:", names(coef(M0.int)))
-        stopifnot(length(ids) == J)
-        VC <- vcov(M0.int)
-        ATE_hats <- coef(M0.int)[ids]
+
+    M0.int <- lm(formula, data = data)
+    ids <- grep( "Z:", names(coef(M0.int)))
+    stopifnot(length(ids) == J)
+    VC <- vcov(M0.int)
+    ATE_hats <- coef(M0.int)[ids]
 
     # site weighting
     if (!is.null( siteID)) {

@@ -146,7 +146,9 @@ estimate_ATE_design_based <- function(formula,
 
 
 
-#'@describeIn estimate_ATE_design_based  This directly implements the adjusted.  The main method will dispatch to this one if control_formula is not NULL.
+#'@describeIn estimate_ATE_design_based  This directly implements the
+#'  adjusted.  The main method will dispatch to this one if
+#'  control_formula is not NULL.
 #'@importFrom rlang .data
 #'@export
 estimate_ATE_design_based_adjusted <- function(formula,
@@ -204,7 +206,7 @@ estimate_ATE_design_based_adjusted <- function(formula,
                          Ybar.C = mean(Yobs[Z==0]),
                          Ybar.T = mean(Yobs[Z==1]),
                          MSE.T = sum(resid[Z==1] ^ 2) / ((N - v) * (nT / N) - 1),
-                         MSE.C = sum(resid[Z == 0] ^ 2) / ((N - v) * (nC / N) - 1))
+                         MSE.C = sum(resid[Z==0] ^ 2) / ((N - v) * (nC / N) - 1))
     #                      X1.bar = mean( X ),
     #                      X2.bar = mean( X2 ) )
     # make sure we have one row of stats per randomization block.

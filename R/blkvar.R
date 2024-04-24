@@ -25,11 +25,11 @@
 #'
 #' Pashley, N. E., & Miratrix, L. W. (In press). Block what you can, except when you shouldn't. Journal of Educational and Behavioral Statistics
 #'
-#' @docType package
 #' @name blkvar
 #' @importFrom dplyr %>%
 #' @importFrom purrr %||%
-NULL
+"_PACKAGE"
+
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines (and .MULTISITE_CANONICAL is a true global variable).
 globalVariables(names = c("n", "n1", "var0", "n0", "Yobs", "Z", "B", "mu1", ".weight", "MSE.C", "MSE.T",

@@ -2,6 +2,7 @@
 % Please edit documentation in R/blkvar.R
 \docType{package}
 \name{blkvar}
+\alias{blkvar-package}
 \alias{blkvar}
 \title{\code{blkvar} package}
 \description{
@@ -29,4 +30,13 @@ Miratrix, L. W., Weiss, M. J., & Henderson, B. (2021). An applied researcher’s
 Pashley, N. E., & Miratrix, L. W. (2021). Insights on variance estimation for blocked and matched pairs designs. Journal of Educational and Behavioral Statistics, 46(3), 271-296.
 
 Pashley, N. E., & Miratrix, L. W. (In press). Block what you can, except when you shouldn't. Journal of Educational and Behavioral Statistics
+}
+\author{
+\strong{Maintainer}: Luke Miratrix \email{lmiratrix@stat.harvard.edu}
+
+Authors:
+\itemize{
+  \item Nicole Pashley \email{npashley@g.harvard.edu}
+}
+
 }

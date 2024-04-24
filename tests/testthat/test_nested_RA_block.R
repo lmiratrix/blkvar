@@ -142,8 +142,8 @@ test_that("DB estimators work with nested randomization blocks", {
     est2 = estimate_ATE_design_based_from_stats( aa, weight="site", method="superpop"  )
     est1
     est2
-    expect_true( est1$ATE_hat == true.site.ATE )
-    expect_true( est2$ATE_hat == site.ATE_hat )
+    expect_equal( est1$ATE_hat, true.site.ATE )
+    expect_equal( est2$ATE_hat, site.ATE_hat )
     expect_true( est1$SE != est2$SE )
 
     # If we pass siteID but don't actually have nesting

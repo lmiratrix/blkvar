@@ -301,6 +301,19 @@ test_that( "Cluster randomization options work", {
 
 } )
 
+test_that( "ICC = 0 works", {
+
+    set.seed( 40404 )
+    df = generate_multilevel_data( n.bar=10, J=20,
+                                   tau.11.star = 0.3,
+                                   ICC = 0,
+                                   verbose=FALSE,
+                                   cluster.rand=TRUE)
+    head(df)
+    M = lmer( Y0 ~ (1|sid), data=df )
+    expect_true( VarCorr(M)$sid[1,1] <= 0.01 )
+} )
+
 
 
 
