@@ -11,8 +11,8 @@ test_that( "Multisite DGP works", {
 
     # exploring sites
     sdf = generate_multilevel_data( n.bar=10, J=10,
-                   rho2.0W = 0.3, rho2.1W = 0.1,
-                   tau.11.star = 0.3, return.sites=TRUE )
+                                    rho2.0W = 0.3, rho2.1W = 0.1,
+                                    tau.11.star = 0.3, return.sites=TRUE )
 
     expect_equal( nrow(sdf), 10 )
 
@@ -23,8 +23,8 @@ test_that( "Multisite DGP works", {
 
 
     dat = generate_multilevel_data( n.bar=10, J=10,
-                   rho2.0W = 0.3, rho2.1W = 0.1,
-                   tau.11.star = 0.3, return.sites=FALSE )
+                                    rho2.0W = 0.3, rho2.1W = 0.1,
+                                    tau.11.star = 0.3, return.sites=FALSE )
 
     head( dat )
     expect_equal( length( unique( dat$sid ) ), 10 )
@@ -34,11 +34,11 @@ test_that( "Multisite DGP works", {
 test_that( "Variable p and n works", {
     set.seed( 1019 )
     df = generate_multilevel_data_no_cov( n.bar=200, J=20,
-                         tau.11.star = 0.1^2,
-                         ICC = 0.20,
-                         variable.n = TRUE,
-                         variable.p = TRUE,
-                         finite.model = FALSE )
+                                          tau.11.star = 0.1^2,
+                                          ICC = 0.20,
+                                          variable.n = TRUE,
+                                          variable.p = TRUE,
+                                          finite.model = FALSE )
 
     sites = df %>% group_by( sid ) %>%
         summarise( n = n(),
@@ -62,12 +62,12 @@ test_that( "Variable p and n works", {
 test_that( "Site impact correlation works", {
     set.seed( 1019 )
     df = generate_multilevel_data_no_cov( n.bar=200, J=200,
-                         tau.11.star = 0.3^2,
-                         ICC = 0.20,
-                         variable.n = TRUE,
-                         variable.p = TRUE,
-                         size.impact.correlate = TRUE,
-                         finite.model = FALSE )
+                                          tau.11.star = 0.3^2,
+                                          ICC = 0.20,
+                                          variable.n = TRUE,
+                                          variable.p = TRUE,
+                                          size.impact.correlate = TRUE,
+                                          finite.model = FALSE )
     head( df )
     sites = df %>% group_by( sid ) %>%
         summarise( n = n(),
@@ -92,12 +92,12 @@ test_that( "Site impact correlation works", {
 test_that( "prop treated by impact correlation works", {
     set.seed( 1019 )
     df = generate_multilevel_data_no_cov( n.bar=20, J=400,
-                         tau.11.star = 0.3^2,
-                         ICC = 0.20,
-                         variable.n = TRUE,
-                         variable.p = TRUE,
-                         proptx.impact.correlate = 1,
-                         finite.model = FALSE )
+                                          tau.11.star = 0.3^2,
+                                          ICC = 0.20,
+                                          variable.n = TRUE,
+                                          variable.p = TRUE,
+                                          proptx.impact.correlate = 1,
+                                          finite.model = FALSE )
     head( df )
     sites = df %>% group_by( sid ) %>%
         summarise( n = n(),
@@ -124,12 +124,12 @@ test_that( "prop treated by impact correlation works", {
 
 
     df = generate_multilevel_data_no_cov( n.bar=20, J=200,
-                         tau.11.star = 0.3^2,
-                         ICC = 0.20,
-                         variable.n = TRUE,
-                         variable.p = TRUE,
-                         proptx.impact.correlate = -1,
-                         finite.model = FALSE )
+                                          tau.11.star = 0.3^2,
+                                          ICC = 0.20,
+                                          variable.n = TRUE,
+                                          variable.p = TRUE,
+                                          proptx.impact.correlate = -1,
+                                          finite.model = FALSE )
     head( df )
     sites = df %>% group_by( sid ) %>%
         summarise( n = n(),
@@ -153,13 +153,13 @@ test_that( "prop treated by impact correlation works", {
 
 
     df = generate_multilevel_data_no_cov( n.bar=200, J=200,
-                         tau.11.star = 0.3^2,
-                         ICC = 0.20,
-                         variable.n = TRUE,
-                         variable.p = TRUE,
-                         size.impact.correlate = TRUE,
-                         proptx.impact.correlate = TRUE,
-                         finite.model = FALSE )
+                                          tau.11.star = 0.3^2,
+                                          ICC = 0.20,
+                                          variable.n = TRUE,
+                                          variable.p = TRUE,
+                                          size.impact.correlate = TRUE,
+                                          proptx.impact.correlate = TRUE,
+                                          finite.model = FALSE )
     sites = df %>% group_by( sid ) %>%
         summarise( n = n(),
                    p.Z = mean( Z ),
@@ -179,13 +179,13 @@ test_that( "prop treated by impact correlation works", {
 
 
     df = generate_multilevel_data_no_cov( n.bar=25, J=80,
-                         tau.11.star = 0,
-                         ICC = 0.20,
-                         variable.n = TRUE,
-                         variable.p = TRUE,
-                         size.impact.correlate = TRUE,
-                         proptx.impact.correlate = TRUE,
-                         finite.model = FALSE )
+                                          tau.11.star = 0,
+                                          ICC = 0.20,
+                                          variable.n = TRUE,
+                                          variable.p = TRUE,
+                                          size.impact.correlate = TRUE,
+                                          proptx.impact.correlate = TRUE,
+                                          finite.model = FALSE )
     compare_methods( Yobs, Z, sid, data= df )
     tt = table( df$sid, df$Z )
     head( tt )
@@ -200,12 +200,12 @@ test_that( "prop treated by impact correlation works", {
 test_that( "Bounding of 2 tx and 2 co units works", {
     set.seed( 1019 )
     df = generate_multilevel_data_no_cov( n.bar=16, J=200,
-                         tau.11.star = 0.3^2,
-                         ICC = 0.20,
-                         variable.n = TRUE,
-                         variable.p = TRUE,
-                         size.impact.correlate = TRUE,
-                         finite.model = FALSE )
+                                          tau.11.star = 0.3^2,
+                                          ICC = 0.20,
+                                          variable.n = TRUE,
+                                          variable.p = TRUE,
+                                          size.impact.correlate = TRUE,
+                                          finite.model = FALSE )
     head( df )
     sites = df %>% group_by( sid ) %>%
         summarise( n = n(),
@@ -235,8 +235,8 @@ test_that( "Other DGP calls work (#2)", {
     set.seed( 101010 )
 
     df = generate_multilevel_data( n.bar=10, J=300,
-                  tau.11.star = 0.3,
-                  verbose=FALSE)
+                                   tau.11.star = 0.3,
+                                   verbose=FALSE)
 
     var( df$Y0 )
     var( df$Y1 )
@@ -255,13 +255,13 @@ test_that( "Other DGP calls work (#2)", {
                                                      p.Tx = mean( Z ) )
     nrow( sites )
     rst <- sites %>% ungroup() %>% summarise( mean.Y0 = mean( Y0.bar ),
-                                       mean.Y1 = mean( Y1.bar ),
-                                       cor.Ys = cor( Y0.bar, Y1.bar ),
-                                       cov.Ys = cov( Y0.bar, Y1.bar ),
-                                       mean.beta = mean( beta ),
-                                       n.bar = mean( n ),
-                                       p = mean( p.Tx ),
-                                       W.bar = mean( W ) )
+                                              mean.Y1 = mean( Y1.bar ),
+                                              cor.Ys = cor( Y0.bar, Y1.bar ),
+                                              cov.Ys = cov( Y0.bar, Y1.bar ),
+                                              mean.beta = mean( beta ),
+                                              n.bar = mean( n ),
+                                              p = mean( p.Tx ),
+                                              W.bar = mean( W ) )
     tt = t.test( sites$W )
     tt
     expect_true( tt$p.value > 0.05 )
@@ -271,16 +271,16 @@ test_that( "Other DGP calls work (#2)", {
 
 test_that( "Cluster randomization options work", {
     df = generate_multilevel_data( n.bar=10, J=20,
-                  tau.11.star = 0.3,
-                  verbose=FALSE,
-                  cluster.rand=TRUE)
+                                   tau.11.star = 0.3,
+                                   verbose=FALSE,
+                                   cluster.rand=TRUE)
     tb = table( df$Z, df$sid)
     tb
     expect_true( all( tb[1,] * tb[2,] == 0 ) )
     df = generate_multilevel_data( n.bar=10, J=300,
-                  tau.11.star = 0.3,
-                  verbose=FALSE,
-                  cluster.rand=FALSE)
+                                   tau.11.star = 0.3,
+                                   verbose=FALSE,
+                                   cluster.rand=FALSE)
     tb = table( df$Z, df$sid)
     expect_true( all( tb[1,] * tb[2,] != 0 ) )
 
@@ -319,12 +319,13 @@ test_that( "ICC = 0 works", {
 
 
 test_that( "Individual covariate options work", {
+
     set.seed( 1020 )
     df = generate_multilevel_data_model( n.bar = 20, J = 300,
-                        gamma.00 = 1, gamma.01 = 1, gamma.10 = 0.3, gamma.11 = 0,
-                        tau.00 = 1, tau.01 = 0, tau.11 = 0,
-                        sigma2.e = 1, sigma2.W = 1,
-                        beta.X = 0.8, sigma2.mean.X = 0.5, variable.n = FALSE, variable.p = FALSE )
+                                         gamma.00 = 1, gamma.01 = 1, gamma.10 = 0.3, gamma.11 = 0,
+                                         tau.00 = 1, tau.01 = 0, tau.11 = 0,
+                                         sigma2.e = 1, sigma2.W = 1,
+                                         beta.X = 0.8, sigma2.mean.X = 0.5, variable.n = FALSE, variable.p = FALSE )
     #head( df )
 
     sd( df$Y0 )
@@ -349,15 +350,132 @@ test_that( "Individual covariate options work", {
     expect_true( all( CI[,2] >= params ) )
 
 
-    M0 = lm( Yobs ~ 1 + Z + W + X, data=df )
-    #summary( M0 )
+    if ( FALSE ) {
+        M0 = lm( Yobs ~ 1 + Z + W + X, data=df )
+        #summary( M0 )
 
-    gp = df %>% group_by( sid ) %>%
-        summarise( mean.X = mean( X ) )
-    M1 = lmer( X ~ 1 + (1|sid), data=df )
-    M1
-    #arm::display( M1 )
+        gp = df %>% group_by( sid ) %>%
+            summarise( mean.X = mean( X ) )
+        M1 = lmer( X ~ 1 + (1|sid), data=df )
+        M1
+        #arm::display( M1 )
+    }
+} )
+
+
+
+
+test_that( "multiple covariates works", {
+
+    set.seed( 40450 )
+    d1 <- generate_multilevel_data( n.bar=20, J=300,
+                                    tau.11.star = 0.4,
+                                    gamma.10 = 0.4,
+                                    ICC = 0.20,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE,
+                                    num.X = 3, num.W = 4, zero.corr = TRUE )
+
+    head( d1 )
+    expect_true( all( paste0( "W", 1:4 ) %in% colnames(d1) ) )
+    expect_true( all( paste0( "X", 1:3 ) %in% colnames(d1) ) )
+
+    M = lmer( Y0 ~ 1 + X1 + X2 + X3 + W1 + W2 + W3 + W4 + (1|sid), data=d1 )
+
+    CI = confint(M, method="Wald")[ -c(1:2), ]
+    params =  c( 0,0,0,0, sqrt(0.20) * 0.4, 0,0,0)
+
+    expect_true( all( CI[,1] <= params ) )
+    expect_true( all( CI[,2] >= params ) )
+
+})
+
+
+
+test_that( "covariate version and no covariate version align", {
+
+    set.seed( 40404 )
+    d1 <- generate_multilevel_data_no_cov( n.bar=20, J=300,
+                                           tau.11.star = 0.3,
+                                           ICC = 0.20,
+                                           variable.n = FALSE,
+                                           variable.p = FALSE )
+
+    set.seed( 40404 )
+    d2 <- generate_multilevel_data( n.bar=20, J=300,
+                                    tau.11.star = 0.3,
+                                    ICC = 0.20,
+                                    variable.n = FALSE,
+                                    rho2.0W = 0, rho2.1W = 0 )
+
+
+    expect_equal( nrow( d1 ), nrow( d2 ) )
+    expect_equal( sd( d1$Y0 ), sd( d2$Y0 ) )
+    expect_equal( d1$Z, d2$Z )
+    expect_equal( d1$Yobs, d2$Yobs )
+
+
+
+    set.seed( 140404 )
+    d1 <- generate_multilevel_data_no_cov( n.bar=26, J=300,
+                                           tau.11.star = 0.3,
+                                           ICC = 0.50,
+                                           size.impact.correlate = 1, proptx.impact.correlate = 1,
+                                           variable.n = TRUE,
+                                           variable.p = TRUE )
+
+    set.seed( 140404 )
+    d2 <- generate_multilevel_data( n.bar=26, J=300,
+                                    tau.11.star = 0.3,
+                                    ICC = 0.50,
+                                    size.impact.correlate = 1, proptx.impact.correlate = 1,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE,
+                                    rho2.0W = 0, rho2.1W = 0 )
+
+
+    expect_equal( nrow( d1 ), nrow( d2 ) )
+    expect_equal( sd( d1$Y0 ), sd( d2$Y0 ) )
+    expect_equal( d1$Z, d2$Z )
+    expect_equal( d1$Yobs, d2$Yobs )
+
+
+
+    # Now with individual level covariate
+
+    set.seed( 140404 )
+    d1 <- generate_multilevel_data_no_cov( n.bar=26, J=300,
+                                           tau.11.star = 0.3,
+                                           ICC = 0.50,
+                                           size.impact.correlate = 1, proptx.impact.correlate = 1,
+                                           variable.n = TRUE,
+                                           variable.p = TRUE,
+                                           beta.X = 0.7 )
+
+    set.seed( 140404 )
+    d2 <- generate_multilevel_data( n.bar=26, J=300,
+                                    tau.11.star = 0.3,
+                                    ICC = 0.50,
+                                    size.impact.correlate = 1, proptx.impact.correlate = 1,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE,
+                                    rho2.0W = 0, rho2.1W = 0,
+                                    beta.X = 0.7 )
+
+
+    expect_equal( nrow( d1 ), nrow( d2 ) )
+    expect_equal( sd( d1$Y0 ), sd( d2$Y0 ) )
+    expect_equal( d1$Z, d2$Z )
+    expect_equal( d1$Yobs, d2$Yobs )
+
+    expect_equal( sd( d2$X ), 1, tolerance = 0.02 )
+    M = lmer( Y0 ~ X + (1|sid), data=d1 )
+    expect_equal( VarCorr( M )$sid[1,1], 0.5, tolerance = 0.06 )
+
+    expect_equal( fixef(M)[["X"]], 0.7, tolerance = 0.01 )
+
 
 } )
+
 
 

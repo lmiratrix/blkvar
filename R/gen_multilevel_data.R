@@ -69,6 +69,29 @@ rerandomize_data <- function(dat) {
 
 
 
+#' Generate block of noisy covariates
+#'
+#' @param Single covariate.  This will be expanded to desired number of covariates.
+#' @param k Number of covariates
+#'
+#' @return tibble with covariates.
+make_covariate_set <- function( X1, k, var_prefix = "X" ) {
+    stopifnot( k >= 1 )
+    n = length(X1)
+    if ( k > 2 ) {
+        X = as.data.frame( cbind( X1, matrix( rnorm( n * (k-1), mean=0, sd=1 ), n, k-1 ) ) ) %>%
+            as_tibble()
+        colnames( X ) = paste0( var_prefix, 1:k )
+    } else {
+        X = tibble( X = X1 )
+        colnames( X ) <- var_prefix
+    }
+    return ( X )
+}
+
+
+
+
 
 #' Generate individual data given a dataframe of site level
 #' characteristics.
@@ -90,19 +113,19 @@ generate_individual_data = function( sdat, p = 0.5,
                                      variable.p = FALSE,
                                      cluster.rand = FALSE,
                                      sigma2.mean.X = 0,
+                                     num.X = 0 + (!is.null(beta.X)),
                                      proptx.impact.correlate = FALSE,
                                      verbose = FALSE) {
 
-    include_X <- FALSE
-    if (!is.null(beta.X)) {
-        include_X <- TRUE
+    include_X <- num.X > 0
+    if ( is.null( beta.X ) ) {
+        beta.X = 0
     }
 
     J = nrow( sdat )
     nj = sdat$n
     beta.0j = sdat$beta.0
     beta.1j = sdat$beta.1
-    Wj = sdat$W
 
     Zj = NULL
     if ( cluster.rand ) {
@@ -144,7 +167,7 @@ generate_individual_data = function( sdat, p = 0.5,
     # individual covariates and residuals
     if (include_X) {
         stopifnot(sigma2.mean.X < sigma2.X)
-        stopifnot(sigma2.e - beta.X ^ 2 > 0)
+        stopifnot(sigma2.e - beta.X^2 > 0)
         Xbar <- rnorm(J, mean = 0, sd = sqrt(sigma2.mean.X))
         X <- Xbar[sid] + rnorm(N, mean = 0, sd = sqrt(sigma2.X - sigma2.mean.X))
         e <- rnorm(N, mean = 0, sd = sqrt(sigma2.e - beta.X^2))
@@ -154,15 +177,20 @@ generate_individual_data = function( sdat, p = 0.5,
         Y0 <- beta.0j[sid] + e
     }
     Y1 <- Y0 + beta.1j[sid]
-    df <- data.frame(sid = as.factor(sid),
-                     Y0 = Y0, Y1 = Y1, Z = Zij,
-                     Yobs = ifelse(Zij, Y1, Y0))
+
+    df <- data.frame( sid = as.factor(sid),
+                      Y0 = Y0, Y1 = Y1, Z = Zij,
+                      Yobs = ifelse(Zij, Y1, Y0))
+
+    # Add any covariates to dataframe
     if (include_X) {
-        df$X <- X
+        df = bind_cols( df, make_covariate_set( X, num.X ) )
     }
-    if ( !is.null( Wj ) ) {
-        df$W <- Wj[df$sid]
-    }
+
+    # Copy over site level covariates (anything starting with "W" )
+    Ws = sdat %>% dplyr::select( starts_with( "W" ) )
+    df = bind_cols( df, Ws[ df$sid, , drop=FALSE ] )
+
     df
 }
 
@@ -216,18 +244,23 @@ generate_individual_data = function( sdat, p = 0.5,
 #'   made.  Recommended to use FALSE.
 #' @param size.ratio The degree to which the site sizes should vary,
 #'   if they should vary.
-#' @param site.sizes (Optional) vector of manually specified site sizes.
-#'   If not specified, use n.bar and variable.n to generate site sizes.
+#' @param site.sizes (Optional) vector of manually specified site
+#'   sizes. If not specified, use n.bar and variable.n to generate
+#'   site sizes.
 #'
 #' @return Dataframe of individual level data (unless
-#'   return.sites=TRUE)!  Dataframe has treatment column, outcome
-#'   column, covariates, and block IDs.
+#'   return.sites=TRUE, in which case only site level stuff is
+#'   returned).  Dataframe has treatment column, outcome column,
+#'   covariates, and block IDs.
+#'
 #' @importFrom magrittr '%>%'
 #' @export
 generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
                                            gamma.00, gamma.01, gamma.10, gamma.11,
                                            tau.00, tau.01, tau.11, sigma2.e, sigma2.W = 1,
                                            beta.X = NULL, sigma2.mean.X = 0,
+                                           num.X = 0 + (!is.null(beta.X)),
+                                           num.W = 1,
                                            variable.n = TRUE, variable.p = FALSE,
                                            site.sizes = NULL,
                                            cluster.rand = FALSE, return.sites = FALSE,
@@ -248,24 +281,24 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 
     # generate site sizes (all the same or different sizes)
     if (is.null(site.sizes)) {
-      if (variable.n) {
-        stopifnot(n.bar > 4)
-        # nj = rpois( J, n.bar)
-        # nj = round( n.bar * runif( J, 0.25, 1.75 ) )
-        nj <- block_distn(J, n.bar, size.ratio, min.size = 4)
-        nj[ nj < 4 ] <- 4
-        # if ( any( nj < 4 ) ) {
-        #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
-        #}
-      } else {
-        nj <- rep(n.bar, J)
-      }
+        if (variable.n) {
+            stopifnot(n.bar > 4)
+            # nj = rpois( J, n.bar)
+            # nj = round( n.bar * runif( J, 0.25, 1.75 ) )
+            nj <- block_distn(J, n.bar, size.ratio, min.size = 4)
+            nj[ nj < 4 ] <- 4
+            # if ( any( nj < 4 ) ) {
+            #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
+            #}
+        } else {
+            nj <- rep(n.bar, J)
+        }
     } else {
-      stopifnot(length(site.sizes) == J)                # specify size for each site
-      stopifnot(min(site.sizes) >= 4)                   # sites must all be large enough
-      stopifnot(all(round(site.sizes) == site.sizes))   # integer-valued site sizes
+        stopifnot(length(site.sizes) == J)                # specify size for each site
+        stopifnot(min(site.sizes) >= 4)                   # sites must all be large enough
+        stopifnot(all(round(site.sizes) == site.sizes))   # integer-valued site sizes
 
-      nj <- site.sizes
+        nj <- site.sizes
     }
 
     include_W = !is.null( gamma.10 ) && !is.null(gamma.11)
@@ -337,20 +370,25 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 
     if (!include_W) {
         df$W <- NULL
+    } else {
+        Wblock = make_covariate_set( df$W, num.W, "W" )
+        df$W <- NULL
+        df <- bind_cols( df, Wblock )
     }
+
 
     if (return.sites) {
         return( df )
     } else {
         df <- generate_individual_data( df, p = p, sigma2.e = sigma2.e, beta.X = beta.X,
                                         proptx.impact.correlate = proptx.impact.correlate,
-                                        sigma2.mean.X = sigma2.mean.X,
+                                        sigma2.mean.X = sigma2.mean.X, num.X = num.X,
                                         variable.p = variable.p, cluster.rand = cluster.rand,
-                                        verbose = verose )
+                                        verbose = verbose )
 
-        attr(df, "tau.S") <- sd( beta.1j)
+        attr(df, "tau.S") <- sd( beta.1j )
 
-        return( df)
+        return( df )
     }
 }
 
@@ -374,23 +412,23 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 #' @param ICC The ICC, Default: 0.7
 #' @param gamma.00 The mean control outcome, Default: 0
 #' @param gamma.10 The ATE, Default: 0.2
-#' @param verbose Say stuff while maing data?, Default: FALSE
+#' @param verbose Say stuff while making data?, Default: FALSE
 #' @param zero.corr TRUE means treatment impact and mean site outcome
 #'   are not correlated.  TRUE means they are negatively correlated to
 #'   make the variance of the treatment group 1, Default: FALSE
 #' @param ... Further parameters passed to
 #'   generate_multilevel_data_model()
 #' @export
-generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5,
-                                     tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7,
-                                     gamma.00 = 0, gamma.10 = 0.2,
-                                     variable.n = TRUE, variable.p = FALSE,
-                                     site.sizes = NULL,
-                                     cluster.rand = FALSE, return.sites = FALSE,
-                                     finite.model = FALSE,
-                                     size.impact.correlate = 0, proptx.impact.correlate = 0,
-                                     correlate.strength = 0.75, size.ratio = 1 / 3,
-                                     verbose = FALSE, zero.corr = FALSE, ... ) {
+generate_multilevel_data <- function( n.bar = 10, J = 30, p = 0.5,
+                                      tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7,
+                                      gamma.00 = 0, gamma.10 = 0.2,
+                                      variable.n = TRUE, variable.p = FALSE,
+                                      site.sizes = NULL,
+                                      cluster.rand = FALSE, return.sites = FALSE,
+                                      finite.model = FALSE,
+                                      size.impact.correlate = 0, proptx.impact.correlate = 0,
+                                      correlate.strength = 0.75, size.ratio = 1 / 3,
+                                      verbose = FALSE, zero.corr = FALSE, ... ) {
 
     sigma2.W <- 1
     gamma.01 <- sqrt(rho2.0W * ICC / sigma2.W)
@@ -445,8 +483,8 @@ generate_multilevel_data <- function(n.bar = 10, J = 30, p = 0.5,
 #' @param control.sd.Y1 Make correlation of random intercept and random slope
 #' @export
 generate_multilevel_data_no_cov <- function(n.bar = 10, J = 30, p = 0.5,
-                           tau.11.star = 0.3, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE,
-                           variable.n = TRUE, control.sd.Y1 = TRUE, ... ) {
+                                            tau.11.star = 0.3, ICC = 0.7, gamma.00 = 0, gamma.10 = 0.2, verbose = FALSE,
+                                            variable.n = TRUE, control.sd.Y1 = TRUE, ... ) {
     tau.00 <- ICC
     tau.11 <- tau.11.star
     if (control.sd.Y1) {
@@ -462,8 +500,11 @@ generate_multilevel_data_no_cov <- function(n.bar = 10, J = 30, p = 0.5,
         scat( "tau.11* = %.2f\n",  tau.11)
         scat( "sigma2.e* = %.2f\n", sigma2.e)
     }
-    generate_multilevel_data_model(n.bar = n.bar, J = J, p = p, gamma.00 = gamma.00, gamma.10 = gamma.10, gamma.01 = 0, gamma.11 = 0, tau.00 = tau.00, tau.01 = tau.01, tau.11 = tau.11,
-                  sigma2.e = sigma2.e, verbose = verbose, variable.n = variable.n, ...)
+
+    generate_multilevel_data_model(n.bar = n.bar, J = J, p = p,
+                                   gamma.00 = gamma.00, gamma.10 = gamma.10, gamma.01 = 0, gamma.11 = 0,
+                                   tau.00 = tau.00, tau.01 = tau.01, tau.11 = tau.11,
+                                   sigma2.e = sigma2.e, verbose = verbose, variable.n = variable.n, ...)
 }
 
 
