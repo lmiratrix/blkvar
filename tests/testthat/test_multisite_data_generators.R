@@ -304,7 +304,7 @@ test_that( "Cluster randomization options work", {
 test_that( "ICC = 0 works", {
 
     set.seed( 40404 )
-    df = generate_multilevel_data( n.bar=10, J=20,
+    df = generate_multilevel_data( n.bar=10, J=50,
                                    tau.11.star = 0.3,
                                    ICC = 0,
                                    verbose=FALSE,
@@ -360,6 +360,57 @@ test_that( "Individual covariate options work", {
         M1
         #arm::display( M1 )
     }
+
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    ICC = 0.20,
+                                    R2.X = 0.75,
+                                    rho2.0W = 0, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE )
+    head( d2 )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0.75 * (1-0.20), tolerance = 0.01 )
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    ICC = 0.40,
+                                    R2.X = 0.50,
+                                    rho2.0W = 0.8, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE )
+    head( d2 )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0.50 * (1-0.40) + 0.8 * 0.4, tolerance = 0.03 )
+
+    M = lmer( Y0 ~ 1 + X + W + (1|sid), data=d2 )
+    expect_equal( VarCorr(M)$sid[1,1], 0.4 * (1-0.8), tolerance = 0.03 )
+    expect_equal( summary(M)$sigma^2, (1-0.4)*(1-0.5), tolerance = 0.03 )
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    ICC = 0,
+                                    R2.X = 0.50,
+                                    rho2.0W = 0.8, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0.50 * (1-0) + 0.8 * 0, tolerance = 0.03 )
+
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    ICC = 0,
+                                    R2.X = 0,
+                                    rho2.0W = 0.8, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0 * (1-0) + 0.8 * 0, tolerance = 0.03 )
+
+
+
 } )
 
 
@@ -388,7 +439,35 @@ test_that( "multiple covariates works", {
     expect_true( all( CI[,1] <= params ) )
     expect_true( all( CI[,2] >= params ) )
 
+
+
+
 })
+
+
+
+
+test_that( "null R2s work", {
+
+    set.seed( 40450 )
+    d1 <- generate_multilevel_data( n.bar=20, J=300,
+                                    tau.11.star = 0.4,
+                                    gamma.10 = 0.4,
+                                    ICC = 0.20,
+                                    rho2.0W = NULL,
+                                    R2.X = NULL,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE,
+                                    num.X = 2, num.W = 1, zero.corr = TRUE )
+
+    head( d1 )
+    expect_true( !( "W" %in% colnames(d1) ) )
+
+    expect_true( all( paste0( "X", 2 ) %in% colnames(d1) ) )
+
+})
+
+
 
 
 
@@ -408,6 +487,9 @@ test_that( "covariate version and no covariate version align", {
                                     variable.n = FALSE,
                                     rho2.0W = 0, rho2.1W = 0 )
 
+
+    head( d1 )
+    head( d2 )
 
     expect_equal( nrow( d1 ), nrow( d2 ) )
     expect_equal( sd( d1$Y0 ), sd( d2$Y0 ) )
@@ -459,17 +541,21 @@ test_that( "covariate version and no covariate version align", {
                                     size.impact.correlate = 1, proptx.impact.correlate = 1,
                                     variable.n = TRUE,
                                     variable.p = TRUE,
-                                    rho2.0W = 0, rho2.1W = 0,
-                                    beta.X = 0.7 )
+                                    rho2.0W = 0, rho2.1W = 0, R2.X = 0.7^2 / (1-0.5) )
 
 
     expect_equal( nrow( d1 ), nrow( d2 ) )
-    expect_equal( sd( d1$Y0 ), sd( d2$Y0 ) )
+    expect_equal( sd( d1$Y0 ), sd( d2$Y0 ), tolerance = 0.002 )
     expect_equal( d1$Z, d2$Z )
-    expect_equal( d1$Yobs, d2$Yobs )
+
+    summary( d1$Y0 - d2$Y0 )
+    summary( d1$Yobs - d2$Yobs )
+    expect_equal( d1$Yobs, d2$Yobs, tolerance = 0 )
 
     expect_equal( sd( d2$X ), 1, tolerance = 0.02 )
-    M = lmer( Y0 ~ X + (1|sid), data=d1 )
+
+    M = lmer( Y0 ~ X + (1|sid), data=d2 )
+    expect_equal( as.numeric( fixef( M ) ), c( 0, 0.7 ), tolerance = 0.02 )
     expect_equal( VarCorr( M )$sid[1,1], 0.5, tolerance = 0.06 )
 
     expect_equal( fixef(M)[["X"]], 0.7, tolerance = 0.01 )
@@ -478,4 +564,61 @@ test_that( "covariate version and no covariate version align", {
 } )
 
 
+
+
+test_that( "scaling outcome with varY0 keeps ICC, etc., well defined", {
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    ICC = 0.20,
+                                    R2.X = 0.75,
+                                    varY0 = 16,
+                                    rho2.0W = 0, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0.75 * (1-0.20), tolerance = 0.02 )
+    expect_equal( sd( d2$Y0 ), 4, tolerance = 0.02 )
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    ICC = 0.40,
+                                    R2.X = 0.50,
+                                    varY0 = 0.25,
+                                    rho2.0W = 0.8, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE, zero.corr = TRUE )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0.50 * (1-0.40) + 0.8 * 0.4, tolerance = 0.05 )
+    expect_equal( sd( d2$Y0 ), 0.5, tolerance = 0.02 )
+
+    M = lmer( Y0 ~ 1 + X + W + (1|sid), data=d2 )
+    expect_equal( VarCorr(M)$sid[1,1], 0.25 * 0.4 * (1-0.8), tolerance = 0.03 )
+    expect_equal( summary(M)$sigma^2, 0.25 * (1-0.4)*(1-0.5), tolerance = 0.03 )
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    ICC = 0,
+                                    varY0 = 100,
+                                    R2.X = 0.50,
+                                    rho2.0W = 0.8, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0.50 * (1-0) + 0.8 * 0, tolerance = 0.03 )
+    expect_equal( sd( d2$Y0 ), 10, tolerance = 0.02 )
+
+    d2 <- generate_multilevel_data( n.bar = 50, J = 250,
+                                    tau.11.star = 0.3,
+                                    varY0 = 1/9,
+                                    ICC = 0,
+                                    R2.X = 0,
+                                    rho2.0W = 0.8, rho2.1W = 0,
+                                    variable.n = TRUE,
+                                    variable.p = TRUE )
+    M = summary( lm( Y0 ~ 1 + X + W, data=d2 ) )
+    expect_equal( M$r.squared, 0 * (1-0) + 0.8 * 0, tolerance = 0.03 )
+    expect_equal( sd( d2$Y0 ), 1/3, tolerance = 0.02 )
+
+})
 

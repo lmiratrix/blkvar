@@ -78,7 +78,7 @@ rerandomize_data <- function(dat) {
 make_covariate_set <- function( X1, k, var_prefix = "X" ) {
     stopifnot( k >= 1 )
     n = length(X1)
-    if ( k > 2 ) {
+    if ( k >= 2 ) {
         X = as.data.frame( cbind( X1, matrix( rnorm( n * (k-1), mean=0, sd=1 ), n, k-1 ) ) ) %>%
             as_tibble()
         colnames( X ) = paste0( var_prefix, 1:k )
@@ -301,13 +301,14 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
         nj <- site.sizes
     }
 
-    include_W = !is.null( gamma.10 ) && !is.null(gamma.11)
+    include_W = !is.null( gamma.10 ) && !is.null(gamma.11) && (num.W > 0)
     if ( include_W ) {
         Wj <- rnorm(J, mean = 0, sd = sqrt(sigma2.W))
     } else {
         Wj <- rep( 0, J )
         gamma.01 = 0
         gamma.11 = 0
+        num.W = 0
     }
 
 
@@ -405,13 +406,17 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 #'
 #' @param tau.11.star Total amount of cross site treatment variation,
 #'   both explained by covariate and not, Default: 0.3
-#' @param rho2.0W Explanatory power of W for control outcomes,
-#'   Default: 0.1
-#' @param rho2.1W Explanatory power of W for average treatment impact,
-#'   Default: 0.5
+#' @param rho2.0W Explanatory power (like a R2 measure) of W for
+#'   control outcomes, Default: 0.1
+#' @param rho2.1W Explanatory power (like a R2 measure) of W for
+#'   average treatment impact, Default: 0.5
+#' @param varY0 The variance of the control-side potential outcomes in
+#'   the superpopulation DGP.
 #' @param ICC The ICC, Default: 0.7
-#' @param gamma.00 The mean control outcome, Default: 0
-#' @param gamma.10 The ATE, Default: 0.2
+#' @param gamma.00 The mean control outcome (i.e., intercept) on the
+#'   outcome scale (not in effect size units). Default: 0
+#' @param gamma.10 The ATE on the outcome scale (not in effect size
+#'   units). Default: 0.2.
 #' @param verbose Say stuff while making data?, Default: FALSE
 #' @param zero.corr TRUE means treatment impact and mean site outcome
 #'   are not correlated.  TRUE means they are negatively correlated to
@@ -421,7 +426,11 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
 #' @export
 generate_multilevel_data <- function( n.bar = 10, J = 30, p = 0.5,
                                       tau.11.star = 0.3, rho2.0W = 0.1, rho2.1W = 0.5, ICC = 0.7,
+                                      R2.X = NULL,
+                                      varY0 = 1,
                                       gamma.00 = 0, gamma.10 = 0.2,
+                                      num.X = 0 + (!is.null(R2.X)),
+                                      num.W = 1,
                                       variable.n = TRUE, variable.p = FALSE,
                                       site.sizes = NULL,
                                       cluster.rand = FALSE, return.sites = FALSE,
@@ -430,42 +439,53 @@ generate_multilevel_data <- function( n.bar = 10, J = 30, p = 0.5,
                                       correlate.strength = 0.75, size.ratio = 1 / 3,
                                       verbose = FALSE, zero.corr = FALSE, ... ) {
 
+    if ( num.W == 0 || is.null( rho2.0W ) ) {
+        rho2.0W = 0
+        rho2.1W = 0
+        num.W = 0
+    }
     sigma2.W <- 1
-    gamma.01 <- sqrt(rho2.0W * ICC / sigma2.W)
-    gamma.11 <- sqrt(rho2.1W * tau.11.star)
-    tau.00 <- (1 - rho2.0W) * ICC
+    gamma.01 <- sqrt( varY0 * rho2.0W * ICC / sigma2.W)
+    gamma.11 <- sqrt( rho2.1W * tau.11.star / sigma2.W )
+    tau.00 <- varY0 * (1 - rho2.0W) * ICC
     if (zero.corr) {
         tau.01 <- 0
     } else {
-        tau.01 <- -tau.11.star / 2 - gamma.01 * gamma.11 * sigma2.W
+        tau.01 <- - sqrt(varY0) * tau.11.star / 2 - gamma.01 * gamma.11 * sigma2.W
     }
-    tau.11 <- (1 - rho2.1W) * tau.11.star
-    sigma2.e <- 1 - ICC
+    tau.11 <- varY0 * (1 - rho2.1W) * tau.11.star
+    sigma2.e <- varY0 * (1 - ICC)
+
+    if ( num.X == 0 || is.null( R2.X ) ) {
+        R2.X = 0
+    }
 
     if (verbose) {
-        scat( "tau.11* <- %.2f\tICC <- %.2f\trho2.Ws <- %.2f, %.2f\n",
-              tau.11.star, ICC, rho2.0W, rho2.1W)
+        scat( "tau.11* <- %.2f\tICC <- %.2f\trho2.Ws <- %.2f, %.2f\nvarY0 = %.2f\n",
+              tau.11.star, ICC, rho2.0W, rho2.1W, varY0 )
         scat( "tau.00* <- %.2f\n", gamma.01 ^ 2 * sigma2.W + tau.00)
         scat( "tau.11* <- %.2f\n", gamma.11 ^ 2 * sigma2.W + tau.11)
-        scat( "sigma2.e* <- %.2f\n", sigma2.e)
+        scat( "sigma2.e* <- %.2f\n", sigma2.e )
     }
 
-    generate_multilevel_data_model(n.bar = n.bar, J = J, p = p,
-                                   gamma.00 = gamma.00, gamma.01 = gamma.01,
-                                   gamma.10 = gamma.10, gamma.11 = gamma.11,
-                                   tau.00 = tau.00, tau.01 = tau.01,
-                                   tau.11 = tau.11, sigma2.e = sigma2.e,
-                                   variable.n = variable.n,
-                                   variable.p = variable.p,
-                                   site.sizes = site.sizes,
-                                   cluster.rand = cluster.rand,
-                                   return.sites = return.sites,
-                                   finite.model = finite.model,
-                                   size.impact.correlate = size.impact.correlate,
-                                   proptx.impact.correlate = proptx.impact.correlate,
-                                   correlate.strength = correlate.strength,
-                                   size.ratio = size.ratio,
-                                   verbose = verbose, ... )
+    generate_multilevel_data_model( n.bar = n.bar, J = J, p = p,
+                                    gamma.00 = gamma.00, gamma.01 = gamma.01,
+                                    gamma.10 = gamma.10, gamma.11 = gamma.11,
+                                    tau.00 = tau.00, tau.01 = tau.01,
+                                    tau.11 = tau.11, sigma2.e = sigma2.e,
+                                    beta.X = sqrt( varY0 * R2.X * (1-ICC) ),
+                                    num.W = num.W, num.X = num.X,
+                                    variable.n = variable.n,
+                                    variable.p = variable.p,
+                                    site.sizes = site.sizes,
+                                    cluster.rand = cluster.rand,
+                                    return.sites = return.sites,
+                                    finite.model = finite.model,
+                                    size.impact.correlate = size.impact.correlate,
+                                    proptx.impact.correlate = proptx.impact.correlate,
+                                    correlate.strength = correlate.strength,
+                                    size.ratio = size.ratio,
+                                    verbose = verbose, ... )
 }
 
 
@@ -478,7 +498,7 @@ generate_multilevel_data <- function( n.bar = 10, J = 30, p = 0.5,
 #' @param ICC The ICC, Default: 0.7
 #' @param gamma.00 The mean control outcome, Default: 0
 #' @param gamma.10 The ATE, Default: 0.2
-#' @param verbose Say stuff while maing data?, Default: FALSE
+#' @param verbose Say stuff while making data?, Default: FALSE
 #' @param variable.n Allow n to vary around n.bar, Default: TRUE
 #' @param control.sd.Y1 Make correlation of random intercept and random slope
 #' @export
@@ -502,7 +522,8 @@ generate_multilevel_data_no_cov <- function(n.bar = 10, J = 30, p = 0.5,
     }
 
     generate_multilevel_data_model(n.bar = n.bar, J = J, p = p,
-                                   gamma.00 = gamma.00, gamma.10 = gamma.10, gamma.01 = 0, gamma.11 = 0,
+                                   gamma.00 = gamma.00, gamma.01 = 0,
+                                   gamma.10 = gamma.10, gamma.11 = 0,
                                    tau.00 = tau.00, tau.01 = tau.01, tau.11 = tau.11,
                                    sigma2.e = sigma2.e, verbose = verbose, variable.n = variable.n, ...)
 }

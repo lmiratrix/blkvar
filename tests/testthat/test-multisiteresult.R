@@ -4,9 +4,9 @@
 test_that("Nice formatting of result object", {
     set.seed( 1010101 )
 
-    dt = generate_multilevel_data(n = 100, J = 40,
-                                  ICC = 0.5, rho2.1W = 0,
-                                  tau.11.star = 0.45, zero.corr = FALSE )
+    dt = generate_multilevel_data( n.bar = 100, J = 40,
+                                   ICC = 0.5, rho2.1W = 0,
+                                   tau.11.star = 0.45, zero.corr = FALSE )
 
     head( dt )
     rs = analysis_Qstatistic( Yobs, Z, sid, data=dt )
