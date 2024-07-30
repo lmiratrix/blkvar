@@ -8,3 +8,14 @@ It is used in a variety of research projects connected with the Miratrix CARES L
 A core method of the package is `compare_methods()`, which uses a bunch of different estimation strategies on multisite data to estimate the ATE, and then makes a table of the results.
 
 Also see `block_estimator()` which implements the various variance estimators for blocked experiments as discussed in the Pashley & Miratrix JEBS papers.
+
+
+## Installing blkvar
+
+You can install the package from github using the `devtools` package:
+
+```
+library( devtools )
+devtools::install_github("miratrix/blkvar")
+```
+
