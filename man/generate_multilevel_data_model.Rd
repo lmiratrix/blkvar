@@ -17,6 +17,7 @@ generate_individual_data(
   variable.p = FALSE,
   cluster.rand = FALSE,
   sigma2.mean.X = 0,
+  num.X = 0 + (!is.null(beta.X)),
   proptx.impact.correlate = FALSE,
   verbose = FALSE
 )
@@ -36,6 +37,8 @@ generate_multilevel_data_model(
   sigma2.W = 1,
   beta.X = NULL,
   sigma2.mean.X = 0,
+  num.X = 0 + (!is.null(beta.X)),
+  num.W = 1,
   variable.n = TRUE,
   variable.p = FALSE,
   site.sizes = NULL,
@@ -57,8 +60,12 @@ generate_multilevel_data(
   rho2.0W = 0.1,
   rho2.1W = 0.5,
   ICC = 0.7,
+  R2.X = NULL,
+  varY0 = 1,
   gamma.00 = 0,
   gamma.10 = 0.2,
+  num.X = 0 + (!is.null(R2.X)),
+  num.W = 1,
   variable.n = TRUE,
   variable.p = FALSE,
   site.sizes = NULL,
@@ -112,7 +119,7 @@ means vary across site.}
 proportion of units treated negatively correlated, uncorrelated,
 or positively correlated with site size?}
 
-\item{verbose}{Say stuff while maing data?, Default: FALSE}
+\item{verbose}{Say stuff while making data?, Default: FALSE}
 
 \item{n.bar}{average site size, Default: 10}
 
@@ -137,8 +144,9 @@ under control}
 
 \item{variable.n}{Allow n to vary around n.bar, Default: TRUE}
 
-\item{site.sizes}{(Optional) vector of manually specified site sizes.
-If not specified, use n.bar and variable.n to generate site sizes.}
+\item{site.sizes}{(Optional) vector of manually specified site
+sizes. If not specified, use n.bar and variable.n to generate
+site sizes.}
 
 \item{return.sites}{Return sites, not individual students, Default:
 FALSE}
@@ -162,13 +170,16 @@ if they should vary.}
 
 \item{tau.11.star}{Total amount of cross site treatment variation}
 
-\item{rho2.0W}{Explanatory power of W for control outcomes,
-Default: 0.1}
+\item{rho2.0W}{Explanatory power (like a R2 measure) of W for
+control outcomes, Default: 0.1}
 
-\item{rho2.1W}{Explanatory power of W for average treatment impact,
-Default: 0.5}
+\item{rho2.1W}{Explanatory power (like a R2 measure) of W for
+average treatment impact, Default: 0.5}
 
 \item{ICC}{The ICC, Default: 0.7}
+
+\item{varY0}{The variance of the control-side potential outcomes in
+the superpopulation DGP.}
 
 \item{zero.corr}{TRUE means treatment impact and mean site outcome
 are not correlated.  TRUE means they are negatively correlated to
@@ -181,8 +192,9 @@ generate_multilevel_data_model()}
 }
 \value{
 Dataframe of individual level data (unless
-  return.sites=TRUE)!  Dataframe has treatment column, outcome
-  column, covariates, and block IDs.
+  return.sites=TRUE, in which case only site level stuff is
+  returned).  Dataframe has treatment column, outcome column,
+  covariates, and block IDs.
 }
 \description{
 Given a 2-level model, generate data to specifications

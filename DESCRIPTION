@@ -1,7 +1,7 @@
 Package: blkvar
 Title: ATE and Treatment Variation Estimation for Blocked and
     Multisite RCTs
-Version: 0.0.1.5
+Version: 0.0.1.6
 Authors@R: 
     c(person(given = "Luke",
              family = "Miratrix",
