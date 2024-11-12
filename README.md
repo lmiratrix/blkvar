@@ -16,6 +16,6 @@ You can install the package from github using the `devtools` package:
 
 ```
 library( devtools )
-devtools::install_github("miratrix/blkvar")
+devtools::install_github("lmiratrix/blkvar")
 ```
 

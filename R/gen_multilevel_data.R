@@ -18,8 +18,9 @@
 
 #' Generate site sizes for simulation of multisite or blocked data
 #'
-#' Generate piecewise uniform distribution with a mean of (approximately, due to integer values) n.bar and a
-#' 'size.ratio' that controls the variance of site sizes.
+#' Generate piecewise uniform distribution with a mean of
+#' (approximately, due to integer values) n.bar and a 'size.ratio'
+#' that controls the variance of site sizes.
 #'
 #' The range of site sizes will be from 1 to n.bar * (1+3*size.ratio).
 #'
@@ -29,23 +30,34 @@
 #'   size.ratio = 0 means no variation.  Higher numbers mean more
 #'   variation.
 #' @param min.size Minimum size of each block.
+#' @param round Round the site sizes to integers?  Default of TRUE.
+#'   (FALSE if want expected sizes or similar.)
 #' @return Numeric vector of site sizes.
 #' @examples
 #' block_distn( 4, 10, 1 )
 #' @export
-block_distn <- function(J, n.bar, size.ratio, min.size = 1) {
+block_distn <- function(J, n.bar, size.ratio, min.size = 1, round=TRUE) {
     stopifnot( n.bar >= min.size )
     stopifnot( (n.bar - min.size) > 1 || size.ratio == 0 )
 
     n.bar = n.bar - min.size
 
     N <- 1 + 3 * size.ratio
-    p <- (N - 1) / N
-    small <- rbinom(J, 1, p)
-    Y <- runif(J)
-    Y <- n.bar * ifelse(small, Y, 1 + Y * (N - 1))
 
-    round( Y ) + min.size
+    if ( size.ratio > 1/3 ) {
+        p <- (N - 1) / N
+        small <- rbinom(J, 1, p)
+        Y <- runif(J)
+        Y <- n.bar * ifelse(small, Y, 1 + Y * (N - 1))
+    } else {
+        deltaN = N - 1
+        Y = runif(J, 1 - deltaN, 1 + deltaN ) * n.bar
+    }
+    if ( round ) {
+        round( Y ) + min.size
+    } else {
+        Y + min.size
+    }
 }
 
 
@@ -71,7 +83,7 @@ rerandomize_data <- function(dat) {
 
 #' Generate block of noisy covariates
 #'
-#' @param Single covariate.  This will be expanded to desired number of covariates.
+#' @param X1 A single covariate.  This will be expanded to desired number of covariates.
 #' @param k Number of covariates
 #'
 #' @return tibble with covariates.
@@ -247,7 +259,8 @@ generate_individual_data = function( sdat, p = 0.5,
 #' @param site.sizes (Optional) vector of manually specified site
 #'   sizes. If not specified, use n.bar and variable.n to generate
 #'   site sizes.
-#'
+#' @param min.size Smallest site size.  Default of 4 to allow for 2
+#'   units in tx and co in smallest sites.
 #' @return Dataframe of individual level data (unless
 #'   return.sites=TRUE, in which case only site level stuff is
 #'   returned).  Dataframe has treatment column, outcome column,
@@ -267,7 +280,8 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
                                            finite.model = FALSE,
                                            size.impact.correlate = 0, proptx.impact.correlate = 0,
                                            correlate.strength = 0.75, size.ratio = 1 / 3,
-                                           verbose = FALSE ) {
+                                           min.size = 4,
+                                           verbose = FALSE) {
 
     stopifnot(size.impact.correlate %in% c(-1, 0, 1))
     stopifnot(proptx.impact.correlate %in% c(-1, 0, 1))
@@ -282,11 +296,11 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
     # generate site sizes (all the same or different sizes)
     if (is.null(site.sizes)) {
         if (variable.n) {
-            stopifnot(n.bar > 4)
+            stopifnot(n.bar > min.size)
             # nj = rpois( J, n.bar)
             # nj = round( n.bar * runif( J, 0.25, 1.75 ) )
-            nj <- block_distn(J, n.bar, size.ratio, min.size = 4)
-            nj[ nj < 4 ] <- 4
+            nj <- block_distn(J, n.bar, size.ratio)
+            nj[ nj < min.size ] <- min.size
             # if ( any( nj < 4 ) ) {
             #    warning( "Some sites have fewer than 4 units, disallowing 2 tx and 2 co units" )
             #}
@@ -295,7 +309,7 @@ generate_multilevel_data_model <- function(n.bar = 10, J = 30, p = 0.5,
         }
     } else {
         stopifnot(length(site.sizes) == J)                # specify size for each site
-        stopifnot(min(site.sizes) >= 4)                   # sites must all be large enough
+        stopifnot(min(site.sizes) >= min.size)                   # sites must all be large enough
         stopifnot(all(round(site.sizes) == site.sizes))   # integer-valued site sizes
 
         nj <- site.sizes

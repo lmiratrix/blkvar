@@ -4,7 +4,7 @@
 \alias{block_distn}
 \title{Generate site sizes for simulation of multisite or blocked data}
 \usage{
-block_distn(J, n.bar, size.ratio, min.size = 1)
+block_distn(J, n.bar, size.ratio, min.size = 1, round = TRUE)
 }
 \arguments{
 \item{J}{number of sites to generate.}
@@ -16,13 +16,17 @@ size.ratio = 0 means no variation.  Higher numbers mean more
 variation.}
 
 \item{min.size}{Minimum size of each block.}
+
+\item{round}{Round the site sizes to integers?  Default of TRUE.
+(FALSE if want expected sizes or similar.)}
 }
 \value{
 Numeric vector of site sizes.
 }
 \description{
-Generate piecewise uniform distribution with a mean of (approximately, due to integer values) n.bar and a
-'size.ratio' that controls the variance of site sizes.
+Generate piecewise uniform distribution with a mean of
+(approximately, due to integer values) n.bar and a 'size.ratio'
+that controls the variance of site sizes.
 }
 \details{
 The range of site sizes will be from 1 to n.bar * (1+3*size.ratio).

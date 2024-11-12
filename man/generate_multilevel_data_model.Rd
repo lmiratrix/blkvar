@@ -49,6 +49,7 @@ generate_multilevel_data_model(
   proptx.impact.correlate = 0,
   correlate.strength = 0.75,
   size.ratio = 1/3,
+  min.size = 4,
   verbose = FALSE
 )
 
@@ -167,6 +168,9 @@ they are set to be correlated.}
 
 \item{size.ratio}{The degree to which the site sizes should vary,
 if they should vary.}
+
+\item{min.size}{Smallest site size.  Default of 4 to allow for 2
+units in tx and co in smallest sites.}
 
 \item{tau.11.star}{Total amount of cross site treatment variation}
 

@@ -7,9 +7,9 @@
 make_covariate_set(X1, k, var_prefix = "X")
 }
 \arguments{
-\item{k}{Number of covariates}
+\item{X1}{A single covariate.  This will be expanded to desired number of covariates.}
 
-\item{Single}{covariate.  This will be expanded to desired number of covariates.}
+\item{k}{Number of covariates}
 }
 \value{
 tibble with covariates.
