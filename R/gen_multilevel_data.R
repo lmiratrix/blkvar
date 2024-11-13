@@ -38,7 +38,7 @@
 #' @export
 block_distn <- function(J, n.bar, size.ratio, min.size = 1, round=TRUE) {
     stopifnot( n.bar >= min.size )
-    stopifnot( (n.bar - min.size) > 1 || size.ratio == 0 )
+    stopifnot( (n.bar - min.size) >= 1 || size.ratio == 0 )
 
     n.bar = n.bar - min.size
 
