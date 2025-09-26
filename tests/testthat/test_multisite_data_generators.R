@@ -418,7 +418,7 @@ test_that( "Individual covariate options work", {
 
 test_that( "multiple covariates works", {
 
-    set.seed( 40450 )
+    set.seed( 40444450 )
     d1 <- generate_multilevel_data( n.bar=20, J=300,
                                     tau.11.star = 0.4,
                                     gamma.10 = 0.4,
@@ -434,12 +434,16 @@ test_that( "multiple covariates works", {
     M = lmer( Y0 ~ 1 + X1 + X2 + X3 + W1 + W2 + W3 + W4 + (1|sid), data=d1 )
 
     CI = confint(M, method="Wald")[ -c(1:2), ]
+
     params =  c( 0,0,0,0, sqrt(0.20) * 0.4, 0,0,0)
-
-    expect_true( all( CI[,1] <= params ) )
-    expect_true( all( CI[,2] >= params ) )
-
-
+    CI <- CI %>%
+        as_tibble() %>%
+        mutate( name = names(coef(M)),
+                params = params,
+                hit = ( `2.5 %` <= params & `97.5 %` >= params ) )
+    CI
+    expect_true( all( CI[[1]] <= params ) )
+    expect_true( all( CI[[2]] >= params ) )
 
 
 })

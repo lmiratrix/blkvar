@@ -39,6 +39,8 @@ test_that("Check compare_methods with covariate adjustment", {
 
     rs = compare_methods( Yobs, Z, sid, data=dat, control_formula = ~ X1 + X2 )
 
+    rs = compare_methods( Yobs, Z, sid, data=dat, control_formula = ~ X1 )
+
     rs2 = compare_methods( Yobs, Z, sid, data=dat )
 
     expect_equal( ncol( rs ), ncol( rs2 ) )

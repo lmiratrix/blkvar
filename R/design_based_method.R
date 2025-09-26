@@ -166,7 +166,7 @@ estimate_ATE_design_based_adjusted <- function(formula,
     # Get control variables and expand control matrix with dummy variables, etc.
     controls = model.matrix( control_formula, data )
     stopifnot( colnames(controls)[1] == "(Intercept)" )
-    controls = controls[,-1]
+    controls = controls[,-1, drop=FALSE]  # drop intercept
     can_names = c("Yobs", "Z", "siteID", "B")
     nms = make.names( c( can_names, colnames(controls) ), unique=TRUE )
     c.names = nms[ -(1:length(can_names))]
